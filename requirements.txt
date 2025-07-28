@@ -4,4 +4,6 @@ Flask-SQLAlchemy==3.0.5
 python-dotenv==1.0.0
 requests==2.31.0
 paypalrestsdk==1.13.1
-Werkzeug==2.3.7 
+Werkzeug==2.3.7
+gunicorn==21.2.0 
+gunicorn==21.2.0
