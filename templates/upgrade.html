@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upgrade - ColdMail</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="/static/Black & White Minimalist Business Logo_20250708_190239_0000.png" alt="PitchAI Logo" class="nav-logo">
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/privacy" class="nav-link">Privacy</a>
+                <a href="/faq" class="nav-link">FAQ</a>
+                <a href="/contact" class="nav-link">Contact</a>
+            </div>
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero-section">
+            <h1>Upgrade to Unlimited</h1>
+            <p>Unlock unlimited cold DM and cold email analyses</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="price">$20</div>
+            <div class="price-subtitle">One-time payment</div>
+            <p>Get unlimited access to all ColdMail features</p>
+        </div>
+        
+        <div class="feature-card">
+            <h3>What you get with unlimited access:</h3>
+            <ul>
+                <li>Unlimited cold DM and cold email analyses</li>
+                <li>Advanced AI-powered improvement suggestions</li>
+                <li>PDF export of analysis reports</li>
+                <li>Priority customer support</li>
+                <li>Access to future premium features</li>
+                <li>No daily limits or restrictions</li>
+            </ul>
+        </div>
+        
+        <div class="contact-form-container">
+            <h4>Complete Your Purchase</h4>
+            <form method="POST" action="/process_payment" class="contact-form">
+                <p style="margin-bottom:20px;">You will be redirected to PayPal to complete your payment securely.</p>
+                <button type="submit" class="btn btn-primary" style="background-color: #ffc439; color: #111; border: none; padding: 12px 24px; border-radius: 5px; font-size: 16px; cursor: pointer;">
+                    Pay with PayPal
+                </button>
+            </form>
+        </div>
+        
+        <div class="auth-links">
+            <a href="/">← Back to Analyzer</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="/privacy.html">Privacy Policy</a>
+                <a href="/faq">FAQ</a>
+                <a href="/terms">Terms of Service</a>
+            </div>
+            <div class="footer-copyright">
+                <p>&copy; 2024 PitchAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile navigation toggle
+        document.getElementById('navToggle').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('active');
+            this.classList.toggle('active');
+        });
+    </script>
+</body>
+</html> 

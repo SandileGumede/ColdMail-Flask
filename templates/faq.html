@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ - PitchAI Cold DM & Cold Email Analyzer</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="/static/Black & White Minimalist Business Logo_20250708_190239_0000.png" alt="PitchAI Logo" class="nav-logo">
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/privacy" class="nav-link">Privacy</a>
+                <a href="/faq" class="nav-link active">FAQ</a>
+                <a href="/contact" class="nav-link">Contact</a>
+            </div>
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="faq-container">
+        <div class="faq-title">Frequently Asked Questions</div>
+
+        <details>
+            <summary>How does the tool analyze my emails?</summary>
+            <p>We use rule-based checks (spam triggers, personalization markers) + lightweight AI. No data is stored after analysis.</p>
+        </details>
+        <details>
+            <summary>Why is my improved email blank/weird?</summary>
+            <p>This happens with extremely short emails. Try adding context (e.g., 'Hi [Name], I saw your work at [Company]...').</p>
+        </details>
+        <details>
+            <summary>Is there a free trial?</summary>
+            <p>Yes! Analyze 3 emails/day for free. Upgrade to unlock unlimited use and PDF reports.</p>
+        </details>
+        <details>
+            <summary>Can I get a refund if I don't get more replies?</summary>
+            <p>We offer 7-day refunds if the tool malfunctions. Results depend on your email list quality - we can't guarantee replies.</p>
+        </details>
+        <details>
+            <summary>Does this work for cold DMs as well as emails?</summary>
+            <p>Yes! The tool analyzes both cold DMs and cold emails for best practices and spam triggers.</p>
+        </details>
+        <details>
+            <summary>Is my data private?</summary>
+            <p>Absolutely. We do not store your cold DMs or emails after analysis. Your content is never shared.</p>
+        </details>
+        <details>
+            <summary>What counts as an analysis for the free tier?</summary>
+            <p>Each time you submit a cold DM or cold email for analysis, it counts toward your daily free limit.</p>
+        </details>
+        <details>
+            <summary>How do I unlock unlimited analyses?</summary>
+            <p>Click the "Unlock Unlimited Analyses" button on the homepage and follow the instructions to upgrade.</p>
+        </details>
+        <details>
+            <summary>Can I export my results?</summary>
+            <p>Paid users can export their analysis as a PDF report from the results page.</p>
+        </details>
+        <details>
+            <summary>Who can I contact for support?</summary>
+            <p>Use the Contact page to reach out. We're happy to help!</p>
+        </details>
+
+        <a href="/" class="back-btn">← Back to Analyzer</a>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="/privacy.html">Privacy Policy</a>
+                <a href="/faq">FAQ</a>
+                <a href="/terms">Terms of Service</a>
+            </div>
+            <div class="footer-copyright">
+                <p>&copy; 2024 PitchAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile navigation toggle
+        document.getElementById('navToggle').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('active');
+            this.classList.toggle('active');
+        });
+    </script>
+</body>
+</html> 

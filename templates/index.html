@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ColdMail - Email Analysis</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="/static/Black & White Minimalist Business Logo_20250708_190239_0000.png" alt="ColdMail Logo" class="nav-logo">
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link active">Home</a>
+                <a href="/faq" class="nav-link">FAQ</a>
+                <a href="/contact" class="nav-link">Contact</a>
+                {% if current_user.is_authenticated %}
+                    <span class="nav-link" style="color:#4a90e2;">{{ current_user.email }}</span>
+                    <a href="/logout" class="nav-link">Logout</a>
+                {% else %}
+                    <a href="/login" class="nav-link">Login</a>
+                    <a href="/signup" class="nav-link">Sign Up</a>
+                {% endif %}
+            </div>
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero-section">
+            <h1>ColdMail Cold DM & Cold Email Analyzer</h1>
+            <p>Analyze your cold DM or cold email for spam indicators, personalization, and optimization opportunities.</p>
+            {% if current_user.is_authenticated %}
+                {% if paid %}
+                    <p style="color:#28a745;font-weight:bold;">Unlimited analyses enabled. PDF export available on results page.</p>
+                {% else %}
+                    <p style="color:#dc3545;font-weight:bold;">Free analyses left: {{ remaining }} / 3</p>
+                    <a href="/upgrade" class="btn btn-primary" style="margin-top:10px; display: inline-block; text-decoration: none;">Upgrade to Unlimited (PayPal $20)</a>
+                {% endif %}
+            {% else %}
+                <p style="color:#dc3545;font-weight:bold;">Free analyses left: {{ remaining }} / 3</p>
+                <div style="margin-top:10px;">
+                    <a href="/login" class="btn btn-primary" style="margin-right:10px;">Login</a>
+                    <a href="/signup" class="btn btn-secondary">Sign Up</a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <form action="/analyze" method="POST" class="email-form">
+            <div class="form-group">
+                <label for="email_content">Enter your cold DM or cold email content:</label>
+                <textarea 
+                    id="email_content" 
+                    name="email_content" 
+                    rows="12" 
+                    placeholder="Paste your cold DM or cold email here...&#10;&#10;First line will be treated as the subject line.&#10;&#10;Example:&#10;Subject: Meeting Tomorrow&#10;&#10;Hi Alex,&#10;&#10;I hope this message finds you well. I wanted to follow up on our discussion..."
+                    required></textarea>
+            </div>
+            <button type="submit" class="analyze-btn">
+                <span class="btn-text">Analyze Cold DM/Email</span>
+                <span class="btn-icon">→</span>
+            </button>
+        </form>
+
+        <div class="features-section">
+            <h3>What we analyze:</h3>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🚫</div>
+                    <h4>Spam Detection</h4>
+                    <p>Identify common spam words and phrases in your cold DM or cold email</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📏</div>
+                    <h4>Subject Length</h4>
+                    <p>Optimize your subject line for cold emails and DMs</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👋</div>
+                    <h4>Personalization</h4>
+                    <p>Check for proper greetings and personal touch in your cold DM or cold email</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="/faq" class="nav-link">FAQ</a>
+                <a href="/terms">Terms of Service</a>
+            </div>
+            <div class="footer-copyright">
+                <p>&copy; 2024 PitchAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile navigation toggle
+        document.getElementById('navToggle').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('active');
+            this.classList.toggle('active');
+        });
+
+        // Auto-resize textarea
+        const textarea = document.getElementById('email_content');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    </script>
+</body>
+</html> 

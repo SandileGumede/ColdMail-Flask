@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ - PitchAI</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="/static/Black & White Minimalist Business Logo_20250708_190239_0000.png" alt="PitchAI Logo" class="nav-logo">
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/privacy" class="nav-link">Privacy</a>
+                <a href="/faq" class="nav-link active">FAQ</a>
+                <a href="/contact" class="nav-link">Contact</a>
+            </div>
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Frequently Asked Questions</h1>
+        <div class="faq-item">
+            <h2>Can I get a refund?</h2>
+            <p>Since this is a free tool, there are no payments or refunds required.</p>
+        </div>
+        <div class="faq-item">
+            <h2>How does this work?</h2>
+            <p>You paste your email content, and our tool analyzes it for spam indicators and other metrics. No data is stored.</p>
+        </div>
+        <div class="faq-item">
+            <h2>How can I contact you?</h2>
+            <p>You can reach us at <a href="mailto:support@pitchai.com">support@pitchai.com</a>.</p>
+        </div>
+    </div>
+
+    <script>
+        // Mobile navigation toggle
+        document.getElementById('navToggle').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('active');
+            this.classList.toggle('active');
+        });
+    </script>
+</body>
+</html> 
