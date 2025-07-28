@@ -347,6 +347,10 @@ def contact():
 def faq():
     return render_template('faq.html')
 
+@app.route('/health')
+def health_check():
+    return jsonify({"status": "healthy", "timestamp": datetime.utcnow().isoformat()})
+
 # --- Database initialization ---
 @app.cli.command("init-db")
 def init_db():

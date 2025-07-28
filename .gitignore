@@ -108,4 +108,7 @@ ENV/
 
 # SQLite database
 *.db
-*.sqlite3 
+*.sqlite3
+
+# Instance folder (contains database)
+instance/ 
