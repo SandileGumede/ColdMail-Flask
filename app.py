@@ -25,10 +25,16 @@ paypalrestsdk.configure({
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your-secret-key-here')
 # Use environment variable for database URL (for production) or default to SQLite
-database_url = os.environ.get('DATABASE_URL', 'sqlite:///pitchai.db')
-if database_url.startswith('postgres://'):
+database_url = os.environ.get('DATABASE_URL')
+if not database_url:
+    # Default to SQLite in instance folder
+    database_url = 'sqlite:///pitchai.db'
+elif database_url.startswith('postgres://'):
+    # Fix for older PostgreSQL URLs
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+print(f"Using database: {database_url}")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize extensions
@@ -363,7 +369,28 @@ def init_db_route():
             db.create_all()
         return jsonify({"status": "success", "message": "Database initialized successfully"})
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        return jsonify({"status": "error", "message": str(e), "type": type(e).__name__}), 500
+
+@app.route('/test-db')
+def test_db():
+    """Test database connection"""
+    try:
+        with app.app_context():
+            # Test basic connection
+            result = db.engine.execute('SELECT 1 as test').fetchone()
+            return jsonify({
+                "status": "success", 
+                "message": "Database connection working",
+                "test_result": result[0] if result else None,
+                "database_url": app.config['SQLALCHEMY_DATABASE_URI']
+            })
+    except Exception as e:
+        return jsonify({
+            "status": "error", 
+            "message": str(e), 
+            "type": type(e).__name__,
+            "database_url": app.config['SQLALCHEMY_DATABASE_URI']
+        }), 500
 
 # --- Database initialization ---
 @app.cli.command("init-db")
@@ -375,22 +402,37 @@ def init_db():
 def init_database():
     """Initialize the database with proper error handling"""
     print(f"Database URL: {app.config['SQLALCHEMY_DATABASE_URI']}")
+    print(f"Environment DATABASE_URL: {os.environ.get('DATABASE_URL', 'Not set')}")
+    
     try:
         with app.app_context():
+            # Test database connection first
+            db.engine.execute('SELECT 1')
+            print('Database connection successful')
+            
+            # Create tables
             db.create_all()
             print('Database initialized successfully')
+            
             # Check if tables exist
-            tables = db.engine.table_names()
-            print(f'Available tables: {tables}')
+            try:
+                tables = db.engine.table_names()
+                print(f'Available tables: {tables}')
+            except Exception as table_error:
+                print(f'Could not list tables: {table_error}')
+                
     except Exception as e:
         print(f'Error initializing database: {e}')
-        # Try to create tables one by one
+        print(f'Error type: {type(e).__name__}')
+        
+        # Try alternative approach
         try:
             with app.app_context():
                 db.create_all()
-                print('Database tables created successfully')
+                print('Database tables created successfully (retry)')
         except Exception as e2:
             print(f'Failed to create database tables: {e2}')
+            print(f'Second error type: {type(e2).__name__}')
 
 if __name__ == '__main__':
     init_database()
