@@ -24,7 +24,11 @@ paypalrestsdk.configure({
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your-secret-key-here')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///pitchai.db'
+# Use environment variable for database URL (for production) or default to SQLite
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///pitchai.db')
+if database_url.startswith('postgres://'):
+    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize extensions
@@ -351,6 +355,16 @@ def faq():
 def health_check():
     return jsonify({"status": "healthy", "timestamp": datetime.utcnow().isoformat()})
 
+@app.route('/init-db')
+def init_db_route():
+    """Initialize database via web route (for debugging)"""
+    try:
+        with app.app_context():
+            db.create_all()
+        return jsonify({"status": "success", "message": "Database initialized successfully"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 # --- Database initialization ---
 @app.cli.command("init-db")
 def init_db():
@@ -358,9 +372,28 @@ def init_db():
     db.create_all()
     print('Initialized the database.')
 
+def init_database():
+    """Initialize the database with proper error handling"""
+    print(f"Database URL: {app.config['SQLALCHEMY_DATABASE_URI']}")
+    try:
+        with app.app_context():
+            db.create_all()
+            print('Database initialized successfully')
+            # Check if tables exist
+            tables = db.engine.table_names()
+            print(f'Available tables: {tables}')
+    except Exception as e:
+        print(f'Error initializing database: {e}')
+        # Try to create tables one by one
+        try:
+            with app.app_context():
+                db.create_all()
+                print('Database tables created successfully')
+        except Exception as e2:
+            print(f'Failed to create database tables: {e2}')
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
+    init_database()
     # Get port from environment variable (for deployment) or use 5000 for local development
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False) 
