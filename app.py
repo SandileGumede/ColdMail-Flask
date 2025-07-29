@@ -359,7 +359,29 @@ def faq():
 
 @app.route('/health')
 def health_check():
-    return jsonify({"status": "healthy", "timestamp": datetime.utcnow().isoformat()})
+    try:
+        # Check environment variables
+        env_vars = {
+            'FLASK_SECRET_KEY': bool(os.environ.get('FLASK_SECRET_KEY')),
+            'OPENAI_API_KEY': bool(os.environ.get('OPENAI_API_KEY')),
+            'PAYPAL_CLIENT_ID': bool(os.environ.get('PAYPAL_CLIENT_ID')),
+            'PAYPAL_CLIENT_SECRET': bool(os.environ.get('PAYPAL_CLIENT_SECRET')),
+            'DATABASE_URL': bool(os.environ.get('DATABASE_URL'))
+        }
+        
+        return jsonify({
+            "status": "healthy", 
+            "timestamp": datetime.utcnow().isoformat(),
+            "environment_variables": env_vars,
+            "database_url": app.config['SQLALCHEMY_DATABASE_URI'],
+            "debug_mode": app.debug
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }), 500
 
 @app.route('/init-db')
 def init_db_route():
@@ -390,6 +412,32 @@ def test_db():
             "message": str(e), 
             "type": type(e).__name__,
             "database_url": app.config['SQLALCHEMY_DATABASE_URI']
+        }), 500
+
+@app.route('/server-info')
+def server_info():
+    """Get server information for debugging"""
+    import platform
+    import sys
+    
+    try:
+        return jsonify({
+            "python_version": sys.version,
+            "platform": platform.platform(),
+            "app_name": app.name,
+            "app_debug": app.debug,
+            "app_testing": app.testing,
+            "environment": os.environ.get('FLASK_ENV', 'production'),
+            "port": os.environ.get('PORT', '5000'),
+            "database_url": app.config['SQLALCHEMY_DATABASE_URI'],
+            "secret_key_set": bool(app.config['SECRET_KEY']),
+            "timestamp": datetime.utcnow().isoformat()
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
         }), 500
 
 # --- Database initialization ---
