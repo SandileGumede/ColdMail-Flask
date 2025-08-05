@@ -24,6 +24,7 @@ paypalrestsdk.configure({
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your-secret-key-here')
+
 # Use environment variable for database URL (for production) or default to SQLite
 database_url = os.environ.get('DATABASE_URL')
 if not database_url:
@@ -37,12 +38,40 @@ app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 print(f"Using database: {database_url}")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# Production database settings
+if 'postgresql' in database_url or 'postgres' in database_url:
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+        'pool_timeout': 20,
+        'max_overflow': 0
+    }
+
 # Initialize extensions
 db.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 setattr(login_manager, 'login_view', 'login')
 login_manager.login_message = 'Please log in to access this feature.'
+
+# Ensure database is initialized in production
+def ensure_db_initialized():
+    """Ensure database is initialized, especially important for production"""
+    try:
+        with app.app_context():
+            # Test if tables exist by trying to query
+            try:
+                User.query.first()
+                print("Database tables already exist")
+            except Exception:
+                print("Creating database tables...")
+                db.create_all()
+                print("Database tables created successfully")
+    except Exception as e:
+        print(f"Database initialization error: {e}")
+
+# Initialize database on startup
+ensure_db_initialized()
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -193,42 +222,84 @@ def analyze_email(email_content):
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        
-        if User.query.filter_by(email=email).first():
-            flash('Email already registered. Please login.')
-            return redirect(url_for('login'))
-        
-        user = User()  # Fixed: Don't pass email to constructor
-        user.email = email  # Set email attribute directly
-        user.set_password(password)
-        db.session.add(user)
-        db.session.commit()
-        
-        login_user(user, remember=True)
-        flash('Account created successfully! You have 3 free ColdMail analyses.')
-        return redirect(url_for('home'))
+        try:
+            email = request.form.get('email')
+            password = request.form.get('password')
+            confirm_password = request.form.get('confirm_password')
+            
+            print(f"Signup attempt for email: {email}")  # Debug logging
+            
+            # Validate input
+            if not email or not password:
+                flash('Please fill in all fields.')
+                return render_template('auth/signup.html')
+            
+            if password != confirm_password:
+                flash('Passwords do not match.')
+                return render_template('auth/signup.html')
+            
+            if len(password) < 6:
+                flash('Password must be at least 6 characters long.')
+                return render_template('auth/signup.html')
+            
+            # Check if user already exists
+            existing_user = User.query.filter_by(email=email).first()
+            if existing_user:
+                flash('Email already registered. Please login.')
+                return redirect(url_for('login'))
+            
+            # Create new user
+            user = User()
+            user.email = email
+            user.set_password(password)
+            
+            db.session.add(user)
+            db.session.commit()
+            
+            print(f"User created successfully: {user.id}")  # Debug logging
+            
+            login_user(user, remember=True)
+            flash('Account created successfully! You have 3 free ColdMail analyses.')
+            return redirect(url_for('home'))
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"Signup error: {e}")  # Debug logging
+            flash('Error creating account. Please try again.')
+            return render_template('auth/signup.html')
     
     return render_template('auth/signup.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        # Fix: Ensure remember is a boolean
-        remember = request.form.get('remember') == 'on'
-        
-        user = User.query.filter_by(email=email).first()
-        if user and user.check_password(password):
-            login_user(user, remember=remember)
-            user.last_login = datetime.utcnow()
-            db.session.commit()
-            flash(f'Welcome back! You have {user.get_remaining_analyses()} ColdMail analyses remaining.')
-            return redirect(url_for('home'))
-        else:
-            flash('Invalid email or password.')
+        try:
+            email = request.form.get('email')
+            password = request.form.get('password')
+            remember = request.form.get('remember') == 'on'
+            
+            print(f"Login attempt for email: {email}")  # Debug logging
+            
+            # Validate input
+            if not email or not password:
+                flash('Please fill in all fields.')
+                return render_template('auth/login.html')
+            
+            user = User.query.filter_by(email=email).first()
+            if user and user.check_password(password):
+                login_user(user, remember=remember)
+                user.last_login = datetime.utcnow()
+                db.session.commit()
+                
+                print(f"User logged in successfully: {user.id}")  # Debug logging
+                flash(f'Welcome back! You have {user.get_remaining_analyses()} ColdMail analyses remaining.')
+                return redirect(url_for('home'))
+            else:
+                print(f"Login failed for email: {email}")  # Debug logging
+                flash('Invalid email or password.')
+        except Exception as e:
+            print(f"Login error: {e}")  # Debug logging
+            flash('Error during login. Please try again.')
     
     return render_template('auth/login.html')
 
@@ -440,6 +511,81 @@ def server_info():
             "timestamp": datetime.utcnow().isoformat()
         }), 500
 
+@app.route('/check-db')
+def check_db():
+    """Check database status and initialize if needed"""
+    try:
+        with app.app_context():
+            # Test connection
+            db.engine.execute('SELECT 1')
+            
+            # Check if User table exists
+            try:
+                user_count = User.query.count()
+                return jsonify({
+                    "status": "success",
+                    "message": "Database is working",
+                    "user_count": user_count,
+                    "database_url": app.config['SQLALCHEMY_DATABASE_URI']
+                })
+            except Exception as table_error:
+                # Table doesn't exist, create it
+                db.create_all()
+                return jsonify({
+                    "status": "success",
+                    "message": "Database initialized",
+                    "user_count": 0,
+                    "database_url": app.config['SQLALCHEMY_DATABASE_URI']
+                })
+                
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e),
+            "database_url": app.config['SQLALCHEMY_DATABASE_URI']
+        }), 500
+
+@app.route('/deployment-status')
+def deployment_status():
+    """Check deployment status and configuration"""
+    try:
+        with app.app_context():
+            # Test database
+            db_status = "working"
+            user_count = 0
+            try:
+                user_count = User.query.count()
+            except Exception as e:
+                db_status = f"error: {str(e)}"
+            
+            return jsonify({
+                "status": "deployed",
+                "timestamp": datetime.utcnow().isoformat(),
+                "database": {
+                    "status": db_status,
+                    "url": app.config['SQLALCHEMY_DATABASE_URI'],
+                    "user_count": user_count
+                },
+                "environment": {
+                    "flask_secret_key_set": bool(app.config['SECRET_KEY']),
+                    "openai_api_key_set": bool(os.environ.get('OPENAI_API_KEY')),
+                    "paypal_client_id_set": bool(os.environ.get('PAYPAL_CLIENT_ID')),
+                    "paypal_client_secret_set": bool(os.environ.get('PAYPAL_CLIENT_SECRET')),
+                    "database_url_set": bool(os.environ.get('DATABASE_URL'))
+                },
+                "app_config": {
+                    "debug": app.debug,
+                    "testing": app.testing,
+                    "secret_key_length": len(app.config['SECRET_KEY']) if app.config['SECRET_KEY'] else 0
+                }
+            })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }), 500
+
 # --- Database initialization ---
 @app.cli.command("init-db")
 def init_db():
@@ -473,14 +619,31 @@ def init_database():
         print(f'Error initializing database: {e}')
         print(f'Error type: {type(e).__name__}')
         
-        # Try alternative approach
-        try:
-            with app.app_context():
-                db.create_all()
-                print('Database tables created successfully (retry)')
-        except Exception as e2:
-            print(f'Failed to create database tables: {e2}')
-            print(f'Second error type: {type(e2).__name__}')
+        # Try alternative approach for SQLite
+        if 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']:
+            try:
+                with app.app_context():
+                    # Ensure the instance directory exists
+                    import os
+                    instance_path = os.path.join(os.getcwd(), 'instance')
+                    if not os.path.exists(instance_path):
+                        os.makedirs(instance_path)
+                        print(f'Created instance directory: {instance_path}')
+                    
+                    db.create_all()
+                    print('Database tables created successfully (SQLite retry)')
+            except Exception as e2:
+                print(f'Failed to create database tables: {e2}')
+                print(f'Second error type: {type(e2).__name__}')
+        else:
+            # For other databases, try one more time
+            try:
+                with app.app_context():
+                    db.create_all()
+                    print('Database tables created successfully (retry)')
+            except Exception as e2:
+                print(f'Failed to create database tables: {e2}')
+                print(f'Second error type: {type(e2).__name__}')
 
 if __name__ == '__main__':
     init_database()
