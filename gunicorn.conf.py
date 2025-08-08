@@ -6,11 +6,11 @@ import multiprocessing
 bind = f"0.0.0.0:{os.environ.get('PORT', 5000)}"
 backlog = 2048
 
-# Worker processes - use fewer workers for better session handling
-workers = 1  # Changed from 2 to 1 for better session consistency
+# Worker processes - use single worker for better session handling
+workers = 1
 worker_class = "sync"
 worker_connections = 1000
-timeout = 60  # Increased timeout
+timeout = 120  # Increased timeout for database operations
 keepalive = 2
 
 # Restart workers after this many requests, to help prevent memory leaks
@@ -44,4 +44,16 @@ worker_tmp_dir = "/dev/shm"  # Use shared memory for better performance
 
 # Enable worker recycling
 max_requests = 1000
-max_requests_jitter = 50 
+max_requests_jitter = 50
+
+# Additional settings for Flask apps
+raw_env = [
+    "FLASK_ENV=production",
+    "FLASK_DEBUG=0"
+]
+
+# Enable graceful reload
+graceful_timeout = 30
+
+# Disable access logging for better performance (optional)
+# accesslog = None 

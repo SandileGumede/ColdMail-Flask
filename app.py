@@ -25,6 +25,12 @@ paypalrestsdk.configure({
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your-secret-key-here')
 
+# Session configuration for production
+app.config['SESSION_COOKIE_SECURE'] = os.environ.get('FLASK_ENV') == 'production'
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
+
 # Use environment variable for database URL (for production) or default to SQLite
 database_url = os.environ.get('DATABASE_URL')
 if not database_url:
@@ -43,8 +49,16 @@ if 'postgresql' in database_url or 'postgres' in database_url:
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'pool_pre_ping': True,
         'pool_recycle': 300,
-        'pool_timeout': 20,
-        'max_overflow': 0
+        'pool_timeout': 30,
+        'max_overflow': 0,
+        'pool_size': 10
+    }
+else:
+    # SQLite settings for development
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+        'pool_timeout': 20
     }
 
 # Initialize extensions
@@ -274,8 +288,8 @@ def signup():
 def login():
     if request.method == 'POST':
         try:
-            email = request.form.get('email')
-            password = request.form.get('password')
+            email = request.form.get('email', '').strip()
+            password = request.form.get('password', '')
             remember = request.form.get('remember') == 'on'
             
             print(f"Login attempt for email: {email}")  # Debug logging
@@ -285,21 +299,33 @@ def login():
                 flash('Please fill in all fields.')
                 return render_template('auth/login.html')
             
+            # Check if user exists
             user = User.query.filter_by(email=email).first()
-            if user and user.check_password(password):
-                login_user(user, remember=remember)
-                user.last_login = datetime.utcnow()
-                db.session.commit()
-                
-                print(f"User logged in successfully: {user.id}")  # Debug logging
-                flash(f'Welcome back! You have {user.get_remaining_analyses()} ColdMail analyses remaining.')
-                return redirect(url_for('home'))
-            else:
-                print(f"Login failed for email: {email}")  # Debug logging
+            if not user:
+                print(f"Login failed: User not found for email: {email}")
                 flash('Invalid email or password.')
+                return render_template('auth/login.html')
+            
+            # Check password
+            if not user.check_password(password):
+                print(f"Login failed: Invalid password for email: {email}")
+                flash('Invalid email or password.')
+                return render_template('auth/login.html')
+            
+            # Login successful
+            login_user(user, remember=remember)
+            user.last_login = datetime.utcnow()
+            db.session.commit()
+            
+            print(f"User logged in successfully: {user.id}")  # Debug logging
+            flash(f'Welcome back! You have {user.get_remaining_analyses()} ColdMail analyses remaining.')
+            return redirect(url_for('home'))
+            
         except Exception as e:
+            db.session.rollback()
             print(f"Login error: {e}")  # Debug logging
             flash('Error during login. Please try again.')
+            return render_template('auth/login.html')
     
     return render_template('auth/login.html')
 
@@ -431,6 +457,14 @@ def faq():
 @app.route('/health')
 def health_check():
     try:
+        # Test database connection
+        db_status = "healthy"
+        try:
+            with app.app_context():
+                db.engine.execute('SELECT 1')
+        except Exception as db_error:
+            db_status = f"error: {str(db_error)}"
+        
         # Check environment variables
         env_vars = {
             'FLASK_SECRET_KEY': bool(os.environ.get('FLASK_SECRET_KEY')),
@@ -441,11 +475,17 @@ def health_check():
         }
         
         return jsonify({
-            "status": "healthy", 
+            "status": "healthy" if db_status == "healthy" else "degraded", 
             "timestamp": datetime.utcnow().isoformat(),
+            "database": db_status,
             "environment_variables": env_vars,
             "database_url": app.config['SQLALCHEMY_DATABASE_URI'],
-            "debug_mode": app.debug
+            "debug_mode": app.debug,
+            "session_config": {
+                "secure": app.config.get('SESSION_COOKIE_SECURE', False),
+                "httponly": app.config.get('SESSION_COOKIE_HTTPONLY', True),
+                "samesite": app.config.get('SESSION_COOKIE_SAMESITE', 'Lax')
+            }
         })
     except Exception as e:
         return jsonify({

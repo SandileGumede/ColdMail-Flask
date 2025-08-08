@@ -29,6 +29,19 @@
     <div class="auth-container">
         <div class="auth-title">Create Your ColdMail Account</div>
         
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <div class="flash-message {% if 'error' in message.lower() or 'invalid' in message.lower() %}flash-error{% else %}flash-success{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
         <div class="feature-card">
             <h4>🎉 Free Account Benefits:</h4>
             <ul>
@@ -39,10 +52,11 @@
             </ul>
         </div>
         
-        <form method="POST" class="auth-form">
+        <form method="POST" class="auth-form" id="signupForm">
             <div class="form-group">
                 <label for="email">Email Address</label>
                 <input type="email" id="email" name="email" required>
+                <div class="form-error" id="emailError"></div>
             </div>
             
             <div class="form-group">
@@ -50,9 +64,17 @@
                 <div class="password-input-container">
                     <input type="password" id="password" name="password" required minlength="6">
                     <button type="button" class="password-toggle" onclick="togglePassword('password')">
-                        <span class="eye-icon">👁️</span>
+                        <svg class="eye-icon show" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg class="eye-icon hide" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
                     </button>
                 </div>
+                <div class="form-error" id="passwordError"></div>
             </div>
             
             <div class="form-group">
@@ -60,9 +82,17 @@
                 <div class="password-input-container">
                     <input type="password" id="confirm_password" name="confirm_password" required minlength="6">
                     <button type="button" class="password-toggle" onclick="togglePassword('confirm_password')">
-                        <span class="eye-icon">👁️</span>
+                        <svg class="eye-icon show" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg class="eye-icon hide" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
                     </button>
                 </div>
+                <div class="form-error" id="confirmPasswordError"></div>
             </div>
             
             <button type="submit" class="auth-btn">Create Account</button>
@@ -99,29 +129,87 @@
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
             const toggleBtn = input.nextElementSibling;
-            const eyeIcon = toggleBtn.querySelector('.eye-icon');
+            const showIcon = toggleBtn.querySelector('.eye-icon.show');
+            const hideIcon = toggleBtn.querySelector('.eye-icon.hide');
             
             if (input.type === 'password') {
                 input.type = 'text';
-                eyeIcon.textContent = '🙈';
-                eyeIcon.title = 'Hide password';
+                showIcon.style.display = 'none';
+                hideIcon.style.display = 'block';
+                toggleBtn.title = 'Hide password';
             } else {
                 input.type = 'password';
-                eyeIcon.textContent = '👁️';
-                eyeIcon.title = 'Show password';
+                showIcon.style.display = 'block';
+                hideIcon.style.display = 'none';
+                toggleBtn.title = 'Show password';
             }
         }
         
-        // Password confirmation validation
-        document.querySelector('form').addEventListener('submit', function(e) {
+        // Form validation and submission handling
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm_password').value;
+            const emailError = document.getElementById('emailError');
+            const passwordError = document.getElementById('passwordError');
+            const confirmPasswordError = document.getElementById('confirmPasswordError');
             
-            if (password !== confirmPassword) {
+            // Clear previous errors
+            emailError.textContent = '';
+            passwordError.textContent = '';
+            confirmPasswordError.textContent = '';
+            
+            let hasErrors = false;
+            
+            // Validate email
+            if (!email) {
+                emailError.textContent = 'Email is required';
+                hasErrors = true;
+            } else if (!isValidEmail(email)) {
+                emailError.textContent = 'Please enter a valid email address';
+                hasErrors = true;
+            }
+            
+            // Validate password
+            if (!password) {
+                passwordError.textContent = 'Password is required';
+                hasErrors = true;
+            } else if (password.length < 6) {
+                passwordError.textContent = 'Password must be at least 6 characters';
+                hasErrors = true;
+            }
+            
+            // Validate confirm password
+            if (!confirmPassword) {
+                confirmPasswordError.textContent = 'Please confirm your password';
+                hasErrors = true;
+            } else if (password !== confirmPassword) {
+                confirmPasswordError.textContent = 'Passwords do not match';
+                hasErrors = true;
+            }
+            
+            if (hasErrors) {
                 e.preventDefault();
-                alert('Passwords do not match!');
+                return;
             }
         });
+        
+        // Email validation function
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+        
+        // Auto-hide flash messages after 5 seconds
+        setTimeout(function() {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(function(message) {
+                message.style.opacity = '0';
+                setTimeout(function() {
+                    message.remove();
+                }, 300);
+            });
+        }, 5000);
     </script>
 </body>
 </html> 
