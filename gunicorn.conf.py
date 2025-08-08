@@ -10,7 +10,7 @@ backlog = 2048
 workers = 1
 worker_class = "sync"
 worker_connections = 1000
-timeout = 120  # Increased timeout for database operations
+timeout = 180  # Increased timeout for database operations
 keepalive = 2
 
 # Restart workers after this many requests, to help prevent memory leaks
@@ -53,7 +53,36 @@ raw_env = [
 ]
 
 # Enable graceful reload
-graceful_timeout = 30
+graceful_timeout = 60  # Increased graceful timeout
 
 # Disable access logging for better performance (optional)
-# accesslog = None 
+# accesslog = None
+
+# Worker initialization
+def on_starting(server):
+    """Called just after the server is started"""
+    server.log.info("Starting PitchAI server...")
+
+def on_reload(server):
+    """Called to reload the server"""
+    server.log.info("Reloading PitchAI server...")
+
+def worker_int(worker):
+    """Called just after a worker has been initialized"""
+    worker.log.info("Worker initialized")
+
+def pre_fork(server, worker):
+    """Called just before a worker has been forked"""
+    server.log.info("Worker spawned (pid: %s)", worker.pid)
+
+def post_fork(server, worker):
+    """Called just after a worker has been forked"""
+    server.log.info("Worker spawned (pid: %s)", worker.pid)
+
+def post_worker_init(worker):
+    """Called just after a worker has initialized the application"""
+    worker.log.info("Worker initialized")
+
+def worker_abort(worker):
+    """Called when a worker received SIGABRT signal"""
+    worker.log.info("Worker received SIGABRT") 

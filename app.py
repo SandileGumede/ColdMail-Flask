@@ -7,6 +7,7 @@ import requests
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import paypalrestsdk
+import time
 
 load_dotenv()
 import os
@@ -71,21 +72,36 @@ login_manager.login_message = 'Please log in to access this feature.'
 # Ensure database is initialized in production
 def ensure_db_initialized():
     """Ensure database is initialized, especially important for production"""
-    try:
-        with app.app_context():
-            # Test if tables exist by trying to query
-            try:
-                User.query.first()
-                print("Database tables already exist")
-            except Exception:
-                print("Creating database tables...")
-                db.create_all()
-                print("Database tables created successfully")
-    except Exception as e:
-        print(f"Database initialization error: {e}")
+    max_retries = 5
+    delay = 2
+    
+    for attempt in range(max_retries):
+        try:
+            with app.app_context():
+                # Test if tables exist by trying to query
+                try:
+                    User.query.first()
+                    print("✓ Database tables already exist")
+                    return True
+                except Exception as table_error:
+                    print(f"Attempt {attempt + 1}/{max_retries}: Creating database tables...")
+                    db.create_all()
+                    print("✓ Database tables created successfully")
+                    return True
+        except Exception as e:
+            print(f"Attempt {attempt + 1}/{max_retries}: Database initialization error: {e}")
+            if attempt < max_retries - 1:
+                print(f"Retrying in {delay} seconds...")
+                time.sleep(delay)
+            else:
+                print("✗ Database initialization failed after maximum retries")
+                return False
+    
+    return False
 
 # Initialize database on startup
-ensure_db_initialized()
+if not ensure_db_initialized():
+    print("Warning: Database initialization failed, but continuing startup...")
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -461,7 +477,15 @@ def health_check():
         db_status = "healthy"
         try:
             with app.app_context():
-                db.engine.execute('SELECT 1')
+                try:
+                    # Try newer SQLAlchemy syntax first
+                    with db.engine.connect() as connection:
+                        result = connection.execute(db.text('SELECT 1'))
+                        result.close()
+                except AttributeError:
+                    # Fall back to older SQLAlchemy syntax
+                    result = db.engine.execute('SELECT 1')
+                    result.close()
         except Exception as db_error:
             db_status = f"error: {str(db_error)}"
         
@@ -510,7 +534,14 @@ def test_db():
     try:
         with app.app_context():
             # Test basic connection
-            result = db.engine.execute('SELECT 1 as test').fetchone()
+            try:
+                # Try newer SQLAlchemy syntax first
+                with db.engine.connect() as connection:
+                    result = connection.execute(db.text('SELECT 1 as test')).fetchone()
+            except AttributeError:
+                # Fall back to older SQLAlchemy syntax
+                result = db.engine.execute('SELECT 1 as test').fetchone()
+            
             return jsonify({
                 "status": "success", 
                 "message": "Database connection working",
@@ -557,7 +588,15 @@ def check_db():
     try:
         with app.app_context():
             # Test connection
-            db.engine.execute('SELECT 1')
+            try:
+                # Try newer SQLAlchemy syntax first
+                with db.engine.connect() as connection:
+                    result = connection.execute(db.text('SELECT 1'))
+                    result.close()
+            except AttributeError:
+                # Fall back to older SQLAlchemy syntax
+                result = db.engine.execute('SELECT 1')
+                result.close()
             
             # Check if User table exists
             try:
@@ -641,7 +680,15 @@ def init_database():
     try:
         with app.app_context():
             # Test database connection first
-            db.engine.execute('SELECT 1')
+            try:
+                # Try newer SQLAlchemy syntax first
+                with db.engine.connect() as connection:
+                    result = connection.execute(db.text('SELECT 1'))
+                    result.close()
+            except AttributeError:
+                # Fall back to older SQLAlchemy syntax
+                result = db.engine.execute('SELECT 1')
+                result.close()
             print('Database connection successful')
             
             # Create tables
