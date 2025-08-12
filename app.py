@@ -26,11 +26,22 @@ paypalrestsdk.configure({
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your-secret-key-here')
 
-# Session configuration for production
-app.config['SESSION_COOKIE_SECURE'] = os.environ.get('FLASK_ENV') == 'production'
-app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
+# Session configuration
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your-secret-key-here')
+
+# Session configuration - more flexible for development and production
+if os.environ.get('FLASK_ENV') == 'production':
+    # Production settings
+    app.config['SESSION_COOKIE_SECURE'] = True
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
+else:
+    # Development settings
+    app.config['SESSION_COOKIE_SECURE'] = False
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 
 # Use environment variable for database URL (for production) or default to SQLite
 database_url = os.environ.get('DATABASE_URL')
@@ -69,6 +80,17 @@ login_manager.init_app(app)
 setattr(login_manager, 'login_view', 'login')
 login_manager.login_message = 'Please log in to access this feature.'
 
+# Add request logging middleware
+@app.before_request
+def log_request_info():
+    print(f"Request: {request.method} {request.path}")
+    print(f"User authenticated: {current_user.is_authenticated}")
+    if current_user.is_authenticated:
+        print(f"Current user: {current_user.email}")
+    print(f"Session ID: {session.get('_id', 'No session ID')}")
+    print(f"Session user ID: {session.get('_user_id', 'No user ID')}")
+    print("---")
+
 # Ensure database is initialized in production
 def ensure_db_initialized():
     """Ensure database is initialized, especially important for production"""
@@ -105,7 +127,16 @@ if not ensure_db_initialized():
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    try:
+        user = User.query.get(int(user_id))
+        if user:
+            print(f"User loader: Loaded user {user.email} (ID: {user_id})")
+        else:
+            print(f"User loader: No user found for ID {user_id}")
+        return user
+    except Exception as e:
+        print(f"User loader error: {e}")
+        return None
 
 # --- Helper Functions ---
 def rule_based_spam_score(email_content):
@@ -330,10 +361,19 @@ def login():
             
             # Login successful
             login_user(user, remember=remember)
+            
+            # Set session as permanent if remember is checked
+            if remember:
+                session.permanent = True
+            
+            # Update user last login
             user.last_login = datetime.utcnow()
             db.session.commit()
             
             print(f"User logged in successfully: {user.id}")  # Debug logging
+            print(f"Session ID: {session.sid if hasattr(session, 'sid') else 'No session ID'}")
+            print(f"User authenticated: {current_user.is_authenticated}")
+            
             flash(f'Welcome back! You have {user.get_remaining_analyses()} ColdMail analyses remaining.')
             return redirect(url_for('home'))
             
@@ -351,6 +391,46 @@ def logout():
     logout_user()
     flash('You have been logged out of ColdMail.')
     return redirect(url_for('home'))
+
+@app.route('/session-debug')
+def session_debug():
+    """Debug session information"""
+    debug_info = {
+        'session_id': session.get('_id', 'No session ID'),
+        'user_id': session.get('_user_id', 'No user ID'),
+        'is_authenticated': current_user.is_authenticated,
+        'current_user': str(current_user) if current_user.is_authenticated else 'Not logged in',
+        'session_permanent': session.get('_permanent', False),
+        'session_secure': app.config.get('SESSION_COOKIE_SECURE', 'Not set'),
+        'session_httponly': app.config.get('SESSION_COOKIE_HTTPONLY', 'Not set'),
+        'session_samesite': app.config.get('SESSION_COOKIE_SAMESITE', 'Not set'),
+        'flask_env': os.environ.get('FLASK_ENV', 'Not set'),
+        'secret_key_set': bool(app.config.get('SECRET_KEY')),
+        'secret_key_length': len(app.config.get('SECRET_KEY', '')) if app.config.get('SECRET_KEY') else 0
+    }
+    return jsonify(debug_info)
+
+@app.route('/test-auth')
+def test_auth():
+    """Test authentication status"""
+    if current_user.is_authenticated:
+        return jsonify({
+            'status': 'authenticated',
+            'user_id': current_user.id,
+            'email': current_user.email,
+            'is_paid': current_user.is_paid,
+            'remaining_analyses': current_user.get_remaining_analyses()
+        })
+    else:
+        return jsonify({
+            'status': 'not_authenticated',
+            'message': 'No user is currently logged in'
+        })
+
+@app.route('/test-login')
+def test_login_page():
+    """Test login page for debugging"""
+    return render_template('test_login.html')
 
 @app.route('/upgrade')
 @login_required
@@ -403,10 +483,100 @@ def process_payment():
         flash('Error creating PayPal payment: ' + payment.error.get('message', 'Unknown error'))
         return redirect(url_for('upgrade'))
 
+@app.route('/api/orders', methods=['POST'])
+@login_required
+def create_paypal_order():
+    """Create a PayPal order on the server side"""
+    try:
+        # Create PayPal order using the SDK
+        order = paypalrestsdk.Order({
+            "intent": "CAPTURE",
+            "purchase_units": [{
+                "amount": {
+                    "currency_code": "USD",
+                    "value": "20.00"
+                },
+                "description": "PitchAI Unlimited Analyses Upgrade",
+                "custom_id": f"user_{current_user.id}_upgrade"
+            }],
+            "application_context": {
+                "return_url": url_for('payment_success', _external=True),
+                "cancel_url": url_for('upgrade', _external=True)
+            }
+        })
+        
+        if order.create():
+            return jsonify({
+                "id": order.id,
+                "status": order.status
+            })
+        else:
+            error_message = order.error.get('message', 'Unknown error')
+            return jsonify({
+                "error": error_message,
+                "debug_id": order.error.get('debug_id', 'No debug ID')
+            }), 400
+            
+    except Exception as e:
+        print(f"Error creating PayPal order: {e}")
+        return jsonify({
+            "error": "Internal server error",
+            "debug_id": "server_error"
+        }), 500
+
+@app.route('/api/orders/<order_id>/capture', methods=['POST'])
+@login_required
+def capture_paypal_order(order_id):
+    """Capture a PayPal order and upgrade user account"""
+    try:
+        # Find the order
+        order = paypalrestsdk.Order.find(order_id)
+        
+        if not order:
+            return jsonify({
+                "error": "Order not found",
+                "debug_id": "order_not_found"
+            }), 404
+        
+        # Capture the order
+        if order.capture():
+            # Check if capture was successful
+            if order.status == "COMPLETED":
+                # Mark user as paid
+                current_user.mark_paid()
+                db.session.commit()
+                
+                # Send confirmation email
+                send_payment_confirmation(current_user.email)
+                
+                return jsonify({
+                    "id": order.id,
+                    "status": order.status,
+                    "purchase_units": order.purchase_units
+                })
+            else:
+                return jsonify({
+                    "error": f"Order not completed. Status: {order.status}",
+                    "debug_id": "incomplete_order"
+                }), 400
+        else:
+            error_message = order.error.get('message', 'Unknown error')
+            return jsonify({
+                "error": error_message,
+                "debug_id": order.error.get('debug_id', 'No debug ID')
+            }), 400
+            
+    except Exception as e:
+        print(f"Error capturing PayPal order: {e}")
+        return jsonify({
+            "error": "Internal server error",
+            "debug_id": "server_error"
+        }), 500
+
 @app.route('/paypal_webhook', methods=['POST'])
 @login_required
 def paypal_webhook():
-    """Handle PayPal payment webhook from frontend"""
+    """Handle PayPal payment webhook from frontend (legacy support)"""
     try:
         data = request.get_json()
         order_id = data.get('orderID')
@@ -461,7 +631,10 @@ def send_payment_confirmation(email):
 def home():
     if current_user.is_authenticated:
         remaining = current_user.get_remaining_analyses()
+        print(f"User {current_user.email} is authenticated, remaining analyses: {remaining}")
         return render_template('index.html', remaining=remaining, paid=current_user.is_paid)
+    else:
+        print("No user is currently authenticated")
     return render_template('index.html', remaining="3", paid=False)
 
 @app.route('/analyze', methods=['POST'])

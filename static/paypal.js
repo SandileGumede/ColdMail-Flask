@@ -1,101 +1,150 @@
-// PayPal Checkout Integration
-paypal.Buttons({
-    // Sets up the transaction when a payment button is clicked
-    createOrder: function(data, actions) {
-        return actions.order.create({
-            purchase_units: [{
-                amount: {
-                    value: '20.00' // $20.00 for unlimited analyses
-                },
-                description: 'PitchAI Unlimited Analyses Upgrade',
-                custom_id: 'pitchai_upgrade'
-            }]
-        });
+// PayPal Checkout Integration with Server-Side Order Management
+const paypalButtons = window.paypal.Buttons({
+    style: {
+        shape: "rect",
+        layout: "vertical",
+        color: "gold",
+        label: "paypal",
     },
-
-    // Finalize the transaction after payer approval
-    onApprove: function(data, actions) {
-        return actions.order.capture().then(function(details) {
-            // Successful payment
-            console.log('Payment completed successfully:', details);
-            
-            // Send payment details to your Flask backend
-            fetch('/paypal_webhook', {
-                method: 'POST',
+    message: {
+        amount: 20,
+    },
+    
+    async createOrder() {
+        try {
+            const response = await fetch("/api/orders", {
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    orderID: data.orderID,
-                    payerID: data.payerID,
-                    paymentDetails: details
-                })
-            })
-            .then(response => {
-                if (response.status === 401) {
-                    // User not authenticated
-                    throw new Error('Please log in to complete your purchase');
-                }
-                return response.json();
-            })
-            .then(result => {
-                if (result.success) {
-                    // Show success message
-                    document.getElementById('result-message').innerHTML = 
-                        '<div class="success-message">' +
-                        '<h3>🎉 Payment Successful!</h3>' +
-                        '<p>Your account has been upgraded to unlimited analyses.</p>' +
-                        '<p>Transaction ID: ' + data.orderID + '</p>' +
-                        '<a href="/" class="btn-primary">Start Analyzing</a>' +
-                        '</div>';
-                    
-                    // Hide PayPal button
-                    document.getElementById('paypal-button-container').style.display = 'none';
-                } else {
-                    throw new Error(result.message || 'Payment verification failed');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                if (error.message === 'Please log in to complete your purchase') {
-                    document.getElementById('result-message').innerHTML = 
-                        '<div class="error-message">' +
-                        '<h3>🔐 Authentication Required</h3>' +
-                        '<p>Please log in to complete your purchase.</p>' +
-                        '<a href="/login" class="btn-primary">Log In</a>' +
-                        '</div>';
-                } else {
-                    document.getElementById('result-message').innerHTML = 
-                        '<div class="error-message">' +
-                        '<h3>⚠️ Payment Verification Error</h3>' +
-                        '<p>Your payment was successful, but we encountered an issue verifying it.</p>' +
-                        '<p>Please contact support with your transaction ID: ' + data.orderID + '</p>' +
-                        '</div>';
-                }
+                    cart: [
+                        {
+                            id: "pitchai_upgrade",
+                            quantity: "1",
+                        },
+                    ],
+                }),
             });
-        });
+
+            const orderData = await response.json();
+
+            if (orderData.id) {
+                return orderData.id;
+            }
+            const errorDetail = orderData?.details?.[0];
+            const errorMessage = errorDetail
+                ? `${errorDetail.issue} ${errorDetail.description} (${orderData.debug_id})`
+                : JSON.stringify(orderData);
+
+            throw new Error(errorMessage);
+        } catch (error) {
+            console.error(error);
+            resultMessage(`Could not initiate PayPal Checkout...<br><br>${error}`);
+        }
+    },
+    
+    async onApprove(data, actions) {
+        try {
+            const response = await fetch(
+                `/api/orders/${data.orderID}/capture`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            const orderData = await response.json();
+            
+            // Three cases to handle:
+            //   (1) Recoverable INSTRUMENT_DECLINED -> call actions.restart()
+            //   (2) Other non-recoverable errors -> Show a failure message
+            //   (3) Successful transaction -> Show confirmation or thank you message
+
+            const errorDetail = orderData?.details?.[0];
+
+            if (errorDetail?.issue === "INSTRUMENT_DECLINED") {
+                // (1) Recoverable INSTRUMENT_DECLINED -> call actions.restart()
+                return actions.restart();
+            } else if (errorDetail) {
+                // (2) Other non-recoverable errors -> Show a failure message
+                throw new Error(
+                    `${errorDetail.description} (${orderData.debug_id})`
+                );
+            } else if (!orderData.purchase_units) {
+                throw new Error(JSON.stringify(orderData));
+            } else {
+                // (3) Successful transaction -> Show confirmation or thank you message
+                const transaction =
+                    orderData?.purchase_units?.[0]?.payments?.captures?.[0] ||
+                    orderData?.purchase_units?.[0]?.payments
+                        ?.authorizations?.[0];
+                
+                // Show success message
+                resultMessage(
+                    `<div class="success-message">
+                        <h3>🎉 Payment Successful!</h3>
+                        <p>Your account has been upgraded to unlimited analyses.</p>
+                        <p>Transaction ID: ${transaction.id}</p>
+                        <a href="/" class="btn-primary">Start Analyzing</a>
+                    </div>`
+                );
+                
+                // Hide PayPal button
+                document.getElementById('paypal-button-container').style.display = 'none';
+                
+                console.log(
+                    "Capture result",
+                    orderData,
+                    JSON.stringify(orderData, null, 2)
+                );
+            }
+        } catch (error) {
+            console.error(error);
+            resultMessage(
+                `<div class="error-message">
+                    <h3>❌ Payment Error</h3>
+                    <p>Sorry, your transaction could not be processed...</p>
+                    <p>${error}</p>
+                </div>`
+            );
+        }
     },
 
     // Handle errors
     onError: function(err) {
         console.error('PayPal error:', err);
-        document.getElementById('result-message').innerHTML = 
-            '<div class="error-message">' +
-            '<h3>❌ Payment Error</h3>' +
-            '<p>An error occurred during payment processing.</p>' +
-            '<p>Please try again or contact support.</p>' +
-            '</div>';
+        resultMessage(
+            `<div class="error-message">
+                <h3>❌ Payment Error</h3>
+                <p>An error occurred during payment processing.</p>
+                <p>Please try again or contact support.</p>
+            </div>`
+        );
     },
 
     // Handle cancellation
     onCancel: function(data) {
-        document.getElementById('result-message').innerHTML = 
-            '<div class="info-message">' +
-            '<h3>⏹️ Payment Cancelled</h3>' +
-            '<p>Your payment was cancelled. You can try again anytime.</p>' +
-            '</div>';
+        resultMessage(
+            `<div class="info-message">
+                <h3>⏹️ Payment Cancelled</h3>
+                <p>Your payment was cancelled. You can try again anytime.</p>
+            </div>`
+        );
     }
-}).render('#paypal-button-container');
+});
+
+paypalButtons.render("#paypal-button-container");
+
+// Function to show result messages to the user
+function resultMessage(message) {
+    const container = document.querySelector("#result-message");
+    if (container) {
+        container.innerHTML = message;
+    }
+}
 
 // Add some styling for the result messages
 const style = document.createElement('style');
