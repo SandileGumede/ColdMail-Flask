@@ -95,6 +95,74 @@ body {
     transition: all 0.3s ease;
 }
 
+/* ===== PAYPAL CHECKOUT STYLES ===== */
+.paypal-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.paypal-container h1 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 2.5em;
+}
+
+.paypal-container p {
+    color: #7f8c8d;
+    font-size: 1.2em;
+    margin-bottom: 30px;
+}
+
+.features {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    margin: 30px 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    text-align: left;
+}
+
+.features h3 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+.features ul {
+    list-style: none;
+    padding: 0;
+}
+
+.features li {
+    padding: 10px 0;
+    color: #34495e;
+    font-size: 1.1em;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.features li:last-child {
+    border-bottom: none;
+}
+
+.btn-secondary {
+    display: inline-block;
+    background: #95a5a6;
+    color: white;
+    padding: 12px 24px;
+    text-decoration: none;
+    border-radius: 8px;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: #7f8c8d;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(149, 165, 166, 0.4);
+}
+
 /* ===== FLASH MESSAGES ===== */
 .flash-messages {
     margin-bottom: 20px;

@@ -51,13 +51,25 @@
         </div>
         
         <div class="contact-form-container">
-            <h4>Complete Your Purchase</h4>
-            <form method="POST" action="/process_payment" class="contact-form">
-                <p style="margin-bottom:20px;">You will be redirected to PayPal to complete your payment securely.</p>
-                <button type="submit" class="btn btn-primary" style="background-color: #ffc439; color: #111; border: none; padding: 12px 24px; border-radius: 5px; font-size: 16px; cursor: pointer;">
-                    Pay with PayPal
-                </button>
-            </form>
+            <h4>Choose Your Payment Method</h4>
+            
+            <!-- New PayPal Checkout Button -->
+            <div style="margin-bottom: 20px;">
+                <p style="margin-bottom:15px;">Experience seamless checkout with our new PayPal integration:</p>
+                <a href="/paypal-checkout" class="btn btn-primary" style="background-color: #0070ba; color: white; border: none; padding: 12px 24px; border-radius: 5px; font-size: 16px; cursor: pointer; text-decoration: none; display: inline-block;">
+                    🚀 New: PayPal Checkout
+                </a>
+            </div>
+            
+            <!-- Legacy PayPal Form -->
+            <div style="border-top: 1px solid #ddd; padding-top: 20px;">
+                <p style="margin-bottom:15px;">Or use the traditional PayPal redirect:</p>
+                <form method="POST" action="/process_payment" class="contact-form">
+                    <button type="submit" class="btn btn-primary" style="background-color: #ffc439; color: #111; border: none; padding: 12px 24px; border-radius: 5px; font-size: 16px; cursor: pointer;">
+                        Pay with PayPal (Legacy)
+                    </button>
+                </form>
+            </div>
         </div>
         
         <div class="auth-links">

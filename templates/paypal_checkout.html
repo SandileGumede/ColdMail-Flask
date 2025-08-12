@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PayPal Checkout - PitchAI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="{{ url_for('static', filename='Black & White Minimalist Business Logo_20250708_190239_0000.png') }}" alt="PitchAI Logo" class="nav-logo">
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+                <a href="{{ url_for('faq') }}" class="nav-link">FAQ</a>
+                <a href="{{ url_for('contact') }}" class="nav-link">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="paypal-container">
+        <h1>Upgrade to Unlimited Analyses</h1>
+        <p>Get unlimited cold email analyses for just $20.00</p>
+        
+        <div id="paypal-button-container"></div>
+        <p id="result-message"></p>
+        
+        <div class="features">
+            <h3>What you get:</h3>
+            <ul>
+                <li>✓ Unlimited cold email analyses</li>
+                <li>✓ Advanced AI-powered insights</li>
+                <li>✓ Spam detection and scoring</li>
+                <li>✓ Personalization recommendations</li>
+                <li>✓ Subject line optimization</li>
+            </ul>
+        </div>
+        
+        <a href="{{ url_for('home') }}" class="btn-secondary">Back to Home</a>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="{{ url_for('faq') }}">FAQ</a>
+                <a href="/terms">Terms of Service</a>
+            </div>
+            <div class="footer-copyright">
+                <p>&copy; 2024 PitchAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Initialize the JS-SDK -->
+    <script
+        src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&buyer-country=US&currency=USD&components=buttons&enable-funding=venmo,paylater,card"
+        data-sdk-integration-source="developer-studio"
+    ></script>
+    <script src="{{ url_for('static', filename='paypal.js') }}"></script>
+</body>
+</html>

@@ -355,7 +355,13 @@ def logout():
 @app.route('/upgrade')
 @login_required
 def upgrade():
-    return render_template('upgrade.html')
+    return render_template('paypal_checkout.html', paypal_client_id=PAYPAL_CLIENT_ID)
+
+@app.route('/paypal-checkout')
+@login_required
+def paypal_checkout():
+    """Direct PayPal checkout page"""
+    return render_template('paypal_checkout.html', paypal_client_id=PAYPAL_CLIENT_ID)
 
 @app.route('/process_payment', methods=['POST'])
 @login_required
@@ -396,6 +402,40 @@ def process_payment():
     else:
         flash('Error creating PayPal payment: ' + payment.error.get('message', 'Unknown error'))
         return redirect(url_for('upgrade'))
+
+@app.route('/paypal_webhook', methods=['POST'])
+@login_required
+def paypal_webhook():
+    """Handle PayPal payment webhook from frontend"""
+    try:
+        data = request.get_json()
+        order_id = data.get('orderID')
+        payer_id = data.get('payerID')
+        payment_details = data.get('paymentDetails')
+        
+        if not all([order_id, payer_id, payment_details]):
+            return jsonify({'success': False, 'message': 'Missing payment information'}), 400
+        
+        # Verify payment status
+        if payment_details.get('status') == 'COMPLETED':
+            # Mark user as paid
+            current_user.mark_paid()
+            db.session.commit()
+            
+            # Send confirmation email
+            send_payment_confirmation(current_user.email)
+            
+            return jsonify({
+                'success': True, 
+                'message': 'Payment verified successfully',
+                'order_id': order_id
+            })
+        else:
+            return jsonify({'success': False, 'message': 'Payment not completed'}), 400
+            
+    except Exception as e:
+        print(f"PayPal webhook error: {e}")
+        return jsonify({'success': False, 'message': 'Internal server error'}), 500
 
 @app.route('/payment_success')
 @login_required
