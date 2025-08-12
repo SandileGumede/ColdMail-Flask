@@ -131,3 +131,5 @@ python -c "from app import app; print('App imported successfully')"
 5. Test the application endpoints
 
 The startup script will now provide detailed information about what's happening during deployment, making it easier to diagnose any issues.
+
+

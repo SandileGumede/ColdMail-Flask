@@ -19,8 +19,8 @@ PAYPAL_CLIENT_SECRET = os.getenv('PAYPAL_CLIENT_SECRET')
 
 paypalrestsdk.configure({
     "mode": "live",  # Change to "live" for production
-    "client_id": PAYPAL_CLIENT_ID or "AbQ4QCanvZ1VWcuAhwWPrNHiU3dZvbjGQu2SbiyatTjoQuuxQnIiIqo5I4E74XBlodmsOZGb3sTvQL99",
-    "client_secret": PAYPAL_CLIENT_SECRET or "EJXtIcTxaWLa-uVMIyYZpXC89qSQF-ElyFFQLVbMs_wbsV_EbEHyPj0Q0MTXAaPnpxE-JVfTb7ytHdvO"
+    "client_id": PAYPAL_CLIENT_ID or "AbgwSoNkogaIZ6yw4zyYw1xIHJJ7wornxDyqrcmiadv8G5_W_zhlz-Z2K5krNiOBvg7TkUUFHmq0PxYe",
+    "client_secret": PAYPAL_CLIENT_SECRET or "EPMJhQwyzkPD6qAvjhR0eT8SReJs0db8stTISWinxkKFWVDoNEs4wq0wFK5QB7owXy6Tx_hMqN_I3xeM"
 })
 
 app = Flask(__name__)
