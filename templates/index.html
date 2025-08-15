@@ -42,7 +42,10 @@
                     <p style="color:#28a745;font-weight:bold;">Unlimited analyses enabled. PDF export available on results page.</p>
                 {% else %}
                     <p style="color:#dc3545;font-weight:bold;">Free analyses left: {{ remaining }} / 3</p>
-                    <a href="/upgrade" class="btn btn-primary" style="margin-top:10px; display: inline-block; text-decoration: none;">Upgrade to Unlimited (PayPal $20)</a>
+                    <div style="margin-top:10px;">
+                        <a href="/upgrade" class="btn btn-primary" style="margin-right:10px; display: inline-block; text-decoration: none;">Upgrade to Unlimited ($20)</a>
+                        <a href="https://www.paypal.com/ncp/payment/L2XE6X7QDP7H2" target="_blank" class="btn btn-secondary" style="display: inline-block; text-decoration: none;">💳 Quick PayPal Payment</a>
+                    </div>
                 {% endif %}
             {% else %}
                 <p style="color:#dc3545;font-weight:bold;">Free analyses left: {{ remaining }} / 3</p>

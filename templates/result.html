@@ -189,6 +189,18 @@
             </form>
             {% endif %}
         </div>
+        
+        <!-- PayPal Payment Section for Non-Paid Users -->
+        {% if not paid %}
+        <div class="faq-payment-section">
+            <h3>Want Unlimited Access?</h3>
+            <p>Upgrade to unlimited analyses and PDF exports for just $20</p>
+            <div class="payment-buttons">
+                <a href="/upgrade" class="btn btn-primary">View All Options</a>
+                <a href="https://www.paypal.com/ncp/payment/L2XE6X7QDP7H2" target="_blank" class="btn btn-secondary">💳 Quick PayPal Payment</a>
+            </div>
+        </div>
+        {% endif %}
     </div>
 
     <!-- Footer -->

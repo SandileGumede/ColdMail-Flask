@@ -246,6 +246,37 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+/* ===== FAQ PAYMENT SECTION ===== */
+.faq-payment-section {
+    margin-top: 40px;
+    padding: 30px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    text-align: center;
+}
+
+.faq-payment-section h3 {
+    color: #1a365d;
+    margin-bottom: 12px;
+}
+
+.faq-payment-section p {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.payment-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.payment-buttons .btn {
+    min-width: 180px;
+}
+
 /* ===== TYPOGRAPHY ===== */
 h1, h2, h3, h4 {
     color: #1a365d;
@@ -1305,6 +1336,21 @@ details p {
     .btn {
         padding: 12px 20px;
         font-size: 0.95rem;
+    }
+    
+    .payment-buttons {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .payment-buttons .btn {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .faq-payment-section {
+        padding: 20px;
+        margin-top: 30px;
     }
 }
 
