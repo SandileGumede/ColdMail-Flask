@@ -33,12 +33,14 @@ app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your-secret-key-here')
 if os.environ.get('FLASK_ENV') == 'production':
     # Production settings
     app.config['SESSION_COOKIE_SECURE'] = True
+    app.config['SESSION_PERMANENT'] = True
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 else:
     # Development settings
     app.config['SESSION_COOKIE_SECURE'] = False
+    app.config['SESSION_PERMANENT'] = True
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
