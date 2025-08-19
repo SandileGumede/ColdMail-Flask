@@ -127,6 +127,24 @@ def ensure_db_initialized():
 if not ensure_db_initialized():
     print("Warning: Database initialization failed, but continuing startup...")
 
+# --- Main Application Routes ---
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+        user = User.query.filter_by(email=email).first()
+        if user and user.check_password(password):
+            login_user(user, remember=True)
+            return redirect(url_for("home"))
+    return render_template("login.html")
+
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+
 @login_manager.user_loader
 def load_user(user_id):
     try:
