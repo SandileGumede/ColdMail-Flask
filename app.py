@@ -129,7 +129,7 @@ if not ensure_db_initialized():
 
 # --- Main Application Routes ---
 @app.route("/login", methods=["GET", "POST"])
-def login_user():
+def login():
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
@@ -144,7 +144,7 @@ def login_user():
     return render_template("login.html")
 
 @app.route("/signup", methods=["GET", "POST"])
-def signup_user():
+def signup():
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
