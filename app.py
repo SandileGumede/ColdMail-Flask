@@ -27,7 +27,7 @@ app = Flask(__name__)
 
 
 # Session configuration
-app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'b\x91\x8a1\xc2<\xb4A \n*m\x94\x03\x7f\t\x07\xc5B\x88\x86v\xd6Z\xdb')
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', "b\x91\x8a1\xc2<\xb4A \n*m\x94\x03\x7f\t\x07\xc5B\x88\x86v\xd6Z\xdb")
 
 # Session configuration - more flexible for development and production
 if os.environ.get('FLASK_ENV') == 'production':
@@ -144,7 +144,7 @@ def login():
     return render_template("login.html")
 
 @app.route("/signup", methods=["GET", "POST"])
-def signup():
+def signup_user():
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
