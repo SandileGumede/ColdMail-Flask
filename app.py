@@ -128,8 +128,8 @@ if not ensure_db_initialized():
     print("Warning: Database initialization failed, but continuing startup...")
 
 # --- Main Application Routes ---
-@app.route("/login", methods=["GET", "POST"])
-def login():
+@app.route("/login/process", methods=["GET", "POST"])
+def login_user():
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
@@ -355,8 +355,8 @@ def signup():
     
     return render_template('auth/signup.html')
 
-@app.route('/login/process', methods=['GET', 'POST'])
-def login_user():
+@app.route('/login', methods=['GET', 'POST'])
+def login():
     if request.method == 'POST':
         try:
             email = request.form.get('email', '').strip()
