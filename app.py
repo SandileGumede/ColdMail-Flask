@@ -143,7 +143,7 @@ def login():
             
     return render_template("login.html")
 
-@app.route("/signup", methods=["GET", "POST"])
+@app.route("/signup/process", methods=["GET", "POST"])
 def signup_user():
     if request.method == "POST":
         email = request.form.get("email")
@@ -355,7 +355,7 @@ def signup():
     
     return render_template('auth/signup.html')
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login/process', methods=['GET', 'POST'])
 def login_user():
     if request.method == 'POST':
         try:
