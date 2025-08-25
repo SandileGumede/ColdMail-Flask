@@ -356,7 +356,7 @@ def signup():
     return render_template('auth/signup.html')
 
 @app.route('/login', methods=['GET', 'POST'])
-def login():
+def login_user():
     if request.method == 'POST':
         try:
             email = request.form.get('email', '').strip()
