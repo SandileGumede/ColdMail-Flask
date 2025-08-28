@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from models import db, User
 import re
-import os
+import os 
 import requests
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
@@ -11,23 +11,23 @@ import time
 
 load_dotenv()
 import os
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-print('OPENAI_API_KEY loaded:', OPENAI_API_KEY)
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+print("OPENAI_API_KEY loaded:", OPENAI_API_KEY is not None)
 
-PAYPAL_CLIENT_ID = os.getenv('PAYPAL_CLIENT_ID')
-PAYPAL_CLIENT_SECRET = os.getenv('PAYPAL_CLIENT_SECRET')
+PAYPAL_CLIENT_ID = os.getenv("PAYPAL_CLIENT_ID")
+PAYPAL_CLIENT_SECRET = os.getenv("PAYPAL_CLIENT_SECRET")
 
 paypalrestsdk.configure({
     "mode": "live",  # Change to "live" for production
-    "client_id": PAYPAL_CLIENT_ID or "AbgwSoNkogaIZ6yw4zyYw1xIHJJ7wornxDyqrcmiadv8G5_W_zhlz-Z2K5krNiOBvg7TkUUFHmq0PxYe",
-    "client_secret": PAYPAL_CLIENT_SECRET or "EPMJhQwyzkPD6qAvjhR0eT8SReJs0db8stTISWinxkKFWVDoNEs4wq0wFK5QB7owXy6Tx_hMqN_I3xeM"
+    "client_id": PAYPAL_CLIENT_ID ,
+    "client_secret": PAYPAL_CLIENT_SECRET
 })
 
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', "b\x91\x8a1\xc2<\xb4A \n*m\x94\x03\x7f\t\x07\xc5B\x88\x86v\xd6Z\xdb")
+app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY")
 
-app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', "b\x91\x8a1\xc2<\xb4A \n*m\x94\x03\x7f\t\x07\xc5B\x88\x86v\xd6Z\xdb")
+app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY")
 
 # Session configuration - more flexible for development and production
 if os.environ.get('FLASK_ENV') == 'production':
@@ -129,7 +129,7 @@ if not ensure_db_initialized():
 
 # --- Main Application Routes ---
 @app.route("/login/process", methods=["GET", "POST"])
-def login_user():
+def user_login():
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
