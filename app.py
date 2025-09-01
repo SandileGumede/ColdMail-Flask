@@ -130,6 +130,10 @@ if not ensure_db_initialized():
 # --- Main Application Routes ---
 @app.route("/login/process", methods=["GET", "POST"])
 def user_login():
+    
+    if request.method == "GET":
+        return render_template("login.html")
+    
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
