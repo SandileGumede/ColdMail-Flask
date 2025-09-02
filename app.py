@@ -4,6 +4,7 @@ from models import db, User
 import re
 import os 
 import requests
+from app import db, User
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import paypalrestsdk
