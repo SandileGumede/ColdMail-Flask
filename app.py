@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_session import Session
 from models import db, User
 import re
 import os 
 import requests
-from app import db, User
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import paypalrestsdk
@@ -26,6 +26,7 @@ paypalrestsdk.configure({
 
 app = Flask(__name__)
 
+Session(app)
 app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY")
 
 app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY")
@@ -46,6 +47,9 @@ else:
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 
+    app.config['SESSION_TYPE'] = 'sqlalchemy'
+    app.config['SESSION_SQLALCHEMY'] = db
+    app.config['SESSION_SQLALCHEMY_TABLE'] = 'sessions'
 # Use environment variable for database URL (for production) or default to SQLite
 database_url = os.environ.get('DATABASE_URL')
 if not database_url:
