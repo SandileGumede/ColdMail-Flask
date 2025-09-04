@@ -50,6 +50,11 @@ else:
     app.config['SESSION_TYPE'] = 'sqlalchemy'
     app.config['SESSION_SQLALCHEMY'] = db
     app.config['SESSION_SQLALCHEMY_TABLE'] = 'sessions'
+
+    with app.app_context():
+        db.create_all()
+
+        Session(app)
 # Use environment variable for database URL (for production) or default to SQLite
 database_url = os.environ.get('DATABASE_URL')
 if not database_url:
