@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_session import Session
-from models import db, User
+from models import db, User, Session as SessionModel
 import re
 import os 
 import requests
@@ -26,9 +26,6 @@ paypalrestsdk.configure({
 
 app = Flask(__name__)
 
-Session(app)
-app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY")
-
 app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY")
 
 # Session configuration - more flexible for development and production
@@ -47,14 +44,13 @@ else:
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 
-    app.config['SESSION_TYPE'] = 'sqlalchemy'
-    app.config['SESSION_SQLALCHEMY'] = db
-    app.config['SESSION_SQLALCHEMY_TABLE'] = 'sessions'
-
-    with app.app_context():
-        db.create_all()
-
-        Session(app)
+# Configure Flask-Session to use database storage
+app.config['SESSION_TYPE'] = 'sqlalchemy'
+app.config['SESSION_SQLALCHEMY'] = db
+app.config['SESSION_SQLALCHEMY_TABLE'] = 'sessions'
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_KEY_PREFIX'] = 'pitchai:'
+app.config['SESSION_PERMANENT'] = True
 # Use environment variable for database URL (for production) or default to SQLite
 database_url = os.environ.get('DATABASE_URL')
 if not database_url:
@@ -91,6 +87,9 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 setattr(login_manager, 'login_view', 'login')
 login_manager.login_message = 'Please log in to access this feature.'
+
+# Initialize Flask-Session after database is configured
+Session(app)
 
 # Add request logging middleware
 @app.before_request
@@ -358,6 +357,14 @@ def signup():
             print(f"User created successfully: {user.id}")  # Debug logging
             
             login_user(user, remember=True)
+            
+            # Store user ID in session for database session tracking
+            session['user_id'] = user.id
+            session['login_time'] = datetime.utcnow().isoformat()
+            session.permanent = True
+            
+            print(f"Session data after signup: {dict(session)}")
+            
             flash('Account created successfully! You have 3 free ColdMail analyses.')
             return redirect(url_for('home'))
             
@@ -404,6 +411,10 @@ def login():
             if remember:
                 session.permanent = True
             
+            # Store user ID in session for database session tracking
+            session['user_id'] = user.id
+            session['login_time'] = datetime.utcnow().isoformat()
+            
             # Update user last login
             user.last_login = datetime.utcnow()
             db.session.commit()
@@ -411,6 +422,7 @@ def login():
             print(f"User logged in successfully: {user.id}")  # Debug logging
             print(f"Session ID: {session.sid if hasattr(session, 'sid') else 'No session ID'}")
             print(f"User authenticated: {current_user.is_authenticated}")
+            print(f"Session data: {dict(session)}")
             
             flash(f'Welcome back! You have {user.get_remaining_analyses()} ColdMail analyses remaining.')
             return redirect(url_for('home'))
@@ -426,8 +438,11 @@ def login():
 @app.route('/logout')
 @login_required
 def logout():
+    user_id = session.get('user_id')
     logout_user()
+    session.clear()  # Clear all session data
     flash('You have been logged out of ColdMail.')
+    print(f"User {user_id} logged out, session cleared")
     return redirect(url_for('home'))
 
 @app.route('/session-debug')
@@ -444,9 +459,52 @@ def session_debug():
         'session_samesite': app.config.get('SESSION_COOKIE_SAMESITE', 'Not set'),
         'flask_env': os.environ.get('FLASK_ENV', 'Not set'),
         'secret_key_set': bool(app.config.get('SECRET_KEY')),
-        'secret_key_length': len(app.config.get('SECRET_KEY', '')) if app.config.get('SECRET_KEY') else 0
+        'secret_key_length': len(app.config.get('SECRET_KEY', '')) if app.config.get('SECRET_KEY') else 0,
+        'session_data': dict(session),
+        'database_sessions': get_session_info()
     }
     return jsonify(debug_info)
+
+@app.route('/db-sessions')
+def db_sessions_debug():
+    """Debug database sessions"""
+    try:
+        with app.app_context():
+            sessions = SessionModel.query.all()
+            session_data = []
+            for s in sessions:
+                session_data.append({
+                    'id': s.id,
+                    'expiry': s.expiry.isoformat(),
+                    'is_expired': s.expiry < datetime.utcnow(),
+                    'data_length': len(s.data) if s.data else 0
+                })
+            
+            return jsonify({
+                'total_sessions': len(sessions),
+                'sessions': session_data,
+                'current_session_id': session.get('_id', 'No current session'),
+                'session_info': get_session_info()
+            })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/cleanup-sessions')
+def cleanup_sessions_route():
+    """Clean up expired sessions via web route"""
+    try:
+        cleanup_expired_sessions()
+        session_info = get_session_info()
+        return jsonify({
+            'status': 'success',
+            'message': 'Session cleanup completed',
+            'session_info': session_info
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
 
 @app.route('/test-auth')
 def test_auth():
@@ -663,6 +721,34 @@ def payment_success():
 # --- Simple Email Sender (prints to console for now) ---
 def send_payment_confirmation(email):
     print(f"Payment confirmation sent to {email}")
+
+# --- Session Management ---
+def cleanup_expired_sessions():
+    """Clean up expired sessions from database"""
+    try:
+        with app.app_context():
+            expired_sessions = SessionModel.query.filter(SessionModel.expiry < datetime.utcnow()).all()
+            for session in expired_sessions:
+                db.session.delete(session)
+            db.session.commit()
+            if expired_sessions:
+                print(f"Cleaned up {len(expired_sessions)} expired sessions")
+    except Exception as e:
+        print(f"Error cleaning up sessions: {e}")
+
+def get_session_info():
+    """Get current session information for debugging"""
+    try:
+        with app.app_context():
+            total_sessions = SessionModel.query.count()
+            active_sessions = SessionModel.query.filter(SessionModel.expiry > datetime.utcnow()).count()
+            return {
+                'total_sessions': total_sessions,
+                'active_sessions': active_sessions,
+                'expired_sessions': total_sessions - active_sessions
+            }
+    except Exception as e:
+        return {'error': str(e)}
 
 # --- Main App Routes ---
 @app.route('/')
@@ -942,9 +1028,24 @@ def init_database():
                 result.close()
             print('Database connection successful')
             
-            # Create tables
+            # Create tables (including sessions table)
             db.create_all()
             print('Database initialized successfully')
+            
+            # Verify sessions table was created
+            try:
+                # Check if sessions table exists
+                with db.engine.connect() as connection:
+                    result = connection.execute(db.text("SELECT name FROM sqlite_master WHERE type='table' AND name='sessions'"))
+                    sessions_exists = result.fetchone()
+                    if sessions_exists:
+                        print('✓ Sessions table created successfully')
+                    else:
+                        print('⚠ Sessions table not found, creating manually...')
+                        # Create sessions table manually if needed
+                        db.create_all()
+            except Exception as table_check_error:
+                print(f'Could not verify sessions table: {table_check_error}')
             
             # Check if tables exist
             try:
@@ -985,6 +1086,10 @@ def init_database():
 
 if __name__ == '__main__':
     init_database()
+    
+    # Clean up expired sessions on startup
+    cleanup_expired_sessions()
+    
     # Get port from environment variable (for deployment) or use 5000 for local development
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False) 

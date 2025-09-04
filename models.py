@@ -5,6 +5,17 @@ from datetime import datetime, timedelta
 
 db = SQLAlchemy()
 
+class Session(db.Model):
+    """Database session table for Flask-Session"""
+    __tablename__ = 'sessions'
+    
+    id = db.Column(db.String(255), primary_key=True)
+    data = db.Column(db.LargeBinary)
+    expiry = db.Column(db.DateTime, nullable=False)
+    
+    def __repr__(self):
+        return f'<Session {self.id}>'
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
