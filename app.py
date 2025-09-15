@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_session import Session
-from models import db, User, Session as SessionModel
+from models import db, User
 import re
 import os 
 import requests
@@ -50,7 +50,6 @@ app.config['SESSION_SQLALCHEMY'] = db
 app.config['SESSION_SQLALCHEMY_TABLE'] = 'sessions'
 app.config['SESSION_USE_SIGNER'] = True
 app.config['SESSION_KEY_PREFIX'] = 'pitchai:'
-app.config['SESSION_PERMANENT'] = True
 # Use environment variable for database URL (for production) or default to SQLite
 database_url = os.environ.get('DATABASE_URL')
 if not database_url:
@@ -87,9 +86,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 setattr(login_manager, 'login_view', 'login')
 login_manager.login_message = 'Please log in to access this feature.'
-
-# Initialize Flask-Session after database is configured
-Session(app)
 
 # Add request logging middleware
 @app.before_request
@@ -135,6 +131,9 @@ def ensure_db_initialized():
 # Initialize database on startup
 if not ensure_db_initialized():
     print("Warning: Database initialization failed, but continuing startup...")
+
+# Initialize Flask-Session after database is configured
+Session(app)
 
 # --- Main Application Routes ---
 @app.route("/login/process", methods=["GET", "POST"])
@@ -470,21 +469,19 @@ def db_sessions_debug():
     """Debug database sessions"""
     try:
         with app.app_context():
-            sessions = SessionModel.query.all()
-            session_data = []
-            for s in sessions:
-                session_data.append({
-                    'id': s.id,
-                    'expiry': s.expiry.isoformat(),
-                    'is_expired': s.expiry < datetime.utcnow(),
-                    'data_length': len(s.data) if s.data else 0
-                })
+            # Get session info from Flask-Session
+            session_info = get_session_info()
             
             return jsonify({
-                'total_sessions': len(sessions),
-                'sessions': session_data,
+                'session_type': 'Flask-Session SQLAlchemy',
                 'current_session_id': session.get('_id', 'No current session'),
-                'session_info': get_session_info()
+                'session_info': session_info,
+                'flask_session_config': {
+                    'session_type': app.config.get('SESSION_TYPE'),
+                    'session_table': app.config.get('SESSION_SQLALCHEMY_TABLE'),
+                    'session_permanent': app.config.get('SESSION_PERMANENT'),
+                    'session_lifetime': str(app.config.get('PERMANENT_SESSION_LIFETIME'))
+                }
             })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -727,25 +724,21 @@ def cleanup_expired_sessions():
     """Clean up expired sessions from database"""
     try:
         with app.app_context():
-            expired_sessions = SessionModel.query.filter(SessionModel.expiry < datetime.utcnow()).all()
-            for session in expired_sessions:
-                db.session.delete(session)
-            db.session.commit()
-            if expired_sessions:
-                print(f"Cleaned up {len(expired_sessions)} expired sessions")
+            # Flask-Session handles cleanup automatically, but we can add custom cleanup here if needed
+            print("Session cleanup - Flask-Session handles this automatically")
     except Exception as e:
-        print(f"Error cleaning up sessions: {e}")
+        print(f"Error in session cleanup: {e}")
 
 def get_session_info():
     """Get current session information for debugging"""
     try:
         with app.app_context():
-            total_sessions = SessionModel.query.count()
-            active_sessions = SessionModel.query.filter(SessionModel.expiry > datetime.utcnow()).count()
+            # Flask-Session manages its own sessions, so we return basic info
             return {
-                'total_sessions': total_sessions,
-                'active_sessions': active_sessions,
-                'expired_sessions': total_sessions - active_sessions
+                'session_type': 'Flask-Session SQLAlchemy',
+                'session_table': 'sessions',
+                'current_session_id': session.get('_id', 'No session ID'),
+                'session_data': dict(session)
             }
     except Exception as e:
         return {'error': str(e)}
@@ -1085,11 +1078,18 @@ def init_database():
                 print(f'Second error type: {type(e2).__name__}')
 
 if __name__ == '__main__':
-    init_database()
-    
-    # Clean up expired sessions on startup
-    cleanup_expired_sessions()
-    
-    # Get port from environment variable (for deployment) or use 5000 for local development
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False) 
+    try:
+        print("Starting PitchAI application...")
+        init_database()
+        
+        # Clean up expired sessions on startup
+        cleanup_expired_sessions()
+        
+        # Get port from environment variable (for deployment) or use 5000 for local development
+        port = int(os.environ.get('PORT', 5000))
+        print(f"Starting server on port {port}")
+        app.run(host='0.0.0.0', port=port, debug=True)  # Enable debug mode to see errors
+    except Exception as e:
+        print(f"Error starting application: {e}")
+        import traceback
+        traceback.print_exc() 
