@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_session import Session
 from models import db, User
+from supabase_service import SupabaseService
 import re
 import os 
 import requests
@@ -53,8 +54,13 @@ app.config['SESSION_KEY_PREFIX'] = 'pitchai:'
 # Use environment variable for database URL (for production) or default to SQLite
 database_url = os.environ.get('DATABASE_URL')
 if not database_url:
-    # Default to SQLite in instance folder
-    database_url = 'sqlite:///pitchai.db'
+    # Check for Supabase database URL
+    supabase_url = os.environ.get('SUPABASE_DATABASE_URL')
+    if supabase_url:
+        database_url = supabase_url
+    else:
+        # Default to SQLite in instance folder
+        database_url = 'sqlite:///pitchai.db'
 elif database_url.startswith('postgres://'):
     # Fix for older PostgreSQL URLs
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
@@ -86,6 +92,9 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 setattr(login_manager, 'login_view', 'login')
 login_manager.login_message = 'Please log in to access this feature.'
+
+# Initialize Supabase service
+supabase_service = SupabaseService()
 
 # Add request logging middleware
 @app.before_request
@@ -345,27 +354,27 @@ def signup():
                 flash('Email already registered. Please login.')
                 return redirect(url_for('login'))
             
-            # Create new user
-            user = User()
-            user.email = email
-            user.set_password(password)
+            # Create new user with Supabase
+            result = supabase_service.sign_up(email, password)
             
-            db.session.add(user)
-            db.session.commit()
-            
-            print(f"User created successfully: {user.id}")  # Debug logging
-            
-            login_user(user, remember=True)
-            
-            # Store user ID in session for database session tracking
-            session['user_id'] = user.id
-            session['login_time'] = datetime.utcnow().isoformat()
-            session.permanent = True
-            
-            print(f"Session data after signup: {dict(session)}")
-            
-            flash('Account created successfully! You have 3 free ColdMail analyses.')
-            return redirect(url_for('home'))
+            if result['success']:
+                user = result['user']
+                print(f"User created successfully: {user.id}")  # Debug logging
+                
+                login_user(user, remember=True)
+                
+                # Store user ID in session for database session tracking
+                session['user_id'] = user.id
+                session['login_time'] = datetime.utcnow().isoformat()
+                session.permanent = True
+                
+                print(f"Session data after signup: {dict(session)}")
+                
+                flash('Account created successfully! Please check your email to verify your account. You have 3 free ColdMail analyses.')
+                return redirect(url_for('home'))
+            else:
+                flash(f'Error creating account: {result.get("error", "Unknown error")}')
+                return render_template('auth/signup.html')
             
         except Exception as e:
             db.session.rollback()
@@ -390,41 +399,63 @@ def login():
                 flash('Please fill in all fields.')
                 return render_template('auth/login.html')
             
-            # Check if user exists
-            user = User.query.filter_by(email=email).first()
-            if not user:
-                print(f"Login failed: User not found for email: {email}")
-                flash('Invalid email or password.')
-                return render_template('auth/login.html')
+            # Try Supabase authentication first
+            try:
+                result = supabase_service.sign_in(email, password)
+                print(f"Supabase auth result: {result}")  # Debug logging
+            except Exception as supabase_error:
+                print(f"Supabase auth error: {supabase_error}")  # Debug logging
+                result = {"success": False, "error": str(supabase_error)}
             
-            # Check password
-            if not user.check_password(password):
-                print(f"Login failed: Invalid password for email: {email}")
-                flash('Invalid email or password.')
-                return render_template('auth/login.html')
-            
-            # Login successful
-            login_user(user, remember=remember)
-            
-            # Set session as permanent if remember is checked
-            if remember:
-                session.permanent = True
-            
-            # Store user ID in session for database session tracking
-            session['user_id'] = user.id
-            session['login_time'] = datetime.utcnow().isoformat()
-            
-            # Update user last login
-            user.last_login = datetime.utcnow()
-            db.session.commit()
-            
-            print(f"User logged in successfully: {user.id}")  # Debug logging
-            print(f"Session ID: {session.sid if hasattr(session, 'sid') else 'No session ID'}")
-            print(f"User authenticated: {current_user.is_authenticated}")
-            print(f"Session data: {dict(session)}")
-            
-            flash(f'Welcome back! You have {user.get_remaining_analyses()} ColdMail analyses remaining.')
-            return redirect(url_for('home'))
+            if result['success']:
+                user = result['user']
+                
+                # Login successful
+                login_user(user, remember=remember)
+                
+                # Set session as permanent if remember is checked
+                if remember:
+                    session.permanent = True
+                
+                # Store user ID in session for database session tracking
+                session['user_id'] = user.id
+                session['login_time'] = datetime.utcnow().isoformat()
+                
+                # Update user last login
+                user.last_login = datetime.utcnow()
+                db.session.commit()
+                
+                print(f"User logged in successfully: {user.id}")  # Debug logging
+                print(f"Session ID: {session.sid if hasattr(session, 'sid') else 'No session ID'}")
+                print(f"User authenticated: {current_user.is_authenticated}")
+                print(f"Session data: {dict(session)}")
+                
+                flash(f'Welcome back! You have {user.get_remaining_analyses()} ColdMail analyses remaining.')
+                return redirect(url_for('home'))
+            else:
+                print(f"Supabase auth failed: {result.get('error', 'Unknown error')}")
+                
+                # Fallback to local authentication for existing users
+                user = User.query.filter_by(email=email).first()
+                if user and not user.supabase_id and user.check_password(password):
+                    print("Using local authentication fallback")
+                    login_user(user, remember=remember)
+                    
+                    if remember:
+                        session.permanent = True
+                    
+                    session['user_id'] = user.id
+                    session['login_time'] = datetime.utcnow().isoformat()
+                    
+                    user.last_login = datetime.utcnow()
+                    db.session.commit()
+                    
+                    flash(f'Welcome back! You have {user.get_remaining_analyses()} ColdMail analyses remaining.')
+                    return redirect(url_for('home'))
+                else:
+                    print(f"All authentication methods failed")
+                    flash('Invalid email or password.')
+                    return render_template('auth/login.html')
             
         except Exception as e:
             db.session.rollback()
@@ -438,6 +469,11 @@ def login():
 @login_required
 def logout():
     user_id = session.get('user_id')
+    
+    # Sign out from Supabase if user has Supabase ID
+    if current_user.supabase_id:
+        supabase_service.sign_out()
+    
     logout_user()
     session.clear()  # Clear all session data
     flash('You have been logged out of ColdMail.')
@@ -512,18 +548,68 @@ def test_auth():
             'user_id': current_user.id,
             'email': current_user.email,
             'is_paid': current_user.is_paid,
-            'remaining_analyses': current_user.get_remaining_analyses()
+            'remaining_analyses': current_user.get_remaining_analyses(),
+            'supabase_id': getattr(current_user, 'supabase_id', None)
         })
     else:
         return jsonify({
             'status': 'not_authenticated',
-            'message': 'No user is currently logged in'
+            'message': 'No user is currently logged in',
+            'session_data': dict(session),
+            'flask_login_user': str(current_user)
         })
+
+@app.route('/debug-login')
+def debug_login():
+    """Debug login information"""
+    return jsonify({
+        'current_user_authenticated': current_user.is_authenticated,
+        'current_user_id': current_user.id if current_user.is_authenticated else None,
+        'current_user_email': current_user.email if current_user.is_authenticated else None,
+        'session_data': dict(session),
+        'session_permanent': session.permanent,
+        'flask_env': os.environ.get('FLASK_ENV', 'Not set'),
+        'database_url': app.config['SQLALCHEMY_DATABASE_URI'],
+        'supabase_configured': bool(os.environ.get('SUPABASE_URL')),
+        'supabase_url': os.environ.get('SUPABASE_URL', 'Not set')[:20] + '...' if os.environ.get('SUPABASE_URL') else 'Not set'
+    })
 
 @app.route('/test-login')
 def test_login_page():
     """Test login page for debugging"""
     return render_template('test_login.html')
+
+@app.route('/reset-password', methods=['GET', 'POST'])
+def reset_password():
+    """Password reset request"""
+    if request.method == 'POST':
+        email = request.form.get('email')
+        if email:
+            result = supabase_service.reset_password(email)
+            if result['success']:
+                flash('Password reset email sent! Please check your inbox.')
+            else:
+                flash(f'Error: {result.get("error", "Failed to send reset email")}')
+        else:
+            flash('Please enter your email address.')
+    
+    return render_template('auth/reset_password.html')
+
+@app.route('/verify-email')
+def verify_email():
+    """Email verification"""
+    token = request.args.get('token')
+    type = request.args.get('type', 'signup')
+    
+    if token:
+        result = supabase_service.verify_email(token, type)
+        if result:
+            flash('Email verified successfully!')
+            return redirect(url_for('login'))
+        else:
+            flash('Email verification failed. Please try again.')
+    
+    return redirect(url_for('login'))
 
 @app.route('/upgrade')
 @login_required
