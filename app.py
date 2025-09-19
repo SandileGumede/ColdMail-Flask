@@ -4,6 +4,7 @@ from flask_session import Session
 from models import db, User
 from supabase_service import SupabaseService
 from supabase_config_alt import supabase_config_alt
+from db_compat import get_database_url, test_database_connection
 import re
 import os 
 import requests
@@ -52,22 +53,18 @@ app.config['SESSION_SQLALCHEMY'] = db
 app.config['SESSION_SQLALCHEMY_TABLE'] = 'sessions'
 app.config['SESSION_USE_SIGNER'] = True
 app.config['SESSION_KEY_PREFIX'] = 'pitchai:'
-# Use environment variable for database URL (for production) or default to SQLite
-database_url = os.environ.get('DATABASE_URL')
-if not database_url:
-    # Check for Supabase database URL
-    supabase_url = os.environ.get('SUPABASE_DATABASE_URL')
-    if supabase_url:
-        database_url = supabase_url
-    else:
-        # Default to SQLite in instance folder
-        database_url = 'sqlite:///pitchai.db'
-elif database_url.startswith('postgres://'):
-    # Fix for older PostgreSQL URLs
-    database_url = database_url.replace('postgres://', 'postgresql://', 1)
-
+# Use compatibility layer to get database URL
+database_url = get_database_url()
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 print(f"Using database: {database_url}")
+
+# Test database connection
+success, message = test_database_connection(database_url)
+if success:
+    print(f"✅ {message}")
+else:
+    print(f"⚠️  {message}")
+    print("   App will continue, but database features may not work")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Production database settings
