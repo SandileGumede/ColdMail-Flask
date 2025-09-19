@@ -11,9 +11,18 @@ class SupabaseConfig:
         self.service_key = os.getenv("SUPABASE_SERVICE_KEY")
         
         if not self.url or not self.key:
-            raise ValueError("SUPABASE_URL and SUPABASE_ANON_KEY must be set in environment variables")
+            print("⚠️  WARNING: SUPABASE_URL and SUPABASE_ANON_KEY not set!")
+            print("   Supabase features will be disabled.")
+            print("   Please set these environment variables in your Render dashboard.")
+            self.client = None
+            return
         
-        self.client: Client = create_client(self.url, self.key)
+        try:
+            self.client: Client = create_client(self.url, self.key)
+            print("✅ Supabase client initialized successfully")
+        except Exception as e:
+            print(f"❌ Failed to initialize Supabase client: {e}")
+            self.client = None
         
     def get_client(self) -> Client:
         """Get the Supabase client instance"""

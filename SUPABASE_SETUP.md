@@ -74,3 +74,5 @@ PAYPAL_CLIENT_SECRET=your-paypal-client-secret
 - **Database Connection Issues:** Check your `SUPABASE_DATABASE_URL` format
 - **Authentication Errors:** Verify your `SUPABASE_URL` and `SUPABASE_ANON_KEY`
 - **Email Issues:** Check your Supabase email settings and SMTP configuration
+
+

@@ -9,10 +9,17 @@ logger = logging.getLogger(__name__)
 class SupabaseService:
     def __init__(self):
         self.client = supabase_config.get_client()
-        self.service_client = supabase_config.get_service_client()
+        self.service_client = supabase_config.get_service_client() if supabase_config.service_key else None
+        self.is_available = self.client is not None
     
     def sign_up(self, email: str, password: str):
         """Sign up a new user with Supabase Auth"""
+        if not self.is_available:
+            return {
+                "success": False,
+                "error": "Supabase not configured. Please set SUPABASE_URL and SUPABASE_ANON_KEY environment variables."
+            }
+        
         try:
             response = self.client.auth.sign_up({
                 "email": email,
@@ -49,6 +56,12 @@ class SupabaseService:
     
     def sign_in(self, email: str, password: str):
         """Sign in user with Supabase Auth"""
+        if not self.is_available:
+            return {
+                "success": False,
+                "error": "Supabase not configured. Please set SUPABASE_URL and SUPABASE_ANON_KEY environment variables."
+            }
+        
         try:
             response = self.client.auth.sign_in_with_password({
                 "email": email,
