@@ -18,11 +18,8 @@ class SupabaseConfig:
             return
         
         try:
-            # Create client with explicit parameters to avoid proxy issues
-            self.client: Client = create_client(
-                supabase_url=self.url,
-                supabase_key=self.key
-            )
+            # Create client with positional arguments (compatible with 2.3.4)
+            self.client: Client = create_client(self.url, self.key)
             print("✅ Supabase client initialized successfully")
         except Exception as e:
             print(f"❌ Failed to initialize Supabase client: {e}")

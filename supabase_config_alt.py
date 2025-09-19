@@ -18,25 +18,9 @@ class SupabaseConfigAlt:
             return
         
         try:
-            # Try different initialization methods for compatibility
-            try:
-                # Method 1: Newer API with explicit parameter names
-                self.client: Client = create_client(
-                    supabase_url=self.url,
-                    supabase_key=self.key
-                )
-                print("✅ Supabase client initialized successfully (method 1)")
-            except TypeError as e:
-                if "proxy" in str(e):
-                    # Method 2: Older API with positional arguments
-                    self.client: Client = create_client(self.url, self.key)
-                    print("✅ Supabase client initialized successfully (method 2)")
-                else:
-                    raise e
-            except Exception as e:
-                # Method 3: Try with minimal parameters
-                self.client: Client = create_client(self.url, self.key)
-                print("✅ Supabase client initialized successfully (method 3)")
+            # Use positional arguments (compatible with 2.3.4)
+            self.client: Client = create_client(self.url, self.key)
+            print("✅ Supabase client initialized successfully")
                 
         except Exception as e:
             print(f"❌ Failed to initialize Supabase client: {e}")
@@ -55,12 +39,6 @@ class SupabaseConfigAlt:
             raise ValueError("SUPABASE_SERVICE_KEY must be set for admin operations")
         
         try:
-            return create_client(
-                supabase_url=self.url,
-                supabase_key=self.service_key
-            )
-        except TypeError:
-            # Fallback for older versions
             return create_client(self.url, self.service_key)
         except Exception as e:
             print(f"❌ Failed to create service client: {e}")
