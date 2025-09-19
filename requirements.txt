@@ -7,5 +7,5 @@ requests==2.31.0
 paypalrestsdk==1.13.1
 Werkzeug==2.3.7
 gunicorn==21.2.0
-psycopg[binary]==3.1.18
+psycopg2-binary==2.9.7
 supabase==1.0.4
