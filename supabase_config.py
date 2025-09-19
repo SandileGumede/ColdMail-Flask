@@ -18,13 +18,13 @@ class SupabaseConfig:
             return
         
         try:
-            # Create client with positional arguments (compatible with 2.3.4)
+            # Use simple positional arguments (compatible with 1.0.4)
             self.client: Client = create_client(self.url, self.key)
             print("✅ Supabase client initialized successfully")
         except Exception as e:
             print(f"❌ Failed to initialize Supabase client: {e}")
             print(f"   Error type: {type(e).__name__}")
-            print("   This might be a version compatibility issue.")
+            print("   The app will continue without Supabase features.")
             self.client = None
         
     def get_client(self) -> Client:

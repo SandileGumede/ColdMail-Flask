@@ -100,14 +100,14 @@ try:
     print("✅ Supabase service initialized")
 except Exception as e:
     print(f"⚠️  Supabase service initialization failed: {e}")
-    print("   Falling back to alternative configuration...")
+    print("   Falling back to local authentication only...")
     try:
-        from supabase_service_alt import SupabaseServiceAlt
-        supabase_service = SupabaseServiceAlt()
-        print("✅ Alternative Supabase service initialized")
+        from no_supabase_mode import NoSupabaseService
+        supabase_service = NoSupabaseService()
+        print("✅ Local authentication service initialized")
     except Exception as e2:
-        print(f"❌ Alternative Supabase service also failed: {e2}")
-        print("   Supabase features will be disabled")
+        print(f"❌ Local authentication service also failed: {e2}")
+        print("   Authentication will be disabled")
         supabase_service = None
 
 # Add request logging middleware
