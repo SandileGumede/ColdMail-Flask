@@ -18,10 +18,16 @@ class SupabaseConfig:
             return
         
         try:
-            self.client: Client = create_client(self.url, self.key)
+            # Create client with explicit parameters to avoid proxy issues
+            self.client: Client = create_client(
+                supabase_url=self.url,
+                supabase_key=self.key
+            )
             print("✅ Supabase client initialized successfully")
         except Exception as e:
             print(f"❌ Failed to initialize Supabase client: {e}")
+            print(f"   Error type: {type(e).__name__}")
+            print("   This might be a version compatibility issue.")
             self.client = None
         
     def get_client(self) -> Client:

@@ -3,6 +3,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from flask_session import Session
 from models import db, User
 from supabase_service import SupabaseService
+from supabase_config_alt import supabase_config_alt
 import re
 import os 
 import requests
@@ -93,8 +94,21 @@ login_manager.init_app(app)
 setattr(login_manager, 'login_view', 'login')
 login_manager.login_message = 'Please log in to access this feature.'
 
-# Initialize Supabase service
-supabase_service = SupabaseService()
+# Initialize Supabase service with fallback
+try:
+    supabase_service = SupabaseService()
+    print("✅ Supabase service initialized")
+except Exception as e:
+    print(f"⚠️  Supabase service initialization failed: {e}")
+    print("   Falling back to alternative configuration...")
+    try:
+        from supabase_service_alt import SupabaseServiceAlt
+        supabase_service = SupabaseServiceAlt()
+        print("✅ Alternative Supabase service initialized")
+    except Exception as e2:
+        print(f"❌ Alternative Supabase service also failed: {e2}")
+        print("   Supabase features will be disabled")
+        supabase_service = None
 
 # Add request logging middleware
 @app.before_request
@@ -354,8 +368,20 @@ def signup():
                 flash('Email already registered. Please login.')
                 return redirect(url_for('login'))
             
-            # Create new user with Supabase
-            result = supabase_service.sign_up(email, password)
+            # Create new user with Supabase (if available)
+            if supabase_service and supabase_service.is_available:
+                result = supabase_service.sign_up(email, password)
+            else:
+                print("Supabase not available, using local authentication only")
+                # Fallback to local user creation
+                user = User()
+                user.email = email
+                user.set_password(password)
+                
+                db.session.add(user)
+                db.session.commit()
+                
+                result = {"success": True, "user": user}
             
             if result['success']:
                 user = result['user']
@@ -399,13 +425,17 @@ def login():
                 flash('Please fill in all fields.')
                 return render_template('auth/login.html')
             
-            # Try Supabase authentication first
-            try:
-                result = supabase_service.sign_in(email, password)
-                print(f"Supabase auth result: {result}")  # Debug logging
-            except Exception as supabase_error:
-                print(f"Supabase auth error: {supabase_error}")  # Debug logging
-                result = {"success": False, "error": str(supabase_error)}
+            # Try Supabase authentication first (if available)
+            if supabase_service and supabase_service.is_available:
+                try:
+                    result = supabase_service.sign_in(email, password)
+                    print(f"Supabase auth result: {result}")  # Debug logging
+                except Exception as supabase_error:
+                    print(f"Supabase auth error: {supabase_error}")  # Debug logging
+                    result = {"success": False, "error": str(supabase_error)}
+            else:
+                print("Supabase not available, skipping Supabase auth")
+                result = {"success": False, "error": "Supabase not available"}
             
             if result['success']:
                 user = result['user']
