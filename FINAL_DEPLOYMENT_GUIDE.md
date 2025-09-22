@@ -65,3 +65,5 @@ After deployment:
 3. **Add Supabase later** - when you have time to configure it properly
 
 The app is now **bulletproof** and will work regardless of Supabase issues!
+
+

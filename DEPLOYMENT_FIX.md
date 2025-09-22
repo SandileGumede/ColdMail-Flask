@@ -48,3 +48,4 @@ The app will now work even if Supabase fails to initialize. You'll see messages 
 - "Supabase features will be disabled"
 
 This means your app is working, just without Supabase features (which is fine for basic functionality).
+

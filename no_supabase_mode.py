@@ -103,3 +103,5 @@ class NoSupabaseService:
     def verify_email(self, token: str, type: str):
         """Email verification not available in local mode"""
         return None
+
+

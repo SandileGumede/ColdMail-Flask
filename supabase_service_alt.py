@@ -167,3 +167,4 @@ class SupabaseServiceAlt:
         except Exception as e:
             logger.error(f"Email verification error: {e}")
             return None
+

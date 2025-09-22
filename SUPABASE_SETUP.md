@@ -76,3 +76,4 @@ PAYPAL_CLIENT_SECRET=your-paypal-client-secret
 - **Email Issues:** Check your Supabase email settings and SMTP configuration
 
 
+

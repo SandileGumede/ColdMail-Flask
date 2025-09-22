@@ -64,3 +64,4 @@ SUPABASE_DATABASE_URL=postgresql://postgres:yourpassword@db.abcdefghijklmnop.sup
 
 Replace the example values with your actual Supabase credentials.
 
+
