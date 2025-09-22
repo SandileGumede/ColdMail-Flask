@@ -1,4 +1,4 @@
-from supabase_config_alt import supabase_config_alt
+from supabase_config import supabase_config
 from models import User, db
 from flask_login import login_user
 from datetime import datetime
@@ -8,8 +8,8 @@ logger = logging.getLogger(__name__)
 
 class SupabaseServiceAlt:
     def __init__(self):
-        self.client = supabase_config_alt.get_client()
-        self.service_client = supabase_config_alt.get_service_client()
+        self.client = supabase_config.get_client()
+        self.service_client = supabase_config.get_service_client() if getattr(supabase_config, 'service_key', None) else None
         self.is_available = self.client is not None
     
     def sign_up(self, email: str, password: str):

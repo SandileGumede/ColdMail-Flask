@@ -3,7 +3,6 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from flask_session import Session
 from models import db, User
 from supabase_service import SupabaseService
-from supabase_config_alt import supabase_config_alt
 import re
 import os 
 import requests
