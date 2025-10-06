@@ -17,6 +17,7 @@
                 <a href="/" class="nav-link">Home</a>
                 <a href="/faq" class="nav-link active">FAQ</a>
                 <a href="/contact" class="nav-link">Contact</a>
+                <button id="themeToggle" class="btn btn-outline" style="padding:8px 12px; border-radius:20px;">🌙</button>
             </div>
             <div class="nav-toggle" id="navToggle">
                 <span></span>
@@ -95,11 +96,39 @@
     </footer>
 
     <script>
+        // Theme init from storage or system preference
+        (function() {
+            try {
+                const stored = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (stored === 'dark' || (!stored && prefersDark)) {
+                    document.body.classList.add('dark');
+                }
+            } catch (_) {}
+        })();
         // Mobile navigation toggle
         document.getElementById('navToggle').addEventListener('click', function() {
             document.querySelector('.nav-links').classList.toggle('active');
             this.classList.toggle('active');
         });
+
+        // Theme toggle button
+        (function() {
+            const btn = document.getElementById('themeToggle');
+            if (!btn) return;
+            const setIcon = () => {
+                const isDark = document.body.classList.contains('dark');
+                btn.textContent = isDark ? '☀️' : '🌙';
+                btn.title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+            };
+            setIcon();
+            btn.addEventListener('click', function() {
+                document.body.classList.toggle('dark');
+                const isDark = document.body.classList.contains('dark');
+                try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch (_) {}
+                setIcon();
+            });
+        })();
     </script>
 </body>
 </html> 

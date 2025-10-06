@@ -13,6 +13,129 @@ body {
     min-height: 100vh;
 }
 
+/* ===== THEME: DARK MODE OVERRIDES ===== */
+/* Apply by toggling <body class="dark"> */
+body.dark {
+    background: linear-gradient(135deg, #0f1216 0%, #141922 100%);
+    color: #e6e6e6;
+}
+
+body.dark .navbar {
+    background: rgba(20, 24, 31, 0.9);
+    border-bottom-color: rgba(102, 126, 234, 0.2);
+    box-shadow: 0 2px 20px rgba(0,0,0,0.5);
+}
+
+body.dark .nav-link {
+    color: #e6e6e6;
+}
+
+body.dark .nav-toggle span {
+    background: #e6e6e6;
+}
+
+body.dark .container,
+body.dark .auth-container,
+body.dark .faq-container,
+body.dark .features,
+body.dark .email-preview-card,
+body.dark .contact-form-container,
+body.dark .contact-method,
+body.dark .payment-section,
+body.dark .pricing-card,
+body.dark .trust-item,
+body.dark .analysis-card,
+body.dark .feature-card,
+body.dark .result-card {
+    background: #161b22;
+    border-color: #2a3441;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+body.dark h1,
+body.dark h2,
+body.dark h3,
+body.dark h4,
+body.dark .score-header h2,
+body.dark .pricing-features h3,
+body.dark .faq-title {
+    color: #e8edf4;
+    -webkit-text-fill-color: initial;
+}
+
+body.dark p,
+body.dark .score-subtitle,
+body.dark .price-subtitle,
+body.dark .price-description,
+body.dark .payment-section p,
+body.dark .alternative-options p,
+body.dark .email-text,
+body.dark summary,
+body.dark details p,
+body.dark label {
+    color: #c7d1db;
+}
+
+body.dark input[type="email"],
+body.dark input[type="password"],
+body.dark input[type="text"],
+body.dark textarea {
+    background: #0f141a;
+    color: #e6e6e6;
+    border-color: #2a3441;
+}
+
+body.dark input[type="email"]:focus,
+body.dark input[type="password"]:focus,
+body.dark input[type="text"]:focus,
+body.dark textarea:focus {
+    background: #10161d;
+    border-color: #7c8cff;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+body.dark .features-section,
+body.dark .contact-info,
+body.dark .score-card-main,
+body.dark .trust-section,
+body.dark .faq-payment-section {
+    background: linear-gradient(135deg, #0f141a 0%, #141922 100%);
+    border-color: rgba(102, 126, 234, 0.15);
+}
+
+body.dark .footer {
+    color: #aab4bf;
+}
+
+body.dark .footer-links a {
+    color: #9aa6ff;
+}
+
+body.dark .footer-links a:hover {
+    color: #c2cbff;
+}
+
+/* Flash messages and labels */
+body.dark .flash-success { background-color: #153d22; color: #a8f0bf; border-left-color: #28a745; }
+body.dark .flash-error { background-color: #3a1b1e; color: #f3a6ad; border-left-color: #dc3545; }
+body.dark .label.excellent { background: #163b21; color: #a8f0bf; }
+body.dark .label.good { background: #0f3740; color: #9bd5df; }
+body.dark .label.warning { background: #4a3b12; color: #ffd479; }
+body.dark .label.poor { background: #3a1b1e; color: #f3a6ad; }
+
+/* Links */
+body.dark .auth-links a,
+body.dark .footer-links a,
+body.dark .btn-outline { color: #9aa6ff; border-color: #7c8cff; }
+body.dark .btn-outline:hover { background: #7c8cff; color: #0f1216; }
+
+/* Misc */
+body.dark .spam-alert { background: #3a1b1e; border-color: #5a2a31; }
+body.dark .email-preview-content { background: #0f141a; }
+body.dark .nav-link:hover,
+body.dark .nav-link.active { color: #fff; }
+
+
 /* ===== NAVIGATION ===== */
 .navbar {
     background: rgba(255, 255, 255, 0.95);
