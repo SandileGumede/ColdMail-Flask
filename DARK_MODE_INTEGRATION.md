@@ -155,6 +155,13 @@ Visit `/dark-mode-demo` to see all components in both themes and test accessibil
 }
 ```
 
+### Hamburger Menu Integration
+
+The theme toggle is automatically integrated into your hamburger menu as a menu item. This provides better mobile UX and keeps the navigation clean.
+
+**Desktop**: Theme toggle appears as a menu item alongside other navigation links
+**Mobile**: Theme toggle appears as a prominent button in the hamburger menu
+
 ### Custom Toggle Button
 
 If you want to use your own toggle button:

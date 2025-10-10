@@ -10,7 +10,7 @@ class DarkModeToggle {
       themeAttribute: 'data-theme',
       storageKey: 'theme',
       defaultTheme: 'light',
-      toggleSelector: '.theme-toggle',
+      toggleSelector: '.theme-toggle-menu',
       animateTransitions: true,
       respectSystemPreference: true,
       ...options
@@ -72,25 +72,27 @@ class DarkModeToggle {
   }
 
   /**
-   * Create the theme toggle button if it doesn't exist
+   * Create the theme toggle menu item in the hamburger menu
    */
   createToggleButton() {
     // Try to find existing toggle button
     this.toggleElement = document.querySelector(this.options.toggleSelector);
 
     if (!this.toggleElement) {
-      // Create toggle button
-      this.toggleElement = document.createElement('button');
-      this.toggleElement.className = 'theme-toggle';
+      // Create theme toggle menu item
+      this.toggleElement = document.createElement('a');
+      this.toggleElement.className = 'nav-link theme-toggle-menu';
+      this.toggleElement.setAttribute('href', '#');
+      this.toggleElement.setAttribute('role', 'button');
       this.toggleElement.setAttribute('aria-label', 'Toggle dark mode');
       this.toggleElement.setAttribute('title', 'Toggle dark mode');
-      this.toggleElement.setAttribute('type', 'button');
 
-      // Insert into navigation or body
-      const nav = document.querySelector('.nav-links, .navbar, nav');
-      if (nav) {
-        nav.appendChild(this.toggleElement);
+      // Insert into navigation links (hamburger menu)
+      const navLinks = document.querySelector('.nav-links');
+      if (navLinks) {
+        navLinks.appendChild(this.toggleElement);
       } else {
+        // Fallback to body if nav not found
         document.body.appendChild(this.toggleElement);
       }
     }
@@ -99,7 +101,7 @@ class DarkModeToggle {
   }
 
   /**
-   * Update the toggle button icon based on current theme
+   * Update the toggle menu item icon based on current theme
    */
   updateToggleIcon() {
     if (!this.toggleElement) return;
@@ -108,7 +110,7 @@ class DarkModeToggle {
     const icon = isDark ? '☀️' : '🌙';
     const label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
 
-    this.toggleElement.textContent = icon;
+    this.toggleElement.innerHTML = `${icon} ${label}`;
     this.toggleElement.setAttribute('aria-label', label);
     this.toggleElement.setAttribute('title', label);
   }
@@ -211,7 +213,10 @@ class DarkModeToggle {
    */
   bindEvents() {
     if (this.toggleElement) {
-      this.toggleElement.addEventListener('click', () => this.toggle());
+      this.toggleElement.addEventListener('click', (e) => {
+        e.preventDefault(); // Prevent default link behavior
+        this.toggle();
+      });
       
       // Keyboard support
       this.toggleElement.addEventListener('keydown', (e) => {
