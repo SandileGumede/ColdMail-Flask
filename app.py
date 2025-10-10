@@ -859,6 +859,10 @@ def get_session_info():
         return {'error': str(e)}
 
 # --- Main App Routes ---
+@app.route('/dark-mode-demo')
+def dark_mode_demo():
+    return render_template('dark-mode-demo.html')
+
 @app.route('/')
 def home():
     if current_user.is_authenticated:

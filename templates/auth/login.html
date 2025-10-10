@@ -1,32 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - ColdMail</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
-    <!-- Navigation Header -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <img src="/static/Black & White Minimalist Business Logo_20250708_190239_0000.png" alt="PitchAI Logo" class="nav-logo">
-            </div>
-            <div class="nav-links">
-                <a href="/" class="nav-link">Home</a>
-                <a href="/faq" class="nav-link">FAQ</a>
-                <a href="/contact" class="nav-link">Contact</a>
-                <button id="themeToggle" class="btn btn-outline" style="padding:8px 12px; border-radius:20px;">🌙</button>
-            </div>
-            <div class="nav-toggle" id="navToggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    </nav>
+{% extends "base.html" %}
 
+{% block title %}Login - ColdMail{% endblock %}
+
+{% block content %}
     <div class="auth-container">
         <div class="auth-title">Login to ColdMail</div>
         
@@ -87,36 +63,10 @@
             <a href="/">Back to Home</a>
         </div>
     </div>
+{% endblock %}
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-                    <div class="footer-links">
-            <a href="/faq">FAQ</a>
-        </div>
-        <div class="footer-copyright">
-            <p>&copy; 2025 ColdMail. All rights reserved.</p>
-        </div>
-        </div>
-    </footer>
-
+{% block extra_js %}
     <script>
-        // Theme init from storage or system preference
-        (function() {
-            try {
-                const stored = localStorage.getItem('theme');
-                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                if (stored === 'dark' || (!stored && prefersDark)) {
-                    document.body.classList.add('dark');
-                }
-            } catch (_) {}
-        })();
-        // Mobile navigation toggle
-        document.getElementById('navToggle').addEventListener('click', function() {
-            document.querySelector('.nav-links').classList.toggle('active');
-            this.classList.toggle('active');
-        });
-        
         // Password toggle functionality
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
@@ -201,24 +151,5 @@
                 }, 300);
             });
         }, 5000);
-
-        // Theme toggle button
-        (function() {
-            const btn = document.getElementById('themeToggle');
-            if (!btn) return;
-            const setIcon = () => {
-                const isDark = document.body.classList.contains('dark');
-                btn.textContent = isDark ? '☀️' : '🌙';
-                btn.title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
-            };
-            setIcon();
-            btn.addEventListener('click', function() {
-                document.body.classList.toggle('dark');
-                const isDark = document.body.classList.contains('dark');
-                try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch (_) {}
-                setIcon();
-            });
-        })();
     </script>
-</body>
-</html> 
+{% endblock %} 

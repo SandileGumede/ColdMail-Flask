@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ColdMail - Email Analysis{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/dark-mode.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <img src="/static/Black & White Minimalist Business Logo_20250708_190239_0000.png" alt="ColdMail Logo" class="nav-logo">
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Home</a>
+                <a href="/faq" class="nav-link {% if request.endpoint == 'faq' %}active{% endif %}">FAQ</a>
+                <a href="/contact" class="nav-link {% if request.endpoint == 'contact' %}active{% endif %}">Contact</a>
+                {% if current_user.is_authenticated %}
+                    <span class="nav-link" style="color:#4a90e2;">{{ current_user.email }}</span>
+                    <a href="/logout" class="nav-link">Logout</a>
+                {% else %}
+                    <a href="/login" class="nav-link {% if request.endpoint == 'login' %}active{% endif %}">Login</a>
+                    <a href="/signup" class="nav-link {% if request.endpoint == 'signup' %}active{% endif %}">Sign Up</a>
+                {% endif %}
+                <!-- Theme toggle will be automatically inserted here by dark-mode.js -->
+            </div>
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="/faq">FAQ</a>
+            </div>
+            <div class="footer-copyright">
+                <p>&copy; 2025 ColdMail. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/static/dark-mode.js"></script>
+    <script>
+        // Mobile navigation toggle
+        document.getElementById('navToggle').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('active');
+            this.classList.toggle('active');
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

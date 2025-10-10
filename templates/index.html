@@ -1,39 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ColdMail - Email Analysis</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
-    <!-- Navigation Header -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <img src="/static/Black & White Minimalist Business Logo_20250708_190239_0000.png" alt="ColdMail Logo" class="nav-logo">
-            </div>
-            <div class="nav-links">
-                <a href="/" class="nav-link active">Home</a>
-                <a href="/faq" class="nav-link">FAQ</a>
-                <a href="/contact" class="nav-link">Contact</a>
-                {% if current_user.is_authenticated %}
-                    <span class="nav-link" style="color:#4a90e2;">{{ current_user.email }}</span>
-                    <a href="/logout" class="nav-link">Logout</a>
-                {% else %}
-                    <a href="/login" class="nav-link">Login</a>
-                    <a href="/signup" class="nav-link">Sign Up</a>
-                {% endif %}
-                <button id="themeToggle" class="btn btn-outline" style="padding:8px 12px; border-radius:20px;">🌙</button>
-            </div>
-            <div class="nav-toggle" id="navToggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    </nav>
+{% extends "base.html" %}
 
+{% block content %}
     <div class="container">
         <div class="hero-section">
             <h1>ColdMail Cold DM & Cold Email Analyzer</h1>
@@ -93,61 +60,15 @@
             </div>
         </div>
     </div>
+{% endblock %}
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-                    <div class="footer-links">
-            <a href="/faq" class="nav-link">FAQ</a>
-        </div>
-        <div class="footer-copyright">
-            <p>&copy; 2025 ColdMail. All rights reserved.</p>
-        </div>
-        </div>
-    </footer>
-
+{% block extra_js %}
     <script>
-        // Theme init from storage or system preference
-        (function() {
-            try {
-                const stored = localStorage.getItem('theme');
-                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                if (stored === 'dark' || (!stored && prefersDark)) {
-                    document.body.classList.add('dark');
-                }
-            } catch (_) {}
-        })();
-
-        // Mobile navigation toggle
-        document.getElementById('navToggle').addEventListener('click', function() {
-            document.querySelector('.nav-links').classList.toggle('active');
-            this.classList.toggle('active');
-        });
-
         // Auto-resize textarea
         const textarea = document.getElementById('email_content');
         textarea.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = this.scrollHeight + 'px';
         });
-
-        // Theme toggle button
-        (function() {
-            const btn = document.getElementById('themeToggle');
-            if (!btn) return;
-            const setIcon = () => {
-                const isDark = document.body.classList.contains('dark');
-                btn.textContent = isDark ? '☀️' : '🌙';
-                btn.title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
-            };
-            setIcon();
-            btn.addEventListener('click', function() {
-                document.body.classList.toggle('dark');
-                const isDark = document.body.classList.contains('dark');
-                try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch (_) {}
-                setIcon();
-            });
-        })();
     </script>
-</body>
-</html> 
+{% endblock %} 

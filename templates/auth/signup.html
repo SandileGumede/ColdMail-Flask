@@ -1,31 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - ColdMail</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
-    <!-- Navigation Header -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <img src="/static/Black & White Minimalist Business Logo_20250708_190239_0000.png" alt="ColdMail Logo" class="nav-logo">
-            </div>
-            <div class="nav-links">
-                <a href="/" class="nav-link">Home</a>
-                <a href="/faq" class="nav-link">FAQ</a>
-                <a href="/contact" class="nav-link">Contact</a>
-            </div>
-            <div class="nav-toggle" id="navToggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    </nav>
+{% extends "base.html" %}
 
+{% block title %}Sign Up - ColdMail{% endblock %}
+
+{% block content %}
     <div class="auth-container">
         <div class="auth-title">Create Your ColdMail Account</div>
         
@@ -210,5 +187,4 @@
             });
         }, 5000);
     </script>
-</body>
-</html> 
+{% endblock %} 

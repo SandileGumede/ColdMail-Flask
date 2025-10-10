@@ -1,31 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ColdMail - Analysis Results</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
-    <!-- Navigation Header -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <img src="/static/Black & White Minimalist Business Logo_20250708_190239_0000.png" alt="ColdMail Logo" class="nav-logo">
-            </div>
-            <div class="nav-links">
-                <a href="/" class="nav-link">Home</a>
-                <a href="/faq" class="nav-link">FAQ</a>
-                <a href="/contact" class="nav-link">Contact</a>
-            </div>
-            <div class="nav-toggle" id="navToggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    </nav>
+{% extends "base.html" %}
 
+{% block title %}ColdMail - Analysis Results{% endblock %}
+
+{% block content %}
     <div class="container">
         <div class="results-header">
             <h1>Cold DM & Cold Email Analysis Results</h1>
@@ -211,15 +188,5 @@
         <div class="footer-copyright">
             <p>&copy; 2025 ColdMail. All rights reserved.</p>
         </div>
-        </div>
-    </footer>
-
-    <script>
-        // Mobile navigation toggle
-        document.getElementById('navToggle').addEventListener('click', function() {
-            document.querySelector('.nav-links').classList.toggle('active');
-            this.classList.toggle('active');
-        });
-    </script>
-</body>
-</html> 
+    </div>
+{% endblock %} 
