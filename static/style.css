@@ -199,7 +199,7 @@ body.dark .nav-link.active { color: #fff; }
 }
 
 .nav-logo {
-    height: 320px;
+    height: 280px;
     width: auto;
     object-fit: contain;
     transition: transform 0.2s ease;
