@@ -1,0 +1,22 @@
+<svg width="200" height="80" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
+  <!-- Black background -->
+  <rect width="200" height="80" fill="#000000"/>
+  
+  <!-- Paper airplane in purple -->
+  <g transform="translate(40, 20)">
+    <!-- Main airplane body (bright purple) -->
+    <path d="M15 25 L35 15 L45 25 L35 35 Z" fill="#8B5CF6" stroke="#6D28D9" stroke-width="1"/>
+    <!-- Airplane wing (darker purple) -->
+    <path d="M20 30 L30 25 L35 30 L25 35 Z" fill="#6D28D9"/>
+    <!-- Airplane tail -->
+    <path d="M35 15 L40 20 L35 25 Z" fill="#8B5CF6"/>
+  </g>
+  
+  <!-- Dashed flight path -->
+  <g transform="translate(25, 35)">
+    <path d="M0 10 Q15 5 30 0 Q45 -5 60 0" stroke="#6D28D9" stroke-width="2" fill="none" stroke-dasharray="5,5"/>
+  </g>
+  
+  <!-- ColdMail text -->
+  <text x="80" y="45" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#6D28D9">ColdMail</text>
+</svg>
