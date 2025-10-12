@@ -167,7 +167,7 @@ body.dark .nav-link.active { color: #fff; }
 }
 
 .nav-logo {
-    height: 180px;
+    height: 220px;
     width: auto;
     object-fit: contain;
     transition: transform 0.2s ease;
@@ -1478,7 +1478,7 @@ details p {
     }
 
     .nav-logo {
-        height: 80px;
+        height: 100px;
     }
 
     .container,
@@ -1596,7 +1596,7 @@ details p {
     }
     
     .nav-logo {
-        height: 50px;
+        height: 70px;
     }
 
     .container,

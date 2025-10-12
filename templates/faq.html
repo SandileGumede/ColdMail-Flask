@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FAQ - PitchAI Cold DM & Cold Email Analyzer</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/dark-mode.css">
 </head>
 <body>
     <!-- Navigation Header -->
@@ -27,7 +28,7 @@
         </div>
     </nav>
 
-    <div class="faq-container">
+    <div class="faq-container card">
         <div class="faq-title">Frequently Asked Questions</div>
 
         <details>
@@ -74,7 +75,7 @@
         <a href="/" class="back-btn">← Back to Analyzer</a>
         
         <!-- Upgrade Section -->
-        <div class="faq-payment-section">
+        <div class="faq-payment-section card">
             <h3>Ready to Upgrade?</h3>
             <p>Get unlimited cold email analyses and PDF exports for just $20</p>
             <div class="payment-buttons">
@@ -95,40 +96,15 @@
         </div>
     </footer>
 
+    <!-- Include dark mode JavaScript -->
+    <script src="/static/dark-mode.js"></script>
+    
     <script>
-        // Theme init from storage or system preference
-        (function() {
-            try {
-                const stored = localStorage.getItem('theme');
-                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                if (stored === 'dark' || (!stored && prefersDark)) {
-                    document.body.classList.add('dark');
-                }
-            } catch (_) {}
-        })();
         // Mobile navigation toggle
         document.getElementById('navToggle').addEventListener('click', function() {
             document.querySelector('.nav-links').classList.toggle('active');
             this.classList.toggle('active');
         });
-
-        // Theme toggle button
-        (function() {
-            const btn = document.getElementById('themeToggle');
-            if (!btn) return;
-            const setIcon = () => {
-                const isDark = document.body.classList.contains('dark');
-                btn.textContent = isDark ? '☀️' : '🌙';
-                btn.title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
-            };
-            setIcon();
-            btn.addEventListener('click', function() {
-                document.body.classList.toggle('dark');
-                const isDark = document.body.classList.contains('dark');
-                try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch (_) {}
-                setIcon();
-            });
-        })();
     </script>
 </body>
 </html> 

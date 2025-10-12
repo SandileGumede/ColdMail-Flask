@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Us - ColdMail</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/dark-mode.css">
 </head>
 <body>
     <!-- Navigation Header -->
@@ -32,7 +33,7 @@
             <p>Get in touch with our team. We'd love to hear from you!</p>
         </div>
         
-        <div class="contact-form-container">
+        <div class="contact-form-container card">
             <form id="contactForm" class="contact-form">
                 <div class="form-group">
                     <label for="email">Your Email:</label>
@@ -50,15 +51,13 @@
                 </button>
             </form>
             
-            <div id="confirmationMessage" class="confirmation-message" style="display: none;">
-                <div class="success-message">
-                    <p>✅ Thank you for your message!</p>
-                    <p class="message-detail">We'll get back to you as soon as possible.</p>
-                </div>
+            <div id="confirmationMessage" class="confirmation-message flash-message flash-success" style="display: none;">
+                <p>✅ Thank you for your message!</p>
+                <p class="message-detail">We'll get back to you as soon as possible.</p>
             </div>
         </div>
         
-        <div class="contact-info">
+        <div class="contact-info card">
             <h3>Other Ways to Reach Us</h3>
             <div class="contact-methods">
                 <div class="contact-method">
@@ -72,7 +71,7 @@
         </div>
         
         <!-- Upgrade Section -->
-        <div class="faq-payment-section">
+        <div class="faq-payment-section card">
             <h3>Need Unlimited Access?</h3>
             <p>Upgrade to unlimited cold email analyses and PDF exports for just $20</p>
             <div class="payment-buttons">
@@ -94,6 +93,9 @@
         </div>
     </footer>
 
+    <!-- Include dark mode JavaScript -->
+    <script src="/static/dark-mode.js"></script>
+    
     <script>
         // Mobile navigation toggle
         document.getElementById('navToggle').addEventListener('click', function() {
