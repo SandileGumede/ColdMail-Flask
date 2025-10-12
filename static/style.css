@@ -76,6 +76,38 @@ body.dark label {
     color: #c7d1db;
 }
 
+/* Dark mode styles for FAQ details and summary */
+body.dark details {
+    background: var(--bg-card);
+    border: 1px solid var(--border-primary);
+    color: var(--text-primary);
+}
+
+body.dark details[open] {
+    box-shadow: 0 4px 16px rgba(124, 140, 255, 0.15);
+    border-color: var(--accent-primary);
+}
+
+body.dark summary {
+    background: var(--surface-secondary);
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-primary);
+}
+
+body.dark details:hover summary {
+    background: var(--bg-hover);
+}
+
+body.dark details[open] summary {
+    background: var(--surface-secondary);
+    border-bottom: 1px solid var(--border-primary);
+}
+
+body.dark details p {
+    color: var(--text-secondary);
+    background: var(--bg-card);
+}
+
 body.dark input[type="email"],
 body.dark input[type="password"],
 body.dark input[type="text"],
@@ -167,7 +199,7 @@ body.dark .nav-link.active { color: #fff; }
 }
 
 .nav-logo {
-    height: 220px;
+    height: 320px;
     width: auto;
     object-fit: contain;
     transition: transform 0.2s ease;
@@ -1279,8 +1311,8 @@ textarea:focus {
 details {
     margin-bottom: 16px;
     border-radius: 12px;
-    background: #f8f9fa;
-    border: 1px solid #e1e5e9;
+    background: var(--bg-card, #f8f9fa);
+    border: 1px solid var(--border-primary, #e1e5e9);
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     transition: all 0.3s ease;
 }
@@ -1296,7 +1328,7 @@ summary {
     padding: 20px 24px;
     cursor: pointer;
     outline: none;
-    color: #333;
+    color: var(--text-primary, #333);
     transition: all 0.3s ease;
     border-radius: 12px;
 }
@@ -1312,7 +1344,7 @@ details[open] summary {
 
 details p {
     padding: 20px 24px 24px 24px;
-    color: #666;
+    color: var(--text-secondary, #666);
     margin: 0;
     font-size: 1em;
     line-height: 1.6;
