@@ -5,6 +5,87 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upgrade - ColdMail</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/dark-mode.css">
+    <style>
+        /* PayPal Integration Styles */
+        .paypal-checkout-container {
+            margin: 2rem 0;
+            padding: 2rem;
+            background: var(--bg-card, #ffffff);
+            border: 1px solid var(--border-primary, #e1e5e9);
+            border-radius: var(--radius-xl, 12px);
+            box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.1));
+        }
+        
+        .payment-status {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .status-message {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border-primary, #e1e5e9);
+            border-top: 4px solid var(--accent-primary, #667eea);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* PayPal Button Styling */
+        #paypal-button-container {
+            min-height: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Dark mode PayPal button adjustments */
+        [data-theme="dark"] #paypal-button-container {
+            background: var(--surface-secondary);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+        }
+        
+        /* Payment section styling */
+        .payment-section.card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            margin-bottom: var(--space-lg);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .trust-section.card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            margin-bottom: var(--space-lg);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .pricing-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            margin-bottom: var(--space-lg);
+            box-shadow: var(--shadow-md);
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation Header -->
@@ -56,32 +137,33 @@
         </div>
         
         <!-- Payment Section -->
-        <div class="payment-section">
+        <div class="payment-section card">
             <h3>Secure Payment</h3>
-            <p>Choose your preferred payment method below. All payments are processed securely through PayPal.</p>
+            <p>Complete your upgrade with our secure PayPal checkout. No redirects, everything happens right here.</p>
             
-            <!-- Primary Payment Button -->
-            <div class="primary-payment">
-                <a href="https://www.paypal.com/ncp/payment/L2XE6X7QDP7H2" target="_blank" class="btn btn-primary payment-btn">
-                    <span class="payment-icon">💳</span>
-                    <span class="payment-text">Pay with PayPal - $20</span>
-                    <span class="payment-subtitle">Secure • Instant • No recurring fees</span>
-                </a>
-                <p class="payment-note">Opens in a new tab for secure payment processing</p>
+            <!-- PayPal Checkout Button Container -->
+            <div class="paypal-checkout-container">
+                <div id="paypal-button-container"></div>
+                <div id="payment-status" class="payment-status" style="display: none;">
+                    <div class="status-message">
+                        <div class="spinner"></div>
+                        <p>Processing your payment...</p>
+                    </div>
+                </div>
             </div>
             
             <!-- Alternative Options -->
             <div class="alternative-options">
-                <p>Other payment options:</p>
+                <p>Need help or have questions?</p>
                 <div class="alt-buttons">
-                    <a href="/paypal-checkout" class="btn btn-secondary">Integrated Checkout</a>
+                    <a href="/contact" class="btn btn-secondary">Contact Support</a>
                     <a href="/" class="btn btn-outline">Back to Analyzer</a>
                 </div>
             </div>
         </div>
         
         <!-- Trust Indicators -->
-        <div class="trust-section">
+        <div class="trust-section card">
             <h3>Why Choose ColdMail Pro?</h3>
             <div class="trust-grid">
                 <div class="trust-item">
@@ -115,12 +197,88 @@
         </div>
     </footer>
 
+    <!-- Include PayPal JavaScript SDK -->
+    <script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&currency=USD&intent=capture"></script>
+    
+    <!-- Include dark mode JavaScript -->
+    <script src="/static/dark-mode.js"></script>
+    
     <script>
         // Mobile navigation toggle
         document.getElementById('navToggle').addEventListener('click', function() {
             document.querySelector('.nav-links').classList.toggle('active');
             this.classList.toggle('active');
         });
+
+        // PayPal Integration
+        paypal.Buttons({
+            style: {
+                layout: 'vertical',
+                color: 'blue',
+                shape: 'rect',
+                label: 'paypal',
+                height: 45
+            },
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: '20.00',
+                            currency_code: 'USD'
+                        },
+                        description: 'ColdMail Unlimited Analyses Upgrade',
+                        custom_id: 'unlimited_analyses_upgrade'
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                // Show loading state
+                document.getElementById('payment-status').style.display = 'block';
+                document.getElementById('paypal-button-container').style.display = 'none';
+                
+                return actions.order.capture().then(function(details) {
+                    // Payment successful
+                    if (details.status === 'COMPLETED') {
+                        // Send payment confirmation to backend
+                        fetch('/api/orders/' + data.orderID + '/capture', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || ''
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'COMPLETED') {
+                                // Success - redirect to home with success message
+                                window.location.href = '/?payment=success';
+                            } else {
+                                throw new Error('Payment verification failed');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Payment verification error:', error);
+                            alert('Payment completed but verification failed. Please contact support.');
+                            window.location.href = '/';
+                        });
+                    }
+                }).catch(function(error) {
+                    console.error('PayPal capture error:', error);
+                    alert('Payment failed. Please try again.');
+                    // Reset UI
+                    document.getElementById('payment-status').style.display = 'none';
+                    document.getElementById('paypal-button-container').style.display = 'block';
+                });
+            },
+            onError: function(err) {
+                console.error('PayPal error:', err);
+                alert('Payment failed. Please try again.');
+            },
+            onCancel: function(data) {
+                console.log('Payment cancelled:', data);
+                // User cancelled - no action needed
+            }
+        }).render('#paypal-button-container');
     </script>
 </body>
 </html> 

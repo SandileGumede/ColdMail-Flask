@@ -20,7 +20,7 @@ PAYPAL_CLIENT_ID = os.getenv("PAYPAL_CLIENT_ID")
 PAYPAL_CLIENT_SECRET = os.getenv("PAYPAL_CLIENT_SECRET")
 
 paypalrestsdk.configure({
-    "mode": "live",  # Change to "live" for production
+    "mode": "sandbox",  # Change to "live" for production
     "client_id": PAYPAL_CLIENT_ID ,
     "client_secret": PAYPAL_CLIENT_SECRET
 })
@@ -643,13 +643,13 @@ def verify_email():
 @app.route('/upgrade')
 @login_required
 def upgrade():
-    return render_template('paypal_checkout.html', paypal_client_id=PAYPAL_CLIENT_ID)
+    return render_template('upgrade.html', paypal_client_id=PAYPAL_CLIENT_ID)
 
 @app.route('/paypal-checkout')
 @login_required
 def paypal_checkout():
     """Direct PayPal checkout page"""
-    return render_template('paypal_checkout.html', paypal_client_id=PAYPAL_CLIENT_ID)
+    return render_template('upgrade.html', paypal_client_id=PAYPAL_CLIENT_ID)
 
 @app.route('/process_payment', methods=['POST'])
 @login_required
@@ -781,6 +781,108 @@ def capture_paypal_order(order_id):
             "debug_id": "server_error"
         }), 500
 
+@app.route('/create-payment', methods=['POST'])
+@login_required
+def create_payment():
+    """Create a PayPal payment using the REST API"""
+    try:
+        # Create PayPal payment
+        payment = paypalrestsdk.Payment({
+            "intent": "sale",
+            "payer": {
+                "payment_method": "paypal"
+            },
+            "transactions": [{
+                "amount": {
+                    "total": "20.00",
+                    "currency": "USD"
+                },
+                "description": "ColdMail Unlimited Analyses Upgrade",
+                "item_list": {
+                    "items": [{
+                        "name": "ColdMail Unlimited Analyses",
+                        "sku": "unlimited_analyses",
+                        "price": "20.00",
+                        "currency": "USD",
+                        "quantity": 1
+                    }]
+                }
+            }],
+            "redirect_urls": {
+                "return_url": url_for('execute_payment', _external=True),
+                "cancel_url": url_for('upgrade', _external=True)
+            }
+        })
+        
+        if payment.create():
+            # Find the approval URL
+            for link in payment.links:
+                if link.rel == "approval_url":
+                    return jsonify({
+                        "id": payment.id,
+                        "status": payment.state,
+                        "approval_url": link.href
+                    })
+            
+            return jsonify({
+                "error": "Payment created but approval URL not found"
+            }), 500
+        else:
+            error_message = payment.error.get('message', 'Unknown error')
+            return jsonify({
+                "error": error_message,
+                "details": payment.error
+            }), 400
+            
+    except Exception as e:
+        print(f"Error creating PayPal payment: {e}")
+        return jsonify({
+            "error": "Internal server error"
+        }), 500
+
+@app.route('/execute-payment/<payment_id>')
+@login_required
+def execute_payment(payment_id):
+    """Execute a PayPal payment after approval"""
+    try:
+        payer_id = request.args.get('PayerID')
+        if not payer_id:
+            flash('Payment approval failed - missing Payer ID')
+            return redirect(url_for('upgrade'))
+        
+        # Find the payment
+        payment = paypalrestsdk.Payment.find(payment_id)
+        
+        if not payment:
+            flash('Payment not found')
+            return redirect(url_for('upgrade'))
+        
+        # Execute the payment
+        if payment.execute({"payer_id": payer_id}):
+            # Check if payment was successful
+            if payment.state == "approved":
+                # Mark user as paid
+                current_user.mark_paid()
+                db.session.commit()
+                
+                # Send confirmation email
+                send_payment_confirmation(current_user.email)
+                
+                flash('Payment successful! You now have unlimited analyses.')
+                return redirect(url_for('home'))
+            else:
+                flash(f'Payment not approved. Status: {payment.state}')
+                return redirect(url_for('upgrade'))
+        else:
+            error_message = payment.error.get('message', 'Unknown error')
+            flash(f'Payment execution failed: {error_message}')
+            return redirect(url_for('upgrade'))
+            
+    except Exception as e:
+        print(f"Error executing PayPal payment: {e}")
+        flash('Payment execution failed. Please try again.')
+        return redirect(url_for('upgrade'))
+
 @app.route('/paypal_webhook', methods=['POST'])
 @login_required
 def paypal_webhook():
@@ -865,9 +967,16 @@ def dark_mode_demo():
 
 @app.route('/')
 def home():
+    # Check for payment success parameter
+    payment_success = request.args.get('payment') == 'success'
+    
     if current_user.is_authenticated:
         remaining = current_user.get_remaining_analyses()
         print(f"User {current_user.email} is authenticated, remaining analyses: {remaining}")
+        
+        if payment_success:
+            flash('🎉 Payment successful! You now have unlimited analyses.')
+            
         return render_template('index.html', remaining=remaining, paid=current_user.is_paid)
     else:
         print("No user is currently authenticated")
