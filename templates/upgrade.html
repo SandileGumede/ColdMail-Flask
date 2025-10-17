@@ -85,6 +85,87 @@
             margin-bottom: var(--space-lg);
             box-shadow: var(--shadow-md);
         }
+        
+        /* Features Grid Styling */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: var(--surface-secondary, #f8f9fa);
+            border: 1px solid var(--border-primary, #e1e5e9);
+            border-radius: var(--radius-lg, 8px);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.1));
+            border-color: var(--accent-primary, #667eea);
+        }
+        
+        .feature-icon {
+            font-size: 2rem;
+            flex-shrink: 0;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-card, #ffffff);
+            border-radius: var(--radius-lg, 8px);
+            border: 1px solid var(--border-primary, #e1e5e9);
+        }
+        
+        .feature-content h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--text-primary, #1a365d);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .feature-content p {
+            margin: 0;
+            color: var(--text-secondary, #666);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        /* Dark mode feature adjustments */
+        [data-theme="dark"] .feature-item {
+            background: var(--surface-secondary);
+            border-color: var(--border-primary);
+        }
+        
+        [data-theme="dark"] .feature-icon {
+            background: var(--bg-card);
+            border-color: var(--border-primary);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .feature-item {
+                padding: 1rem;
+            }
+            
+            .feature-icon {
+                font-size: 1.5rem;
+                width: 2.5rem;
+                height: 2.5rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -123,16 +204,63 @@
             
             <div class="pricing-features">
                 <h3>What's Included:</h3>
-                <ul>
-                    <li>✅ Unlimited cold DM and cold email analyses</li>
-                    <li>✅ Advanced AI-powered improvement suggestions</li>
-                    <li>✅ PDF export of analysis reports</li>
-                    <li>✅ Priority customer support</li>
-                    <li>✅ Access to future premium features</li>
-                    <li>✅ No daily limits or restrictions</li>
-                    <li>✅ Professional email templates</li>
-                    <li>✅ Detailed performance analytics</li>
-                </ul>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">🚀</div>
+                        <div class="feature-content">
+                            <h4>Unlimited Analyses</h4>
+                            <p>Analyze unlimited cold DMs and emails with no daily restrictions</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">🤖</div>
+                        <div class="feature-content">
+                            <h4>AI-Powered Insights</h4>
+                            <p>Advanced AI suggestions for better personalization and structure</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-content">
+                            <h4>PDF Reports</h4>
+                            <p>Export detailed analysis reports as professional PDFs</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">🎯</div>
+                        <div class="feature-content">
+                            <h4>Spam Detection</h4>
+                            <p>Advanced spam trigger detection and avoidance tips</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">📈</div>
+                        <div class="feature-content">
+                            <h4>Performance Analytics</h4>
+                            <p>Detailed scoring and improvement recommendations</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">🎨</div>
+                        <div class="feature-content">
+                            <h4>Email Templates</h4>
+                            <p>Professional templates and best practice examples</p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">⚡</div>
+                        <div class="feature-content">
+                            <h4>Priority Support</h4>
+                            <p>Fast-track customer support for all premium users</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         
