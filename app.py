@@ -20,7 +20,7 @@ PAYPAL_CLIENT_ID = os.getenv("PAYPAL_CLIENT_ID")
 PAYPAL_CLIENT_SECRET = os.getenv("PAYPAL_CLIENT_SECRET")
 
 paypalrestsdk.configure({
-    "mode": "sandbox",  # Change to "live" for production
+    "mode": "live",  # Change to "live" for production
     "client_id": PAYPAL_CLIENT_ID ,
     "client_secret": PAYPAL_CLIENT_SECRET
 })
@@ -308,12 +308,12 @@ def analyze_email(email_content):
         "Try to personalize your email and keep it concise." if not personalization_final else "Looks clear!"
     )
     # Compose overall score (Spam + Personalization + Subject)
-    # Old: lower score = better, higher = worse
-    # New: higher score = better, lower = worse
+    # Higher score = better, lower = worse
     # We'll use a 10-point scale, where 10 is best, 1 is worst
     # Start from 10, subtract for each issue
+    # Note: spam_score internally is 1 (best) to 10 (worst)
     score = 10
-    score -= spam_score - 1  # spam_score: 1 (best) to 10 (worst), so subtract (spam_score-1)
+    score -= (spam_score - 1)  # spam_score: 1 (best) to 10 (worst), so subtract (spam_score-1)
     if not personalization_final:
         score -= 2
     if subject_grade not in ['A','B']:
@@ -322,7 +322,7 @@ def analyze_email(email_content):
 
     return {
         'spam_words_found': spam_words_found,
-        'spam_score': spam_score,
+        'spam_score': 11 - spam_score,  # Convert to user-friendly: 1 (bad) -> 10 (good)
         'exclamations': exclamations,
         'all_caps': all_caps,
         'personalization': merged_personalization,

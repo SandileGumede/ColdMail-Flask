@@ -62,7 +62,8 @@
                             <p>✅ No spam words detected in your cold DM or cold email</p>
                         </div>
                     {% endif %}
-                    <p>Exclamation marks: {{ analysis.exclamations }}, ALL CAPS words: {{ analysis.all_caps }}</p>
+                    <p> <ul><li>Exclamation marks: {{ analysis.exclamations }}</li> <li>ALL CAPS words: {{ analysis.all_caps }}</li></ul> 
+                        </p>
                 </div>
             </div>
 
@@ -73,19 +74,40 @@
                     <h3>Personalization Check</h3>
                 </div>
                 <div class="card-content">
-                    <p><strong>Personalization:</strong> {{ analysis.personalization }}</p>
-                    <ul>
-                        <li>Has {{ '{Name}' }}: {{ 'Yes' if analysis.has_name else 'No' }}</li>
-                        <li>Has {{ '{Company}' }}: {{ 'Yes' if analysis.has_company else 'No' }}</li>
-                    </ul>
+                    <p><strong>Personalization Status:</strong> 
+                        <span class="{% if analysis.personalization == 'YES' %}status-good{% else %}status-bad{% endif %}">
+                            {{ analysis.personalization }}
+                        </span>
+                    </p>
+                    <div class="personalization-details">
+                        <p><strong>Placeholder Analysis:</strong></p>
+                        <ul>
+                            <li>Has {{ '{Name}' }}: 
+                                <span class="{% if analysis.has_name %}check-yes{% else %}check-no{% endif %}">
+                                    {{ 'Yes ✓' if analysis.has_name else 'No ✗' }}
+                                </span>
+                            </li>
+                            <li>Has {{ '{Company}' }}: 
+                                <span class="{% if analysis.has_company %}check-yes{% else %}check-no{% endif %}">
+                                    {{ 'Yes ✓' if analysis.has_company else 'No ✗' }}
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
                     {% if analysis.personalization == 'NO' %}
                         <div class="warning-message">
-                            <p>⚠️ Consider adding more personalization (e.g., {Name}, {Company}) to your cold DM or cold email</p>
+                            <p>⚠️ Your email lacks personalization markers. Add {Name} and {Company} placeholders to improve engagement.</p>
                         </div>
                     {% else %}
-                        <div class="success-message">
-                            <p>✅ Good personalization detected in your cold DM or cold email</p>
+                        {% if not analysis.has_name and not analysis.has_company %}
+                        <div class="info-message">
+                            <p>ℹ️ AI detected personalized language despite no placeholders. Consider adding {Name} and {Company} for even better results.</p>
                         </div>
+                        {% else %}
+                        <div class="success-message">
+                            <p>✅ Good personalization detected with placeholder markers in your cold DM or cold email</p>
+                        </div>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
@@ -182,11 +204,12 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
-                    <div class="footer-links">
-            <a href="/faq">FAQ</a>
+            <div class="footer-links">
+                <a href="/faq">FAQ</a>
+            </div>
+            <div class="footer-copyright">
+                <p>&copy; 2025 ColdMail. All rights reserved.</p>
+            </div>
         </div>
-        <div class="footer-copyright">
-            <p>&copy; 2025 ColdMail. All rights reserved.</p>
-        </div>
-    </div>
+    </footer>
 {% endblock %} 
