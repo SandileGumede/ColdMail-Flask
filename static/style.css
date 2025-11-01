@@ -948,6 +948,20 @@ textarea:focus {
     border-radius: 6px;
 }
 
+/* Dark mode support for personalization-details */
+body.dark .personalization-details {
+    background: var(--surface-secondary, #1a1f2e);
+    border: 1px solid var(--border-primary, #30363d);
+}
+
+body.dark .personalization-details strong {
+    color: var(--text-primary, #f0f6fc);
+}
+
+body.dark .personalization-details ul {
+    color: var(--text-secondary, #c9d1d9);
+}
+
 .spam-alert {
     background: #f8d7da;
     border: 1px solid #f5c6cb;

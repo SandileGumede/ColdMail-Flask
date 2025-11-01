@@ -275,6 +275,7 @@ def analyze_email(email_content):
     else:
         personalization_gpt = None
 
+    # Personalization: either has placeholders OR AI confirms personalized language
     personalization_final = has_personalization or (personalization_gpt is True)
 
     # 3. Subject Line Grader
