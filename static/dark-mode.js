@@ -108,7 +108,7 @@ class DarkModeToggle {
 
     const isDark = this.currentTheme === 'dark';
     const icon = isDark ? '☀️' : '🌙';
-    const label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+    const label = isDark ? 'Light Mode' : 'Dark Mode';
 
     this.toggleElement.innerHTML = `${icon} ${label}`;
     this.toggleElement.setAttribute('aria-label', label);
