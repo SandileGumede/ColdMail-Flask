@@ -344,14 +344,29 @@ def signup():
     if request.method == 'POST':
         try:
             email = request.form.get('email')
+            user_name = request.form.get('user_name', '').strip()
             password = request.form.get('password')
             confirm_password = request.form.get('confirm_password')
             
-            print(f"Signup attempt for email: {email}")  # Debug logging
+            print(f"Signup attempt for email: {email}, username: {user_name}")  # Debug logging
             
             # Validate input
-            if not email or not password:
+            if not email or not password or not user_name:
                 flash('Please fill in all fields.')
+                return render_template('auth/signup.html')
+            
+            # Validate username
+            if len(user_name) < 3:
+                flash('Username must be at least 3 characters long.')
+                return render_template('auth/signup.html')
+            
+            if len(user_name) > 12:
+                flash('Username must be 12 characters or less.')
+                return render_template('auth/signup.html')
+            
+            # Validate username format (letters, numbers, underscores only)
+            if not re.match(r'^[a-zA-Z0-9_]+$', user_name):
+                flash('Username can only contain letters, numbers, and underscores.')
                 return render_template('auth/signup.html')
             
             if password != confirm_password:
@@ -362,20 +377,27 @@ def signup():
                 flash('Password must be at least 6 characters long.')
                 return render_template('auth/signup.html')
             
-            # Check if user already exists
+            # Check if email already exists
             existing_user = User.query.filter_by(email=email).first()
             if existing_user:
                 flash('Email already registered. Please login.')
                 return redirect(url_for('login'))
             
+            # Check if username already exists
+            existing_username = User.query.filter_by(user_name=user_name).first()
+            if existing_username:
+                flash('Username already taken. Please choose another.')
+                return render_template('auth/signup.html')
+            
             # Create new user with Supabase (if available)
             if supabase_service and supabase_service.is_available:
-                result = supabase_service.sign_up(email, password)
+                result = supabase_service.sign_up(email, password, user_name)
             else:
                 print("Supabase not available, using local authentication only")
                 # Fallback to local user creation
                 user = User()
                 user.email = email
+                user.user_name = user_name
                 user.set_password(password)
                 
                 db.session.add(user)
@@ -1028,6 +1050,10 @@ def contact():
 @app.route('/faq')
 def faq():
     return render_template('faq.html')
+
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html')
 
 @app.route('/health')
 def health_check():

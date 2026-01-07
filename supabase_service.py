@@ -12,7 +12,7 @@ class SupabaseService:
         self.service_client = supabase_config.get_service_client() if supabase_config.service_key else None
         self.is_available = self.client is not None
     
-    def sign_up(self, email: str, password: str):
+    def sign_up(self, email: str, password: str, user_name: str = None):
         """Sign up a new user with Supabase Auth"""
         if not self.is_available:
             return {
@@ -30,11 +30,33 @@ class SupabaseService:
                 # Create user in our local database
                 user = User()
                 user.email = email
+                user.user_name = user_name
                 user.supabase_id = response.user.id
                 user.set_password(password)  # Keep local password for compatibility
                 
                 db.session.add(user)
                 db.session.commit()
+                
+                # Also insert/update into Supabase public.user table
+                if self.service_client and user_name:
+                    try:
+                        # Try to insert into Supabase public.user table
+                        self.service_client.table('user').insert({
+                            'email': email,
+                            'user_name': user_name,
+                            'supabase_id': response.user.id
+                        }).execute()
+                        logger.info(f"User {user_name} inserted into Supabase public.user table")
+                    except Exception as e:
+                        logger.warning(f"Could not insert into Supabase user table: {e}")
+                        # Try update if insert fails (user might already exist)
+                        try:
+                            self.service_client.table('user').update({
+                                'user_name': user_name
+                            }).eq('email', email).execute()
+                            logger.info(f"User {user_name} updated in Supabase public.user table")
+                        except Exception as e2:
+                            logger.warning(f"Could not update Supabase user table: {e2}")
                 
                 return {
                     "success": True,

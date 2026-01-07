@@ -5,18 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PayPal Checkout - PitchAI</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dark-mode.css') }}">
 </head>
 <body>
     <!-- Navigation Header -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-brand">
-                <img src="{{ url_for('static', filename='my simple logo.png') }}" alt="ColdMail Logo" class="nav-logo">
+                <img src="/PitchAI/static/my_simple_logo.png" alt="ColdMail Logo" class="nav-logo">
             </div>
             <div class="nav-links">
                 <a href="{{ url_for('home') }}" class="nav-link">Home</a>
                 <a href="{{ url_for('faq') }}" class="nav-link">FAQ</a>
                 <a href="{{ url_for('contact') }}" class="nav-link">Contact</a>
+                <!-- Theme toggle menu item will be added here by dark-mode.js -->
+            </div>
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
         </div>
     </nav>
@@ -49,6 +56,7 @@
         <div class="footer-content">
             <div class="footer-links">
                 <a href="{{ url_for('faq') }}">FAQ</a>
+                <a href="{{ url_for('privacy') }}">Privacy Policy</a>
             </div>
             <div class="footer-copyright">
                 <p>&copy; 2025 ColdMail. All rights reserved.</p>
@@ -56,6 +64,15 @@
         </div>
     </footer>
 
+    <!-- Include dark mode JavaScript -->
+    <script src="{{ url_for('static', filename='dark-mode.js') }}"></script>
+    <script>
+        // Mobile navigation toggle
+        document.getElementById('navToggle').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('active');
+            this.classList.toggle('active');
+        });
+    </script>
     <!-- Initialize the JS-SDK -->
     <script
         src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&buyer-country=US&currency=USD&components=buttons&enable-funding=venmo,paylater,card"
