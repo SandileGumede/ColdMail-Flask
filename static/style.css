@@ -195,6 +195,13 @@ body.dark .navbar {
     height: 80px;
 }
 
+.nav-brand {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    max-width: 200px;
+}
+
 .nav-brand h2 {
     background: linear-gradient(135deg, #667eea, #764ba2);
     -webkit-background-clip: text;
@@ -205,15 +212,18 @@ body.dark .navbar {
 }
 
 .nav-logo {
-    height: 200px;
+    height: 50px;
+    max-height: 50px;
     width: auto;
+    max-width: 200px;
     object-fit: contain;
     transition: transform 0.2s ease;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    display: block;
 }
 
 .nav-logo:hover {
-    transform: scale(1.1);
+    transform: scale(1.05);
     filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
 }
 
@@ -549,14 +559,72 @@ p {
     font-weight: 400;
 }
 
-.hero-section p[style*="color"] {
-    font-size: 1.05em;
-    margin-top: 16px;
+/* ===== STATUS BANNERS ===== */
+.status-banner {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
     padding: 12px 20px;
-    background: #f9fafb;
-    border-radius: 10px;
-    display: inline-block;
+    border-radius: 12px;
     border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    color: #374151;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-top: 16px;
+    transition: all 0.3s ease;
+}
+
+.status-banner--success {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #047857;
+}
+
+.status-banner--warning {
+    background: #fffbeb;
+    border-color: #fde68a;
+    color: #92400e;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.15);
+}
+
+.status-text {
+    line-height: 1.5;
+}
+
+.status-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Dark mode support for status banners */
+body.dark .status-banner {
+    background: #1f2937;
+    border-color: #374151;
+    color: #e5e7eb;
+}
+
+body.dark .status-banner--success {
+    background: #064e3b;
+    border-color: #10b981;
+    color: #d1fae5;
+}
+
+body.dark .status-banner--warning {
+    background: #78350f;
+    border-color: #facc15;
+    color: #fef3c7;
 }
 
 /* ===== FORMS ===== */
@@ -1880,8 +1948,14 @@ details p {
         transform: rotate(-45deg) translate(7px, -6px);
     }
 
+    .nav-brand {
+        max-width: 150px;
+    }
+
     .nav-logo {
-        height: 100px;
+        height: 40px;
+        max-height: 40px;
+        max-width: 150px;
     }
 
     .container,
@@ -1998,8 +2072,14 @@ details p {
         padding: 0 16px;
     }
     
+    .nav-brand {
+        max-width: 120px;
+    }
+
     .nav-logo {
-        height: 70px;
+        height: 35px;
+        max-height: 35px;
+        max-width: 120px;
     }
 
     .container,
@@ -2115,6 +2195,16 @@ details p {
 }
 
 @media (max-width: 600px) {
+    .nav-brand {
+        max-width: 140px;
+    }
+
+    .nav-logo {
+        height: 38px;
+        max-height: 38px;
+        max-width: 140px;
+    }
+
     .container {
         margin: 16px 8px 0 8px;
         padding: 20px;

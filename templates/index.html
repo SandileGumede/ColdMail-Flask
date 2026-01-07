@@ -7,16 +7,25 @@
             <p>Analyze your cold DM or cold email for spam indicators, personalization, and optimization opportunities.</p>
             {% if current_user.is_authenticated %}
                 {% if paid %}
-                    <p style="color:#059669;font-weight:600;padding:12px 20px;background:#ecfdf5;border-radius:10px;display:inline-block;border:1px solid #d1fae5;margin-top:16px;">Unlimited analyses enabled. PDF export available on results page.</p>
+                    <div class="status-banner status-banner--success">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Unlimited analyses enabled. PDF export available on results page.</span>
+                    </div>
                 {% else %}
-                    <p style="color:#dc2626;font-weight:600;padding:12px 20px;background:#fef2f2;border-radius:10px;display:inline-block;border:1px solid #fecaca;margin-top:16px;">Free analyses left: {{ remaining }} / 3</p>
-                    <div style="margin-top:20px;">
-                        <a href="/upgrade" class="btn btn-primary" style="display: inline-block; text-decoration: none;">Upgrade to Unlimited ($20)</a>
+                    <div class="status-banner status-banner--warning">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Free analyses left: {{ remaining }} / 3</span>
+                    </div>
+                    <div class="status-actions">
+                        <a href="/upgrade" class="btn btn-primary">Upgrade to Unlimited ($20)</a>
                     </div>
                 {% endif %}
             {% else %}
-                <p style="color:#dc2626;font-weight:600;padding:12px 20px;background:#fef2f2;border-radius:10px;display:inline-block;border:1px solid #fecaca;margin-top:16px;">Free analyses left: {{ remaining }} / 3</p>
-                <div style="margin-top:20px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                <div class="status-banner status-banner--warning">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Free analyses left: {{ remaining }} / 3</span>
+                </div>
+                <div class="status-actions">
                     <a href="/login" class="btn btn-primary">Login</a>
                     <a href="/signup" class="btn btn-secondary">Sign Up</a>
                 </div>
