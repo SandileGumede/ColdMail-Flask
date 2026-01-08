@@ -212,8 +212,8 @@ body.dark .navbar {
 }
 
 .nav-logo {
-    height: 50px;
-    max-height: 50px;
+    height: 80px;
+    max-height: 80px;
     width: auto;
     max-width: 200px;
     object-fit: contain;
