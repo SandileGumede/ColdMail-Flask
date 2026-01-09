@@ -119,6 +119,28 @@ def log_request_info():
     print(f"Session ID: {session.get('_id', 'No session ID')}")
     print(f"Session user ID: {session.get('_user_id', 'No user ID')}")
     print("---")
+    # #region agent log - Before request middleware
+    if request.path == '/logout':
+        import json
+        log_data = {
+            'location': 'app.py:before-request-logout',
+            'message': 'Before request for logout',
+            'data': {
+                'method': request.method,
+                'path': request.path,
+                'user_authenticated': current_user.is_authenticated
+            },
+            'timestamp': int(time.time() * 1000),
+            'sessionId': 'debug-session',
+            'runId': 'run1',
+            'hypothesisId': 'E'
+        }
+        try:
+            with open(r'c:\Users\Nathan Gumede\Pitch.io\.cursor\debug.log', 'a', encoding='utf-8') as f:
+                f.write(json.dumps(log_data) + '\n')
+        except:
+            pass
+    # #endregion
 
 # Ensure database is initialized in production
 def ensure_db_initialized():
@@ -520,6 +542,28 @@ def login():
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     """Logout user - allow logout even if session is invalid"""
+    # #region agent log - Route entry
+    import json
+    log_data = {
+        'location': 'app.py:logout-entry',
+        'message': 'Logout route called',
+        'data': {
+            'method': request.method,
+            'endpoint': request.endpoint,
+            'path': request.path,
+            'user_authenticated': current_user.is_authenticated if hasattr(current_user, 'is_authenticated') else False
+        },
+        'timestamp': int(time.time() * 1000),
+        'sessionId': 'debug-session',
+        'runId': 'run1',
+        'hypothesisId': 'C'
+    }
+    try:
+        with open(r'c:\Users\Nathan Gumede\Pitch.io\.cursor\debug.log', 'a', encoding='utf-8') as f:
+            f.write(json.dumps(log_data) + '\n')
+    except:
+        pass
+    # #endregion
     try:
         # Get session info BEFORE clearing
         user_id = session.get('user_id')
@@ -551,6 +595,22 @@ def logout():
         
         flash('You have been logged out of ColdMail.')
         print(f"User {user_id} logged out, session cleared")
+        # #region agent log - Route success
+        log_data = {
+            'location': 'app.py:logout-success',
+            'message': 'Logout completed successfully',
+            'data': {'user_id': user_id, 'redirect_to': 'home'},
+            'timestamp': int(time.time() * 1000),
+            'sessionId': 'debug-session',
+            'runId': 'run1',
+            'hypothesisId': 'C'
+        }
+        try:
+            with open(r'c:\Users\Nathan Gumede\Pitch.io\.cursor\debug.log', 'a', encoding='utf-8') as f:
+                f.write(json.dumps(log_data) + '\n')
+        except:
+            pass
+        # #endregion
         return response
         
     except Exception as e:
@@ -558,6 +618,22 @@ def logout():
         print(f"Logout error: {e}")
         import traceback
         traceback.print_exc()
+        # #region agent log - Route error
+        log_data = {
+            'location': 'app.py:logout-error',
+            'message': 'Logout route error',
+            'data': {'error': str(e), 'error_type': type(e).__name__},
+            'timestamp': int(time.time() * 1000),
+            'sessionId': 'debug-session',
+            'runId': 'run1',
+            'hypothesisId': 'D'
+        }
+        try:
+            with open(r'c:\Users\Nathan Gumede\Pitch.io\.cursor\debug.log', 'a', encoding='utf-8') as f:
+                f.write(json.dumps(log_data) + '\n')
+        except:
+            pass
+        # #endregion
         try:
             # Try Supabase sign out in error handler too
             if current_user.is_authenticated:
