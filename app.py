@@ -435,13 +435,16 @@ def signup():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # Debug: Print current session state
+    print(f"LOGIN: Method={request.method}, Session={dict(session)}, Authenticated={current_user.is_authenticated}")
+    
     if request.method == 'POST':
         try:
             email = request.form.get('email', '').strip()
             password = request.form.get('password', '')
             remember = request.form.get('remember') == 'on'
             
-            print(f"Login attempt for email: {email}")  # Debug logging
+            print(f"LOGIN: Attempt for email: {email}")  # Debug logging
             
             # Validate input
             if not email or not password:
@@ -449,22 +452,29 @@ def login():
                 return render_template('auth/login.html')
             
             # Try Supabase authentication first (if available)
+            print(f"LOGIN: Supabase available: {supabase_service and supabase_service.is_available}")
             if supabase_service and supabase_service.is_available:
                 try:
                     result = supabase_service.sign_in(email, password)
-                    print(f"Supabase auth result: {result}")  # Debug logging
+                    print(f"LOGIN: Supabase result: success={result.get('success')}, error={result.get('error', 'None')}")
                 except Exception as supabase_error:
-                    print(f"Supabase auth error: {supabase_error}")  # Debug logging
+                    print(f"LOGIN: Supabase exception: {supabase_error}")
                     result = {"success": False, "error": str(supabase_error)}
             else:
-                print("Supabase not available, skipping Supabase auth")
+                print("LOGIN: Supabase not available, will try local auth")
                 result = {"success": False, "error": "Supabase not available"}
             
             if result['success']:
                 user = result['user']
+                print(f"LOGIN: User found: {user.email} (ID: {user.id})")
                 
-                # Login successful
-                login_user(user, remember=remember)
+                # Login successful - use login_user
+                try:
+                    login_user(user, remember=remember)
+                    print(f"LOGIN: login_user() completed, authenticated={current_user.is_authenticated}")
+                except Exception as login_err:
+                    print(f"LOGIN: login_user() FAILED: {login_err}")
+                    raise login_err
                 
                 # Set session as permanent if remember is checked
                 if remember:
@@ -478,37 +488,46 @@ def login():
                 user.last_login = datetime.utcnow()
                 db.session.commit()
                 
-                print(f"User logged in successfully: {user.id}")  # Debug logging
-                print(f"Session ID: {session.sid if hasattr(session, 'sid') else 'No session ID'}")
-                print(f"User authenticated: {current_user.is_authenticated}")
-                print(f"Session data: {dict(session)}")
+                print(f"LOGIN: SUCCESS - User {user.id}, Session: {dict(session)}")
                 
                 flash(f'Welcome back! You have {user.get_remaining_analyses()} ColdMail analyses remaining.')
                 return redirect(url_for('home'))
             else:
-                print(f"Supabase auth failed: {result.get('error', 'Unknown error')}")
+                print(f"LOGIN: Supabase failed, trying local auth fallback")
                 
                 # Fallback to local authentication for existing users
                 user = User.query.filter_by(email=email).first()
-                if user and not user.supabase_id and user.check_password(password):
-                    print("Using local authentication fallback")
-                    login_user(user, remember=remember)
-                    
-                    if remember:
-                        session.permanent = True
-                    
-                    session['user_id'] = user.id
-                    session['login_time'] = datetime.utcnow().isoformat()
-                    
-                    user.last_login = datetime.utcnow()
-                    db.session.commit()
-                    
-                    flash(f'Welcome back! You have {user.get_remaining_analyses()} ColdMail analyses remaining.')
-                    return redirect(url_for('home'))
-                else:
-                    print(f"All authentication methods failed")
-                    flash('Invalid email or password.')
-                    return render_template('auth/login.html')
+                print(f"LOGIN: Local user lookup: {user.email if user else 'NOT FOUND'}")
+                
+                if user:
+                    print(f"LOGIN: User has supabase_id: {user.supabase_id is not None}")
+                    if user.check_password(password):
+                        print(f"LOGIN: Password check PASSED")
+                        try:
+                            login_user(user, remember=remember)
+                            print(f"LOGIN: login_user() completed for local auth")
+                        except Exception as login_err:
+                            print(f"LOGIN: login_user() FAILED: {login_err}")
+                            raise login_err
+                        
+                        if remember:
+                            session.permanent = True
+                        
+                        session['user_id'] = user.id
+                        session['login_time'] = datetime.utcnow().isoformat()
+                        
+                        user.last_login = datetime.utcnow()
+                        db.session.commit()
+                        
+                        print(f"LOGIN: SUCCESS (local auth) - User {user.id}")
+                        flash(f'Welcome back! You have {user.get_remaining_analyses()} ColdMail analyses remaining.')
+                        return redirect(url_for('home'))
+                    else:
+                        print(f"LOGIN: Password check FAILED")
+                
+                print(f"LOGIN: All authentication methods FAILED")
+                flash('Invalid email or password.')
+                return render_template('auth/login.html')
             
         except Exception as e:
             db.session.rollback()
