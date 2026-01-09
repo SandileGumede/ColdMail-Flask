@@ -518,18 +518,41 @@ def login():
     return render_template('auth/login.html')
 
 @app.route('/logout')
-@login_required
 def logout():
-    user_id = session.get('user_id')
+    """Logout user - allow logout even if session is invalid"""
+    try:
+        user_id = session.get('user_id')
+        
+        # Only try to sign out from Supabase if user is authenticated and has supabase_id
+        if current_user.is_authenticated:
+            # Safely check for supabase_id
+            supabase_id = getattr(current_user, 'supabase_id', None)
+            if supabase_id:
+                try:
+                    supabase_service.sign_out()
+                except Exception as e:
+                    print(f"Supabase sign out error (non-critical): {e}")
+                    # Continue with logout even if Supabase sign out fails
+        
+        # Logout from Flask-Login
+        logout_user()
+        
+        # Clear all session data
+        session.clear()
+        
+        flash('You have been logged out of ColdMail.')
+        print(f"User {user_id} logged out, session cleared")
+        
+    except Exception as e:
+        # Even if there's an error, try to clear the session
+        print(f"Logout error: {e}")
+        try:
+            logout_user()
+            session.clear()
+        except:
+            pass
+        flash('You have been logged out.')
     
-    # Sign out from Supabase if user has Supabase ID
-    if current_user.supabase_id:
-        supabase_service.sign_out()
-    
-    logout_user()
-    session.clear()  # Clear all session data
-    flash('You have been logged out of ColdMail.')
-    print(f"User {user_id} logged out, session cleared")
     return redirect(url_for('home'))
 
 @app.route('/session-debug')
