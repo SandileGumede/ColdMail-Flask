@@ -523,15 +523,18 @@ def logout():
     try:
         # Get session info BEFORE clearing
         user_id = session.get('user_id')
-        session_id = session.get('_id')
         
         # Only try to sign out from Supabase if user is authenticated and has supabase_id
         if current_user.is_authenticated:
             # Safely check for supabase_id
             supabase_id = getattr(current_user, 'supabase_id', None)
-            if supabase_id:
+            if supabase_id and supabase_service and supabase_service.is_available:
                 try:
-                    supabase_service.sign_out()
+                    result = supabase_service.sign_out()
+                    if result.get('success'):
+                        print(f"User {user_id} signed out from Supabase successfully")
+                    else:
+                        print(f"Supabase sign out returned: {result}")
                 except Exception as e:
                     print(f"Supabase sign out error (non-critical): {e}")
                     # Continue with logout even if Supabase sign out fails
@@ -539,26 +542,10 @@ def logout():
         # Logout from Flask-Login
         logout_user()
         
-        # Delete session from database BEFORE clearing (if using Flask-Session with SQLAlchemy)
-        if session_id:
-            try:
-                session_table = db.Model.metadata.tables.get('sessions')
-                if session_table:
-                    db.session.execute(
-                        session_table.delete().where(
-                            session_table.c.id == session_id
-                        )
-                    )
-                    db.session.commit()
-                    print(f"Session {session_id} deleted from database")
-            except Exception as e:
-                print(f"Session deletion error (non-critical): {e}")
-                db.session.rollback()
-        
-        # Clear all session data
+        # Clear all session data - Flask-Session will handle database cleanup automatically
         session.clear()
         
-        # Also try to delete the session cookie explicitly
+        # Create response and clear cookie
         response = make_response(redirect(url_for('home')))
         response.set_cookie('session', '', expires=0, max_age=0)
         
@@ -572,24 +559,17 @@ def logout():
         import traceback
         traceback.print_exc()
         try:
-            # Get session_id before clearing
-            session_id = session.get('_id')
+            # Try Supabase sign out in error handler too
+            if current_user.is_authenticated:
+                supabase_id = getattr(current_user, 'supabase_id', None)
+                if supabase_id and supabase_service and supabase_service.is_available:
+                    try:
+                        supabase_service.sign_out()
+                    except:
+                        pass
+            
             logout_user()
             session.clear()
-            
-            # Try to delete session from database
-            if session_id:
-                try:
-                    session_table = db.Model.metadata.tables.get('sessions')
-                    if session_table:
-                        db.session.execute(
-                            session_table.delete().where(
-                                session_table.c.id == session_id
-                            )
-                        )
-                        db.session.commit()
-                except:
-                    db.session.rollback()
         except:
             pass
         
