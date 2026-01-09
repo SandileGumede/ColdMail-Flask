@@ -520,7 +520,7 @@ def login():
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
-    """Logout user - simple and reliable"""
+    """Logout user - comprehensive session clearing"""
     print("LOGOUT: Route called")
     
     # Step 1: Try Supabase sign out (non-blocking)
@@ -540,17 +540,35 @@ def logout():
     except Exception as e:
         print(f"LOGOUT: Flask-Login error (ignored): {e}")
     
-    # Step 3: Clear session
+    # Step 3: Clear all session data
     try:
+        # Clear individual session keys
+        for key in list(session.keys()):
+            session.pop(key, None)
         session.clear()
+        session.modified = True
         print("LOGOUT: Session cleared")
     except Exception as e:
         print(f"LOGOUT: Session clear error (ignored): {e}")
     
-    # Step 4: Redirect with flash message
+    # Step 4: Create response and explicitly clear all cookies
     flash('You have been logged out of ColdMail.')
     print("LOGOUT: Redirecting to home")
-    return redirect(url_for('home'))
+    response = make_response(redirect(url_for('home')))
+    
+    # Clear the session cookie with all possible paths
+    response.delete_cookie('session', path='/')
+    response.delete_cookie('pitchai:session', path='/')
+    
+    # Clear Flask-Login's remember me cookie (CRITICAL for persistent sessions)
+    response.delete_cookie('remember_token', path='/')
+    
+    # Force browser to delete cookies by setting expired values
+    response.set_cookie('session', '', expires=0, max_age=0, path='/', httponly=True)
+    response.set_cookie('remember_token', '', expires=0, max_age=0, path='/', httponly=True)
+    
+    print("LOGOUT: All cookies cleared, returning response")
+    return response
 
 @app.route('/session-debug')
 def session_debug():
