@@ -25,7 +25,9 @@
                 <a href="/contact" class="nav-link {% if request.endpoint == 'contact' %}active{% endif %}">Contact</a>
                 {% if current_user.is_authenticated %}
                     <span class="nav-link" style="color:#4a90e2;">{{ current_user.user_name or current_user.email }}</span>
-                    <a href="/logout" class="nav-link">Logout</a>
+                    <form action="/logout" method="POST" style="display:inline; margin:0; padding:0;">
+                        <button type="submit" class="nav-link" style="background:none; border:none; cursor:pointer; font-size:inherit; font-weight:inherit; padding:8px 16px; border-radius:20px; color:inherit; text-decoration:none; font-family:inherit;">Logout</button>
+                    </form>
                 {% else %}
                     <a href="/login" class="nav-link {% if request.endpoint == 'login' %}active{% endif %}">Login</a>
                     <a href="/signup" class="nav-link {% if request.endpoint == 'signup' %}active{% endif %}">Sign Up</a>
