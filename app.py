@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, make_response
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_session import Session
 from models import db, User
@@ -517,11 +517,13 @@ def login():
     
     return render_template('auth/login.html')
 
-@app.route('/logout')
+@app.route('/logout', methods=['GET', 'POST'])
 def logout():
     """Logout user - allow logout even if session is invalid"""
     try:
+        # Get session info BEFORE clearing
         user_id = session.get('user_id')
+        session_id = session.get('_id')
         
         # Only try to sign out from Supabase if user is authenticated and has supabase_id
         if current_user.is_authenticated:
@@ -537,23 +539,64 @@ def logout():
         # Logout from Flask-Login
         logout_user()
         
+        # Delete session from database BEFORE clearing (if using Flask-Session with SQLAlchemy)
+        if session_id:
+            try:
+                session_table = db.Model.metadata.tables.get('sessions')
+                if session_table:
+                    db.session.execute(
+                        session_table.delete().where(
+                            session_table.c.id == session_id
+                        )
+                    )
+                    db.session.commit()
+                    print(f"Session {session_id} deleted from database")
+            except Exception as e:
+                print(f"Session deletion error (non-critical): {e}")
+                db.session.rollback()
+        
         # Clear all session data
         session.clear()
         
+        # Also try to delete the session cookie explicitly
+        response = make_response(redirect(url_for('home')))
+        response.set_cookie('session', '', expires=0, max_age=0)
+        
         flash('You have been logged out of ColdMail.')
         print(f"User {user_id} logged out, session cleared")
+        return response
         
     except Exception as e:
         # Even if there's an error, try to clear the session
         print(f"Logout error: {e}")
+        import traceback
+        traceback.print_exc()
         try:
+            # Get session_id before clearing
+            session_id = session.get('_id')
             logout_user()
             session.clear()
+            
+            # Try to delete session from database
+            if session_id:
+                try:
+                    session_table = db.Model.metadata.tables.get('sessions')
+                    if session_table:
+                        db.session.execute(
+                            session_table.delete().where(
+                                session_table.c.id == session_id
+                            )
+                        )
+                        db.session.commit()
+                except:
+                    db.session.rollback()
         except:
             pass
+        
+        response = make_response(redirect(url_for('home')))
+        response.set_cookie('session', '', expires=0, max_age=0)
         flash('You have been logged out.')
-    
-    return redirect(url_for('home'))
+        return response
 
 @app.route('/session-debug')
 def session_debug():
