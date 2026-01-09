@@ -520,74 +520,37 @@ def login():
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
-    """Logout user - allow logout even if session is invalid"""
-    # Ensure json is available (should be imported at top)
-    try:
-        import json
-    except ImportError:
-        pass  # json should already be imported
+    """Logout user - simple and reliable"""
+    print("LOGOUT: Route called")
     
-    print("=" * 50)
-    print(f"LOGOUT ROUTE CALLED - Method: {request.method}, Path: {request.path}")
-    print(f"User authenticated: {current_user.is_authenticated}")
-    print("=" * 50)
+    # Step 1: Try Supabase sign out (non-blocking)
     try:
-        # Get session info BEFORE clearing
-        user_id = session.get('user_id')
-        
-        # Only try to sign out from Supabase if user is authenticated and has supabase_id
-        if current_user.is_authenticated:
-            # Safely check for supabase_id
-            supabase_id = getattr(current_user, 'supabase_id', None)
-            if supabase_id and supabase_service and supabase_service.is_available:
-                try:
-                    result = supabase_service.sign_out()
-                    if result.get('success'):
-                        print(f"User {user_id} signed out from Supabase successfully")
-                    else:
-                        print(f"Supabase sign out returned: {result}")
-                except Exception as e:
-                    print(f"Supabase sign out error (non-critical): {e}")
-                    # Continue with logout even if Supabase sign out fails
-        
-        # Logout from Flask-Login
-        logout_user()
-        
-        # Clear all session data - Flask-Session will handle database cleanup automatically
-        session.clear()
-        
-        # Create response and clear cookie
-        response = make_response(redirect(url_for('home')))
-        response.set_cookie('session', '', expires=0, max_age=0)
-        
-        flash('You have been logged out of ColdMail.')
-        print(f"User {user_id} logged out, session cleared")
-        return response
-        
+        if current_user.is_authenticated and supabase_service:
+            if hasattr(supabase_service, 'is_available') and supabase_service.is_available:
+                if hasattr(current_user, 'supabase_id') and current_user.supabase_id:
+                    supabase_service.sign_out()
+                    print("LOGOUT: Supabase sign out completed")
     except Exception as e:
-        # Even if there's an error, try to clear the session
-        print(f"Logout error: {e}")
-        import traceback
-        traceback.print_exc()
-        try:
-            # Try Supabase sign out in error handler too
-            if current_user.is_authenticated:
-                supabase_id = getattr(current_user, 'supabase_id', None)
-                if supabase_id and supabase_service and supabase_service.is_available:
-                    try:
-                        supabase_service.sign_out()
-                    except:
-                        pass
-            
-            logout_user()
-            session.clear()
-        except:
-            pass
-        
-        response = make_response(redirect(url_for('home')))
-        response.set_cookie('session', '', expires=0, max_age=0)
-        flash('You have been logged out.')
-        return response
+        print(f"LOGOUT: Supabase error (ignored): {e}")
+    
+    # Step 2: Flask-Login logout
+    try:
+        logout_user()
+        print("LOGOUT: Flask-Login logout completed")
+    except Exception as e:
+        print(f"LOGOUT: Flask-Login error (ignored): {e}")
+    
+    # Step 3: Clear session
+    try:
+        session.clear()
+        print("LOGOUT: Session cleared")
+    except Exception as e:
+        print(f"LOGOUT: Session clear error (ignored): {e}")
+    
+    # Step 4: Redirect with flash message
+    flash('You have been logged out of ColdMail.')
+    print("LOGOUT: Redirecting to home")
+    return redirect(url_for('home'))
 
 @app.route('/session-debug')
 def session_debug():
