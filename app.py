@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import paypalrestsdk
 import time
+import json
 
 load_dotenv()
 import os
@@ -119,31 +120,6 @@ def log_request_info():
     print(f"Session ID: {session.get('_id', 'No session ID')}")
     print(f"Session user ID: {session.get('_user_id', 'No user ID')}")
     print("---")
-    # #region agent log - Before request middleware
-    if request.path == '/logout':
-        import json
-        log_data = {
-            'location': 'app.py:before-request-logout',
-            'message': 'Before request for logout',
-            'data': {
-                'method': request.method,
-                'path': request.path,
-                'user_authenticated': current_user.is_authenticated
-            },
-            'timestamp': int(time.time() * 1000),
-            'sessionId': 'debug-session',
-            'runId': 'run1',
-            'hypothesisId': 'E'
-        }
-        print(f"[DEBUG HYPOTHESIS E] Before request - Logout: {json.dumps(log_data)}")
-        try:
-            log_path = os.path.join(os.path.dirname(__file__), '..', '.cursor', 'debug.log')
-            os.makedirs(os.path.dirname(log_path), exist_ok=True)
-            with open(log_path, 'a', encoding='utf-8') as f:
-                f.write(json.dumps(log_data) + '\n')
-        except Exception as e:
-            print(f"[DEBUG] Failed to write log file: {e}")
-    # #endregion
 
 # Ensure database is initialized in production
 def ensure_db_initialized():
@@ -545,6 +521,12 @@ def login():
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     """Logout user - allow logout even if session is invalid"""
+    # Ensure json is available (should be imported at top)
+    try:
+        import json
+    except ImportError:
+        pass  # json should already be imported
+    
     print("=" * 50)
     print(f"LOGOUT ROUTE CALLED - Method: {request.method}, Path: {request.path}")
     print(f"User authenticated: {current_user.is_authenticated}")
@@ -580,25 +562,6 @@ def logout():
         
         flash('You have been logged out of ColdMail.')
         print(f"User {user_id} logged out, session cleared")
-        # #region agent log - Route success
-        log_data = {
-            'location': 'app.py:logout-success',
-            'message': 'Logout completed successfully',
-            'data': {'user_id': user_id, 'redirect_to': 'home'},
-            'timestamp': int(time.time() * 1000),
-            'sessionId': 'debug-session',
-            'runId': 'run1',
-            'hypothesisId': 'C'
-        }
-        print(f"[DEBUG HYPOTHESIS C] Logout route SUCCESS: {json.dumps(log_data)}")
-        try:
-            log_path = os.path.join(os.path.dirname(__file__), '..', '.cursor', 'debug.log')
-            os.makedirs(os.path.dirname(log_path), exist_ok=True)
-            with open(log_path, 'a', encoding='utf-8') as f:
-                f.write(json.dumps(log_data) + '\n')
-        except Exception as e:
-            print(f"[DEBUG] Failed to write log file: {e}")
-        # #endregion
         return response
         
     except Exception as e:
@@ -606,25 +569,6 @@ def logout():
         print(f"Logout error: {e}")
         import traceback
         traceback.print_exc()
-        # #region agent log - Route error
-        log_data = {
-            'location': 'app.py:logout-error',
-            'message': 'Logout route error',
-            'data': {'error': str(e), 'error_type': type(e).__name__},
-            'timestamp': int(time.time() * 1000),
-            'sessionId': 'debug-session',
-            'runId': 'run1',
-            'hypothesisId': 'D'
-        }
-        print(f"[DEBUG HYPOTHESIS D] Logout route ERROR: {json.dumps(log_data)}")
-        try:
-            log_path = os.path.join(os.path.dirname(__file__), '..', '.cursor', 'debug.log')
-            os.makedirs(os.path.dirname(log_path), exist_ok=True)
-            with open(log_path, 'a', encoding='utf-8') as f:
-                f.write(json.dumps(log_data) + '\n')
-        except Exception as e2:
-            print(f"[DEBUG] Failed to write log file: {e2}")
-        # #endregion
         try:
             # Try Supabase sign out in error handler too
             if current_user.is_authenticated:
