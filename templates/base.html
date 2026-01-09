@@ -25,9 +25,7 @@
                 <a href="/contact" class="nav-link {% if request.endpoint == 'contact' %}active{% endif %}">Contact</a>
                 {% if current_user.is_authenticated %}
                     <span class="nav-link" style="color:#4a90e2;">{{ current_user.user_name or current_user.email }}</span>
-                    <form action="/logout" method="POST" style="display:inline; margin:0; padding:0;" id="logout-form">
-                        <button type="submit" class="nav-link" id="logout-button" style="background:none; border:none; cursor:pointer; font-size:inherit; font-weight:inherit; padding:8px 16px; border-radius:20px; color:inherit; text-decoration:none; font-family:inherit;">Logout</button>
-                    </form>
+                    <a href="/logout" class="nav-link" id="logout-link" onclick="window.location.href='/logout'; return false;">Logout</a>
                 {% else %}
                     <a href="/login" class="nav-link {% if request.endpoint == 'login' %}active{% endif %}">Login</a>
                     <a href="/signup" class="nav-link {% if request.endpoint == 'signup' %}active{% endif %}">Sign Up</a>
@@ -67,31 +65,21 @@
             this.classList.toggle('active');
         });
         
-        // #region agent log - Logout debugging
+        // Ensure logout link works - multiple fallback methods
         document.addEventListener('DOMContentLoaded', function() {
-            const logoutForm = document.getElementById('logout-form');
-            const logoutButton = document.getElementById('logout-button');
-            
-            if (logoutForm && logoutButton) {
-                // Hypothesis A: Button clickability
-                logoutButton.addEventListener('click', function(e) {
-                    fetch('http://127.0.0.1:7242/ingest/4ec28f9f-7af4-4ae5-bda3-64229dd29bcb',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'base.html:button-click',message:'Logout button clicked',data:{eventType:e.type,buttonId:logoutButton.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+            const logoutLink = document.getElementById('logout-link');
+            if (logoutLink) {
+                // Method 1: Click event handler
+                logoutLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.location.href = '/logout';
                 });
                 
-                // Hypothesis B: Form submission
-                logoutForm.addEventListener('submit', function(e) {
-                    fetch('http://127.0.0.1:7242/ingest/4ec28f9f-7af4-4ae5-bda3-64229dd29bcb',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'base.html:form-submit',message:'Logout form submitting',data:{action:logoutForm.action,method:logoutForm.method,defaultPrevented:e.defaultPrevented},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-                });
-                
-                // Check if button is visible and clickable
-                const rect = logoutButton.getBoundingClientRect();
-                const styles = window.getComputedStyle(logoutButton);
-                fetch('http://127.0.0.1:7242/ingest/4ec28f9f-7af4-4ae5-bda3-64229dd29bcb',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'base.html:button-check',message:'Logout button state check',data:{visible:rect.width>0&&rect.height>0,pointerEvents:styles.pointerEvents,zIndex:styles.zIndex,display:styles.display},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-            } else {
-                fetch('http://127.0.0.1:7242/ingest/4ec28f9f-7af4-4ae5-bda3-64229dd29bcb',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'base.html:init',message:'Logout form/button not found',data:{formFound:!!logoutForm,buttonFound:!!logoutButton},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+                // Method 2: Also ensure href is set
+                logoutLink.setAttribute('href', '/logout');
+                logoutLink.setAttribute('style', logoutLink.getAttribute('style') + '; cursor: pointer;');
             }
         });
-        // #endregion
     </script>
     {% block extra_js %}{% endblock %}
 </body>

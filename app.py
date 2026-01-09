@@ -135,11 +135,14 @@ def log_request_info():
             'runId': 'run1',
             'hypothesisId': 'E'
         }
+        print(f"[DEBUG HYPOTHESIS E] Before request - Logout: {json.dumps(log_data)}")
         try:
-            with open(r'c:\Users\Nathan Gumede\Pitch.io\.cursor\debug.log', 'a', encoding='utf-8') as f:
+            log_path = os.path.join(os.path.dirname(__file__), '..', '.cursor', 'debug.log')
+            os.makedirs(os.path.dirname(log_path), exist_ok=True)
+            with open(log_path, 'a', encoding='utf-8') as f:
                 f.write(json.dumps(log_data) + '\n')
-        except:
-            pass
+        except Exception as e:
+            print(f"[DEBUG] Failed to write log file: {e}")
     # #endregion
 
 # Ensure database is initialized in production
@@ -542,28 +545,10 @@ def login():
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     """Logout user - allow logout even if session is invalid"""
-    # #region agent log - Route entry
-    import json
-    log_data = {
-        'location': 'app.py:logout-entry',
-        'message': 'Logout route called',
-        'data': {
-            'method': request.method,
-            'endpoint': request.endpoint,
-            'path': request.path,
-            'user_authenticated': current_user.is_authenticated if hasattr(current_user, 'is_authenticated') else False
-        },
-        'timestamp': int(time.time() * 1000),
-        'sessionId': 'debug-session',
-        'runId': 'run1',
-        'hypothesisId': 'C'
-    }
-    try:
-        with open(r'c:\Users\Nathan Gumede\Pitch.io\.cursor\debug.log', 'a', encoding='utf-8') as f:
-            f.write(json.dumps(log_data) + '\n')
-    except:
-        pass
-    # #endregion
+    print("=" * 50)
+    print(f"LOGOUT ROUTE CALLED - Method: {request.method}, Path: {request.path}")
+    print(f"User authenticated: {current_user.is_authenticated}")
+    print("=" * 50)
     try:
         # Get session info BEFORE clearing
         user_id = session.get('user_id')
@@ -605,11 +590,14 @@ def logout():
             'runId': 'run1',
             'hypothesisId': 'C'
         }
+        print(f"[DEBUG HYPOTHESIS C] Logout route SUCCESS: {json.dumps(log_data)}")
         try:
-            with open(r'c:\Users\Nathan Gumede\Pitch.io\.cursor\debug.log', 'a', encoding='utf-8') as f:
+            log_path = os.path.join(os.path.dirname(__file__), '..', '.cursor', 'debug.log')
+            os.makedirs(os.path.dirname(log_path), exist_ok=True)
+            with open(log_path, 'a', encoding='utf-8') as f:
                 f.write(json.dumps(log_data) + '\n')
-        except:
-            pass
+        except Exception as e:
+            print(f"[DEBUG] Failed to write log file: {e}")
         # #endregion
         return response
         
@@ -628,11 +616,14 @@ def logout():
             'runId': 'run1',
             'hypothesisId': 'D'
         }
+        print(f"[DEBUG HYPOTHESIS D] Logout route ERROR: {json.dumps(log_data)}")
         try:
-            with open(r'c:\Users\Nathan Gumede\Pitch.io\.cursor\debug.log', 'a', encoding='utf-8') as f:
+            log_path = os.path.join(os.path.dirname(__file__), '..', '.cursor', 'debug.log')
+            os.makedirs(os.path.dirname(log_path), exist_ok=True)
+            with open(log_path, 'a', encoding='utf-8') as f:
                 f.write(json.dumps(log_data) + '\n')
-        except:
-            pass
+        except Exception as e2:
+            print(f"[DEBUG] Failed to write log file: {e2}")
         # #endregion
         try:
             # Try Supabase sign out in error handler too
