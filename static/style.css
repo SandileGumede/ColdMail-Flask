@@ -355,40 +355,23 @@ body.dark .theme-toggle-menu:hover {
     border-bottom: none;
 }
 
-.btn-secondary {
-    display: inline-block;
-    background: #95a5a6;
-    color: white;
-    padding: 12px 24px;
-    text-decoration: none;
-    border-radius: 8px;
-    margin-top: 20px;
-    transition: all 0.3s ease;
+/* PayPal Button Styling */
+#paypal-button-container {
+    margin: 20px 0;
+    text-align: center;
 }
 
-    .btn-secondary:hover {
-        background: #7f8c8d;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(149, 165, 166, 0.4);
-    }
-    
-    /* PayPal Button Styling */
-    #paypal-button-container {
-        margin: 20px 0;
-        text-align: center;
-    }
-    
-    /* Result Message Styling */
-    #result-message {
-        margin: 20px 0;
-        min-height: 60px;
-    }
-    
-    #result-message .success-message,
-    #result-message .error-message,
-    #result-message .info-message {
-        margin: 0;
-    }
+/* Result Message Styling */
+#result-message {
+    margin: 20px 0;
+    min-height: 60px;
+}
+
+#result-message .success-message,
+#result-message .error-message,
+#result-message .info-message {
+    margin: 0;
+}
 
 /* ===== FLASH MESSAGES ===== */
 .flash-messages {
@@ -600,12 +583,29 @@ p {
     line-height: 1.5;
 }
 
+/* ===== BUTTON CONTAINERS (UNIFIED) ===== */
+.status-actions,
+.action-buttons,
+.payment-buttons,
+.alt-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    align-items: stretch;
+    flex-wrap: wrap;
+}
+
 .status-actions {
     margin-top: 20px;
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
+}
+
+/* Ensure buttons in containers have equal sizing */
+.status-actions .btn,
+.action-buttons .btn,
+.payment-buttons .btn,
+.alt-buttons .btn {
+    flex: 0 1 auto;
+    min-width: 180px;
 }
 
 /* Dark mode support for status banners */
@@ -749,11 +749,14 @@ textarea:focus {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-/* ===== BUTTONS ===== */
+/* ===== UNIFIED BUTTON SYSTEM ===== */
 .btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
+    min-width: 160px;
+    min-height: 48px;
     padding: 14px 28px;
     border: none;
     border-radius: 12px;
@@ -761,8 +764,11 @@ textarea:focus {
     font-weight: 600;
     cursor: pointer;
     text-decoration: none;
+    text-align: center;
+    white-space: nowrap;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    box-sizing: border-box;
 }
 
 .btn-primary {
@@ -778,15 +784,52 @@ textarea:focus {
 
 .btn-secondary {
     background: #ffffff;
-    color: #111827;
-    border: 1px solid #d1d5db;
+    color: #374151;
+    border: 2px solid #d1d5db;
 }
 
 .btn-secondary:hover {
     background: #f9fafb;
     border-color: #667eea;
+    color: #667eea;
     transform: translateY(-2px);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.btn-outline {
+    background: transparent;
+    color: #667eea;
+    border: 2px solid #667eea;
+}
+
+.btn-outline:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* Dark mode buttons */
+body.dark .btn-secondary {
+    background: #1f2937;
+    color: #e5e7eb;
+    border-color: #4b5563;
+}
+
+body.dark .btn-secondary:hover {
+    background: #374151;
+    border-color: #818cf8;
+    color: #a5b4fc;
+}
+
+body.dark .btn-outline {
+    color: #a5b4fc;
+    border-color: #818cf8;
+}
+
+body.dark .btn-outline:hover {
+    background: #818cf8;
+    color: #0f172a;
 }
 
 .analyze-btn {
@@ -1579,15 +1622,15 @@ body.dark .personalization-details ul {
     word-wrap: break-word;
 }
 
-/* ===== ACTION BUTTONS ===== */
+/* ===== ACTION BUTTONS (Results Page) ===== */
 .action-buttons {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    flex-wrap: wrap;
     margin-top: 48px;
     padding-top: 32px;
     border-top: 2px solid #f0f0f0;
+}
+
+body.dark .action-buttons {
+    border-top-color: #374151;
 }
 
 /* ===== FOOTER ===== */
@@ -1804,29 +1847,7 @@ body.dark .personalization-details ul {
     font-size: 1em;
 }
 
-.alt-buttons {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.btn-outline {
-    background: transparent;
-    color: #667eea;
-    border: 2px solid #667eea;
-    padding: 12px 24px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.btn-outline:hover {
-    background: #667eea;
-    color: white;
-    transform: translateY(-2px);
-}
+/* Alt buttons container - inherits from unified container above */
 
 /* Trust Section */
 .trust-section {
@@ -2246,14 +2267,23 @@ details p {
         padding: 20px;
     }
 
-    .action-buttons {
+    /* Mobile button layout - stack vertically */
+    .action-buttons,
+    .status-actions,
+    .payment-buttons,
+    .alt-buttons {
         flex-direction: column;
+        align-items: center;
         gap: 12px;
     }
 
-    .btn {
+    .action-buttons .btn,
+    .status-actions .btn,
+    .payment-buttons .btn,
+    .alt-buttons .btn {
         width: 100%;
-        justify-content: center;
+        max-width: 320px;
+        min-width: unset;
     }
 
     .features-grid {
@@ -2379,23 +2409,18 @@ details p {
         padding: 16px;
     }
 
-    .action-buttons {
-        gap: 8px;
+    /* Small mobile button adjustments */
+    .action-buttons,
+    .status-actions,
+    .payment-buttons,
+    .alt-buttons {
+        gap: 10px;
     }
 
     .btn {
         padding: 12px 20px;
         font-size: 0.95rem;
-    }
-    
-    .payment-buttons {
-        flex-direction: column;
-        gap: 12px;
-    }
-    
-    .payment-buttons .btn {
-        min-width: auto;
-        width: 100%;
+        min-height: 44px;
     }
     
     .faq-payment-section {
@@ -2458,39 +2483,7 @@ details p {
     }
 }
 
-/* ===== BUTTON SYMMETRY & CONSISTENCY ===== */
-.alt-buttons .btn,
-.payment-buttons .btn {
-    min-width: 180px;
-    min-height: 48px;
-    padding: 14px 28px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    font-size: 1rem;
-    font-weight: 600;
-    border-radius: 12px;
-}
-
-.alt-buttons {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    flex-wrap: wrap;
-    align-items: stretch;
-}
-
-/* Ensure btn-secondary matches btn-outline size */
-.alt-buttons .btn-secondary,
-.alt-buttons .btn-outline {
-    min-width: 180px;
-    min-height: 48px;
-    padding: 14px 28px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 1rem;
-}
+/* Button symmetry handled by unified button system above */
 
 /* ===== PAYPAL & PAYMENT STYLES ===== */
 /* Note: Main PayPal styles are in upgrade.html for specificity */
@@ -2634,18 +2627,6 @@ body.dark .alternative-options {
     .trust-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
-    }
-    
-    .alt-buttons {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .alt-buttons .btn,
-    .alt-buttons .btn-secondary,
-    .alt-buttons .btn-outline {
-        width: 100%;
-        max-width: 280px;
     }
     
     #paypal-button-container {
