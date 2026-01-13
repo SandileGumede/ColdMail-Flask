@@ -2258,55 +2258,17 @@ details p {
     font-size: 1rem;
 }
 
-/* ===== PAYPAL CONTAINER SYMMETRY ===== */
-.paypal-checkout-container {
-    max-width: 500px;
-    margin: 2rem auto;
-    padding: 2rem;
-    text-align: center;
-}
+/* ===== PAYPAL & PAYMENT STYLES ===== */
+/* Note: Main PayPal styles are in upgrade.html for specificity */
+/* These are fallback/base styles only */
 
 #paypal-button-container {
     min-height: 55px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     width: 100%;
-    max-width: 400px;
-    margin: 0 auto;
 }
 
-/* PayPal buttons container styling */
 #paypal-button-container > div {
     width: 100% !important;
-    max-width: 400px !important;
-}
-
-/* ===== PAYMENT SECTION SYMMETRY ===== */
-.payment-section.card {
-    text-align: center;
-}
-
-.payment-section h3 {
-    margin-bottom: 1rem;
-}
-
-.payment-section p {
-    margin-bottom: 1.5rem;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.alternative-options {
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #e5e7eb;
-}
-
-.alternative-options p {
-    margin-bottom: 1rem;
-    color: #6b7280;
 }
 
 /* ===== CARD INPUT TEXT VISIBILITY (PayPal Hosted Fields) ===== */
