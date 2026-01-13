@@ -74,40 +74,100 @@
                     <h3>Personalization Check</h3>
                 </div>
                 <div class="card-content">
-                    <p><strong>Personalization Status:</strong> 
-                        <span class="{% if analysis.personalization == 'YES' %}status-good{% else %}status-bad{% endif %}">
-                            {{ analysis.personalization }}
-                        </span>
-                    </p>
-                    <div class="personalization-details">
-                        <p><strong>Placeholder Analysis:</strong></p>
-                        <ul>
-                            <li>Has {{ '{Name}' }}: 
-                                <span class="{% if analysis.has_name %}check-yes{% else %}check-no{% endif %}">
-                                    {{ 'Yes ✓' if analysis.has_name else 'No ✗' }}
-                                </span>
+                    <!-- Personalization Score Display -->
+                    <div class="personalization-score-display">
+                        <div class="score-badge {% if analysis.personalization_score >= 7 %}score-excellent{% elif analysis.personalization_score >= 5 %}score-good{% elif analysis.personalization_score >= 3 %}score-warning{% else %}score-poor{% endif %}">
+                            <span class="score-value">{{ analysis.personalization_score }}</span>
+                            <span class="score-label">/10</span>
+                        </div>
+                        <div class="score-status">
+                            <strong>Status:</strong> 
+                            <span class="status-label {% if analysis.personalization == 'EXCELLENT' %}status-excellent{% elif analysis.personalization == 'GOOD' %}status-good{% elif analysis.personalization == 'NEEDS WORK' %}status-warning{% else %}status-poor{% endif %}">
+                                {{ analysis.personalization }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Indicators Found -->
+                    {% if analysis.personalization_details and analysis.personalization_details.indicators_found %}
+                    <div class="personalization-indicators">
+                        <p><strong>✓ Detected Personalization Elements:</strong></p>
+                        <ul class="indicators-list">
+                            {% for indicator in analysis.personalization_details.indicators_found %}
+                            <li class="indicator-item">
+                                <span class="indicator-check">✓</span> {{ indicator }}
                             </li>
-                            <li>Has {{ '{Company}' }}: 
-                                <span class="{% if analysis.has_company %}check-yes{% else %}check-no{% endif %}">
-                                    {{ 'Yes ✓' if analysis.has_company else 'No ✗' }}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Missing Elements -->
+                    <div class="personalization-checklist">
+                        <p><strong>Personalization Checklist:</strong></p>
+                        <ul class="checklist">
+                            <li>
+                                <span class="{% if analysis.has_name %}check-yes{% else %}check-no{% endif %}">
+                                    {{ '✓' if analysis.has_name else '✗' }}
                                 </span>
+                                Name placeholder ({{ '{Name}' }}, {{ '{first_name}' }})
+                            </li>
+                            <li>
+                                <span class="{% if analysis.has_company %}check-yes{% else %}check-no{% endif %}">
+                                    {{ '✓' if analysis.has_company else '✗' }}
+                                </span>
+                                Company placeholder ({{ '{Company}' }})
+                            </li>
+                            <li>
+                                <span class="{% if analysis.personalization_details and analysis.personalization_details.has_role_reference %}check-yes{% else %}check-no{% endif %}">
+                                    {{ '✓' if analysis.personalization_details and analysis.personalization_details.has_role_reference else '✗' }}
+                                </span>
+                                Role/title reference
+                            </li>
+                            <li>
+                                <span class="{% if analysis.personalization_details and analysis.personalization_details.has_specific_reference %}check-yes{% else %}check-no{% endif %}">
+                                    {{ '✓' if analysis.personalization_details and analysis.personalization_details.has_specific_reference else '✗' }}
+                                </span>
+                                Specific research reference
+                            </li>
+                            <li>
+                                <span class="{% if analysis.personalization_details and analysis.personalization_details.has_custom_opening %}check-yes{% else %}check-no{% endif %}">
+                                    {{ '✓' if analysis.personalization_details and analysis.personalization_details.has_custom_opening else '✗' }}
+                                </span>
+                                Personalized greeting
+                            </li>
+                            <li>
+                                <span class="{% if analysis.personalization_details and analysis.personalization_details.has_mutual_connection %}check-yes{% else %}check-no{% endif %}">
+                                    {{ '✓' if analysis.personalization_details and analysis.personalization_details.has_mutual_connection else '✗' }}
+                                </span>
+                                Mutual connection reference
+                            </li>
+                            <li>
+                                <span class="{% if analysis.personalization_details and analysis.personalization_details.has_recent_trigger %}check-yes{% else %}check-no{% endif %}">
+                                    {{ '✓' if analysis.personalization_details and analysis.personalization_details.has_recent_trigger else '✗' }}
+                                </span>
+                                Timely trigger event
                             </li>
                         </ul>
                     </div>
-                    {% if analysis.personalization == 'NO' %}
+                    
+                    <!-- Feedback Message -->
+                    {% if analysis.personalization_score < 3 %}
                         <div class="warning-message">
-                            <p>⚠️ Your email lacks personalization markers. Add {Name} and {Company} placeholders to improve engagement.</p>
+                            <p>⚠️ <strong>Low personalization detected.</strong> Your email feels generic. Add specific details about the recipient to increase response rates by up to 50%.</p>
+                        </div>
+                    {% elif analysis.personalization_score < 5 %}
+                        <div class="warning-message">
+                            <p>⚠️ <strong>Needs improvement.</strong> Try adding: recipient's name, company name, or reference something specific about them (recent post, achievement, etc.)</p>
+                        </div>
+                    {% elif analysis.personalization_score < 7 %}
+                        <div class="info-message">
+                            <p>ℹ️ <strong>Good start!</strong> Consider adding a specific reference to their work or a mutual connection to stand out further.</p>
                         </div>
                     {% else %}
-                        {% if not analysis.has_name and not analysis.has_company %}
-                        <div class="info-message">
-                            <p>ℹ️ AI detected personalized language despite no placeholders. Consider adding {Name} and {Company} for even better results.</p>
-                        </div>
-                        {% else %}
                         <div class="success-message">
-                            <p>✅ Good personalization detected with placeholder markers in your cold DM or cold email</p>
+                            <p>✅ <strong>Excellent personalization!</strong> Your email shows you've done your research and feels genuinely customized.</p>
                         </div>
-                        {% endif %}
                     {% endif %}
                 </div>
             </div>

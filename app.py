@@ -218,9 +218,129 @@ def rule_based_spam_score(email_content):
     return min(score, 10), spam_words_found, exclamations, all_caps
 
 def rule_based_personalization(email_content):
-    has_name = '{Name}' in email_content or '{name}' in email_content
-    has_company = '{Company}' in email_content or '{company}' in email_content
-    return has_name or has_company, has_name, has_company
+    """
+    Advanced personalization scoring with multiple indicators.
+    Returns: score (0-10), details dict
+    """
+    content_lower = email_content.lower()
+    details = {
+        'has_name_placeholder': False,
+        'has_company_placeholder': False,
+        'has_role_reference': False,
+        'has_specific_reference': False,
+        'has_custom_opening': False,
+        'has_mutual_connection': False,
+        'has_recent_trigger': False,
+        'indicators_found': []
+    }
+    score = 0
+    
+    # 1. Name placeholders (various formats) - 2 points
+    name_patterns = [
+        r'\{name\}', r'\{first_name\}', r'\{firstname\}', r'\[name\]', 
+        r'\[first_name\]', r'\{\{name\}\}', r'<<name>>'
+    ]
+    for pattern in name_patterns:
+        if re.search(pattern, content_lower):
+            details['has_name_placeholder'] = True
+            details['indicators_found'].append('Name placeholder')
+            score += 2
+            break
+    
+    # 2. Company placeholders - 2 points
+    company_patterns = [
+        r'\{company\}', r'\{company_name\}', r'\[company\]', 
+        r'\{\{company\}\}', r'<<company>>'
+    ]
+    for pattern in company_patterns:
+        if re.search(pattern, content_lower):
+            details['has_company_placeholder'] = True
+            details['indicators_found'].append('Company placeholder')
+            score += 2
+            break
+    
+    # 3. Role/title references - 1 point
+    role_patterns = [
+        r'\b(your role as|in your position|as a |as an |your work as)\b',
+        r'\{role\}', r'\{title\}', r'\{job_title\}',
+        r'\b(ceo|cto|cfo|founder|director|manager|head of|vp of|lead)\b'
+    ]
+    for pattern in role_patterns:
+        if re.search(pattern, content_lower):
+            details['has_role_reference'] = True
+            details['indicators_found'].append('Role/title reference')
+            score += 1
+            break
+    
+    # 4. Specific references (shows research) - 2 points
+    specific_patterns = [
+        r'\b(i saw your|i read your|i noticed your|your recent|your latest)\b',
+        r'\b(your post|your article|your talk|your presentation|your interview)\b',
+        r'\b(your linkedin|your twitter|your blog|your podcast)\b',
+        r'\b(congratulations on|loved your|impressed by your)\b',
+        r'\b(your company\'s|your team\'s|your product)\b'
+    ]
+    for pattern in specific_patterns:
+        if re.search(pattern, content_lower):
+            details['has_specific_reference'] = True
+            details['indicators_found'].append('Specific research reference')
+            score += 2
+            break
+    
+    # 5. Custom opening (not generic) - 1 point
+    generic_openings = [
+        r'^(hi there|hello there|dear sir|dear madam|to whom|greetings)',
+        r'^(hi,\s*$|hello,\s*$|hey,\s*$)'  # Just "Hi," with nothing after
+    ]
+    first_line = email_content.strip().split('\n')[0].lower().strip()
+    is_generic = any(re.search(p, first_line) for p in generic_openings)
+    
+    # Check for personalized opening
+    personalized_openings = [
+        r'^(hi|hello|hey)\s+\{',  # Hi {Name}
+        r'^(hi|hello|hey)\s+[a-z]+',  # Hi John (actual name)
+    ]
+    has_personal_greeting = any(re.search(p, first_line) for p in personalized_openings)
+    
+    if has_personal_greeting and not is_generic:
+        details['has_custom_opening'] = True
+        details['indicators_found'].append('Personalized greeting')
+        score += 1
+    
+    # 6. Mutual connection reference - 1 point
+    mutual_patterns = [
+        r'\b(mutual connection|referred by|introduced by|mentioned you)\b',
+        r'\b(we both know|we met at|spoke at|connected on)\b',
+        r'\b(your colleague|your friend|recommended you)\b'
+    ]
+    for pattern in mutual_patterns:
+        if re.search(pattern, content_lower):
+            details['has_mutual_connection'] = True
+            details['indicators_found'].append('Mutual connection')
+            score += 1
+            break
+    
+    # 7. Recent event/trigger (timeliness) - 1 point
+    trigger_patterns = [
+        r'\b(just (saw|read|heard|noticed)|recently|this week|today)\b',
+        r'\b(your announcement|new funding|new role|promotion)\b',
+        r'\b(congrats on|congratulations on the)\b'
+    ]
+    for pattern in trigger_patterns:
+        if re.search(pattern, content_lower):
+            details['has_recent_trigger'] = True
+            details['indicators_found'].append('Timely trigger event')
+            score += 1
+            break
+    
+    # Cap score at 10
+    score = min(score, 10)
+    
+    # Legacy compatibility
+    details['has_name'] = details['has_name_placeholder']
+    details['has_company'] = details['has_company_placeholder']
+    
+    return score, details
 
 def rule_based_subject_grade(subject):
     length = len(subject)
@@ -265,19 +385,51 @@ def analyze_email(email_content):
     # 1. Spam Shield
     spam_score, spam_words_found, exclamations, all_caps = rule_based_spam_score(email_content)
 
-    # 2. Personalization Checker (Rule + ChatGPT)
-    has_personalization, has_name, has_company = rule_based_personalization(email_content)
-    personalization_gpt = None
-    if current_user.can_analyze():
-        prompt = f"Does this email feel personalized? Reply YES or NO. Email: {email_content[:1000]}"
+    # 2. Personalization Checker (Advanced Rule-Based + AI Enhancement)
+    personalization_score, personalization_details = rule_based_personalization(email_content)
+    
+    # AI enhancement for context-aware personalization detection
+    ai_personalization_boost = 0
+    ai_feedback = None
+    if current_user.can_analyze() and personalization_score < 7:
+        # Only call AI if rule-based score is not already high
+        prompt = (
+            "Rate this email's personalization from 1-10. Consider:\n"
+            "- Does it reference specific details about the recipient?\n"
+            "- Does it feel templated or genuinely customized?\n"
+            "- Is there evidence of research about the recipient?\n\n"
+            "Reply with ONLY a number 1-10.\n\n"
+            f"Email: {email_content[:800]}"
+        )
         gpt_response = call_openai(prompt)
         if gpt_response:
-            personalization_gpt = 'YES' in gpt_response.upper()
+            try:
+                # Extract number from response
+                ai_score = int(re.search(r'\d+', gpt_response).group())
+                ai_score = min(10, max(1, ai_score))
+                # Blend AI score with rule-based (AI can boost by up to 3 points)
+                if ai_score > personalization_score:
+                    ai_personalization_boost = min(3, ai_score - personalization_score)
+                    personalization_details['ai_detected'] = True
+                    personalization_details['indicators_found'].append('AI detected personalized tone')
+            except:
+                pass
+    
+    # Final personalization score (rule-based + AI boost)
+    final_personalization_score = min(10, personalization_score + ai_personalization_boost)
+    personalization_details['score'] = final_personalization_score
+    personalization_details['rule_score'] = personalization_score
+    personalization_details['ai_boost'] = ai_personalization_boost
+    
+    # Determine status label
+    if final_personalization_score >= 7:
+        personalization_status = 'EXCELLENT'
+    elif final_personalization_score >= 5:
+        personalization_status = 'GOOD'
+    elif final_personalization_score >= 3:
+        personalization_status = 'NEEDS WORK'
     else:
-        personalization_gpt = None
-
-    # Personalization: either has placeholders OR AI confirms personalized language
-    personalization_final = has_personalization or (personalization_gpt is True)
+        personalization_status = 'POOR'
 
     # 3. Subject Line Grader
     subject_grade, subject_length, is_question = rule_based_subject_grade(subject)
@@ -305,10 +457,11 @@ def analyze_email(email_content):
         improved_message = "(Could not generate improved cold DM/email. Try again or check your input.)"
 
     # --- Merge outputs (Anti-Wrapper) ---
-    merged_personalization = 'YES' if personalization_final else 'NO'
     merged_structure = structure_suggestion or (
-        "Try to personalize your email and keep it concise." if not personalization_final else "Looks clear!"
+        "Add more personalization elements like recipient name, company, or specific references." 
+        if final_personalization_score < 5 else "Looks clear!"
     )
+    
     # Compose overall score (Spam + Personalization + Subject)
     # Higher score = better, lower = worse
     # We'll use a 10-point scale, where 10 is best, 1 is worst
@@ -316,8 +469,16 @@ def analyze_email(email_content):
     # Note: spam_score internally is 1 (best) to 10 (worst)
     score = 10
     score -= (spam_score - 1)  # spam_score: 1 (best) to 10 (worst), so subtract (spam_score-1)
-    if not personalization_final:
-        score -= 2
+    
+    # Personalization impact on overall score (weighted by new scoring)
+    if final_personalization_score < 3:
+        score -= 3  # Poor personalization = -3
+    elif final_personalization_score < 5:
+        score -= 2  # Needs work = -2
+    elif final_personalization_score < 7:
+        score -= 1  # Good but not excellent = -1
+    # Excellent (7+) = no penalty
+    
     if subject_grade not in ['A','B']:
         score -= 1
     overall_score = max(1, min(10, score))
@@ -327,9 +488,11 @@ def analyze_email(email_content):
         'spam_score': 11 - spam_score,  # Convert to user-friendly: 1 (bad) -> 10 (good)
         'exclamations': exclamations,
         'all_caps': all_caps,
-        'personalization': merged_personalization,
-        'has_name': has_name,
-        'has_company': has_company,
+        'personalization': personalization_status,
+        'personalization_score': final_personalization_score,
+        'personalization_details': personalization_details,
+        'has_name': personalization_details['has_name'],
+        'has_company': personalization_details['has_company'],
         'subject': subject,
         'subject_length': subject_length,
         'subject_grade': subject_grade,
