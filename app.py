@@ -1066,8 +1066,12 @@ def home():
 @login_required
 def analyze():
     if not current_user.can_analyze():
-        flash('Free tier limit reached. Please upgrade for unlimited analyses!')
-        return redirect(url_for('upgrade'))
+        if current_user.is_paid:
+            flash('Monthly fair use limit reached (200/month). Your limit resets at the start of next month.')
+            return redirect(url_for('home'))
+        else:
+            flash('Free tier limit reached. Please upgrade for 200 analyses per month!')
+            return redirect(url_for('upgrade'))
     
     email_content = request.form.get('email_content', '')
     if not email_content.strip():
@@ -1111,6 +1115,10 @@ def faq():
 @app.route('/privacy')
 def privacy():
     return render_template('privacy.html')
+
+@app.route('/terms')
+def terms():
+    return render_template('terms.html')
 
 @app.route('/health')
 def health_check():
