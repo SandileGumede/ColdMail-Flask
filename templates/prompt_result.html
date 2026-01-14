@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}ColdMail - Improved Prompt{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="results-header">
+            <h1>AI Builder Prompt Results</h1>
+            <p style="text-align: center;">Here's your improved prompt optimized for AI app builders like Cursor, v0, Bolt & more</p>
+        </div>
+        
+        <!-- Overall Score Card -->
+        <div class="score-card-main">
+            <div class="score-header">
+                <h2>Prompt Quality Score</h2>
+                <p class="score-subtitle">Based on tech stack, features, UI requirements, and functionality</p>
+            </div>
+            <div class="score-display">
+                <div class="score-circle {{ 'excellent' if prompt_data.rule_analysis.score >= 8 else 'good' if prompt_data.rule_analysis.score >= 6 else 'warning' if prompt_data.rule_analysis.score >= 4 else 'poor' }}">
+                    <span class="score-number">{{ prompt_data.rule_analysis.score }}</span>
+                    <span class="score-max">/10</span>
+                </div>
+                <div class="score-label">
+                    {% if prompt_data.rule_analysis.score >= 8 %}
+                        <span class="label excellent">Excellent</span>
+                        <p>Your prompt is well-structured and detailed!</p>
+                    {% elif prompt_data.rule_analysis.score >= 6 %}
+                        <span class="label good">Good</span>
+                        <p>Solid prompt with room for improvement.</p>
+                    {% elif prompt_data.rule_analysis.score >= 4 %}
+                        <span class="label warning">Needs Work</span>
+                        <p>Your prompt could use more detail and structure.</p>
+                    {% else %}
+                        <span class="label poor">Requires Attention</span>
+                        <p>Significant improvements needed for better AI responses.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Improved Prompt Card - Featured -->
+        <div class="email-preview-card featured-card">
+            <div class="card-header">
+                <div class="card-icon preview-icon">✨</div>
+                <h3>Improved Prompt</h3>
+            </div>
+            <div class="email-preview-content">
+                <pre class="email-text">{{ prompt_data.improved_prompt }}</pre>
+            </div>
+            <div class="copy-section">
+                <button class="btn btn-primary copy-btn" onclick="copyToClipboard()">
+                    <span class="btn-icon">📋</span>
+                    <span class="btn-text">Copy Improved Prompt</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Analysis Cards Grid -->
+        <div class="analysis-grid">
+            <!-- Prompt Stats Card -->
+            <div class="analysis-card">
+                <div class="card-header">
+                    <div class="card-icon spam-icon">📊</div>
+                    <h3>Prompt Statistics</h3>
+                </div>
+                <div class="card-content">
+                    <p><strong>Word Count:</strong> {{ prompt_data.rule_analysis.word_count }}</p>
+                    <p><strong>Character Count:</strong> {{ prompt_data.rule_analysis.char_count }}</p>
+                    {% if prompt_data.rule_analysis.word_count < 10 %}
+                        <div class="warning-message">
+                            <p>⚠️ Your prompt is quite short. More detail typically leads to better results.</p>
+                        </div>
+                    {% elif prompt_data.rule_analysis.word_count > 500 %}
+                        <div class="info-message">
+                            <p>ℹ️ Your prompt is lengthy. Consider if all details are necessary.</p>
+                        </div>
+                    {% else %}
+                        <div class="success-message">
+                            <p>✅ Good prompt length for detailed responses.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Prompt Checklist Card -->
+            <div class="analysis-card">
+                <div class="card-header">
+                    <div class="card-icon personalization-icon">✅</div>
+                    <h3>AI Builder Prompt Checklist</h3>
+                </div>
+                <div class="card-content">
+                    <div class="personalization-checklist">
+                        <ul class="checklist">
+                            <li>
+                                <span class="{% if prompt_data.rule_analysis.has_tech_stack %}check-yes{% else %}check-no{% endif %}">
+                                    {{ '✓' if prompt_data.rule_analysis.has_tech_stack else '✗' }}
+                                </span>
+                                Tech Stack/Framework
+                            </li>
+                            <li>
+                                <span class="{% if prompt_data.rule_analysis.has_feature_description %}check-yes{% else %}check-no{% endif %}">
+                                    {{ '✓' if prompt_data.rule_analysis.has_feature_description else '✗' }}
+                                </span>
+                                Feature/Component Details
+                            </li>
+                            <li>
+                                <span class="{% if prompt_data.rule_analysis.has_ui_requirements %}check-yes{% else %}check-no{% endif %}">
+                                    {{ '✓' if prompt_data.rule_analysis.has_ui_requirements else '✗' }}
+                                </span>
+                                UI/UX Requirements
+                            </li>
+                            <li>
+                                <span class="{% if prompt_data.rule_analysis.has_functionality %}check-yes{% else %}check-no{% endif %}">
+                                    {{ '✓' if prompt_data.rule_analysis.has_functionality else '✗' }}
+                                </span>
+                                Functionality Description
+                            </li>
+                            <li>
+                                <span class="{% if prompt_data.rule_analysis.has_styling %}check-yes{% else %}check-no{% endif %}">
+                                    {{ '✓' if prompt_data.rule_analysis.has_styling else '✗' }}
+                                </span>
+                                Styling Preferences
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Strengths Card -->
+            {% if prompt_data.rule_analysis.strengths %}
+            <div class="analysis-card">
+                <div class="card-header">
+                    <div class="card-icon subject-icon">💪</div>
+                    <h3>Strengths</h3>
+                </div>
+                <div class="card-content">
+                    <ul class="strengths-list">
+                        {% for strength in prompt_data.rule_analysis.strengths %}
+                        <li class="success-item">✅ {{ strength }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Issues/Improvements Card -->
+            {% if prompt_data.rule_analysis.issues %}
+            <div class="analysis-card">
+                <div class="card-header">
+                    <div class="card-icon preview-icon">🔧</div>
+                    <h3>Areas for Improvement</h3>
+                </div>
+                <div class="card-content">
+                    <ul class="issues-list">
+                        {% for issue in prompt_data.rule_analysis.issues %}
+                        <li class="warning-item">⚠️ {{ issue }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- AI Analysis Card -->
+        {% if prompt_data.ai_analysis %}
+        <div class="email-preview-card">
+            <div class="card-header">
+                <div class="card-icon preview-icon">🤖</div>
+                <h3>AI Analysis</h3>
+            </div>
+            <div class="email-preview-content">
+                <pre class="email-text" style="white-space: pre-wrap;">{{ prompt_data.ai_analysis }}</pre>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Original Prompt Preview -->
+        <div class="email-preview-card">
+            <div class="card-header">
+                <div class="card-icon preview-icon">📝</div>
+                <h3>Original Prompt</h3>
+            </div>
+            <div class="email-preview-content">
+                <pre class="email-text">{{ prompt_data.original_prompt }}</pre>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="/" class="btn btn-primary">
+                <span class="btn-icon">←</span>
+                <span class="btn-text">Improve Another Prompt</span>
+            </a>
+            <button class="btn btn-secondary" onclick="window.print()">
+                <span class="btn-icon">🖨️</span>
+                <span class="btn-text">Print Results</span>
+            </button>
+        </div>
+        
+        <!-- Upgrade Section for Non-Paid Users -->
+        {% if not paid %}
+        <div class="faq-payment-section">
+            <h3>Want Unlimited Access?</h3>
+            <p>Upgrade to unlimited analyses and PDF exports for just $20</p>
+            <div class="payment-buttons">
+                <a href="/upgrade" class="btn btn-primary">Upgrade Now</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function copyToClipboard() {
+        const improvedPrompt = document.querySelector('.featured-card .email-text').textContent;
+        navigator.clipboard.writeText(improvedPrompt).then(function() {
+            const btn = document.querySelector('.copy-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="btn-icon">✓</span><span class="btn-text">Copied!</span>';
+            btn.classList.add('btn-success');
+            setTimeout(function() {
+                btn.innerHTML = originalText;
+                btn.classList.remove('btn-success');
+            }, 2000);
+        }).catch(function(err) {
+            alert('Failed to copy. Please select and copy manually.');
+        });
+    }
+</script>
+{% endblock %}

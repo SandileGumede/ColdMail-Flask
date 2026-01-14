@@ -582,7 +582,7 @@ def signup():
                 
                 print(f"Session data after signup: {dict(session)}")
                 
-                flash('Account created successfully! Please check your email to verify your account. You have 3 free ColdMail analyses.')
+                flash('Account created successfully! Please check your email to verify your account. You have 6 free ColdMail analyses.')
                 return redirect(url_for('home'))
             else:
                 flash(f'Error creating account: {result.get("error", "Unknown error")}')
@@ -1265,6 +1265,225 @@ def result():
     return render_template('result.html', 
                          analysis=analysis_result, 
                          email_content=email_content,
+                         paid=current_user.is_paid)
+
+# --- Prompt Improver Feature ---
+def improve_prompt_with_ai(original_prompt):
+    """Use AI to analyze and improve a prompt for AI app builders"""
+    if not OPENAI_API_KEY:
+        return None, None
+    
+    headers = {
+        'Authorization': f'Bearer {OPENAI_API_KEY}',
+        'Content-Type': 'application/json'
+    }
+    
+    # First, get analysis of the prompt
+    analysis_data = {
+        "model": "gpt-3.5-turbo",
+        "messages": [
+            {"role": "system", "content": "You are an expert at analyzing prompts for AI app builders (like Cursor, v0, Bolt, Lovable, Replit Agent). Analyze the given prompt and provide a brief analysis covering: 1) Clarity (is it clear what app/feature is being requested?), 2) Technical Specificity (does it specify tech stack, frameworks, or styling preferences?), 3) Feature Details (are the features and functionality clearly described?), 4) UI/UX Requirements (does it describe the look, feel, or user flow?). Keep your analysis concise - 2-3 sentences per point."},
+            {"role": "user", "content": f"Analyze this AI app builder prompt:\n\n{original_prompt[:1500]}"}
+        ],
+        "max_tokens": 400,
+        "temperature": 0.3
+    }
+    
+    # Then, get the improved version
+    improvement_data = {
+        "model": "gpt-3.5-turbo",
+        "messages": [
+            {"role": "system", "content": "You are an expert at writing prompts for AI app builders (Cursor, v0, Bolt, Lovable, Replit Agent). Your job is to take a developer's vague or basic prompt and transform it into a detailed, specific prompt that will generate better code and features. Include: specific tech stack preferences if apparent, detailed feature descriptions, UI/UX requirements, component structure, styling preferences, and any edge cases. Make the prompt comprehensive but organized. Output ONLY the improved prompt, nothing else."},
+            {"role": "user", "content": f"Improve this AI app builder prompt:\n\n{original_prompt[:1500]}"}
+        ],
+        "max_tokens": 800,
+        "temperature": 0.4
+    }
+    
+    analysis = None
+    improved = None
+    
+    try:
+        # Get analysis
+        response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=analysis_data, timeout=15)
+        response.raise_for_status()
+        analysis = response.json()['choices'][0]['message']['content'].strip()
+        
+        # Get improved prompt
+        response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=improvement_data, timeout=15)
+        response.raise_for_status()
+        improved = response.json()['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        print(f"AI prompt improvement error: {e}")
+    
+    return analysis, improved
+
+def rule_based_prompt_analysis(prompt):
+    """Analyze a prompt for AI app builders using rule-based checks"""
+    analysis = {
+        'word_count': len(prompt.split()),
+        'char_count': len(prompt),
+        'has_tech_stack': False,
+        'has_feature_description': False,
+        'has_ui_requirements': False,
+        'has_functionality': False,
+        'has_styling': False,
+        'issues': [],
+        'strengths': []
+    }
+    
+    prompt_lower = prompt.lower()
+    
+    # Check for tech stack/framework mentions
+    tech_patterns = [
+        r'(react|vue|angular|svelte|next\.?js|nuxt|remix)',
+        r'(tailwind|bootstrap|css|styled-components|chakra|material)',
+        r'(node|express|flask|django|fastapi|rails)',
+        r'(typescript|javascript|python|rust|go)',
+        r'(postgres|mongodb|mysql|sqlite|supabase|firebase)',
+        r'(api|rest|graphql|websocket)'
+    ]
+    for pattern in tech_patterns:
+        if re.search(pattern, prompt_lower):
+            analysis['has_tech_stack'] = True
+            analysis['strengths'].append('Specifies tech stack or framework')
+            break
+    
+    if not analysis['has_tech_stack']:
+        analysis['issues'].append('No tech stack specified - consider adding preferred frameworks (React, Tailwind, etc.)')
+    
+    # Check for feature/component descriptions
+    feature_patterns = [
+        r'(button|form|modal|navbar|sidebar|card|table|list|grid)',
+        r'(login|signup|auth|dashboard|profile|settings|admin)',
+        r'(search|filter|sort|pagination|infinite scroll)',
+        r'(upload|download|export|import|share)',
+        r'(notification|alert|toast|message)',
+        r'(chart|graph|analytics|metrics|stats)'
+    ]
+    for pattern in feature_patterns:
+        if re.search(pattern, prompt_lower):
+            analysis['has_feature_description'] = True
+            analysis['strengths'].append('Describes specific features or components')
+            break
+    
+    if not analysis['has_feature_description']:
+        analysis['issues'].append('Missing feature details - describe specific components and features you want')
+    
+    # Check for UI/UX requirements
+    ui_patterns = [
+        r'(responsive|mobile|desktop|tablet)',
+        r'(dark mode|light mode|theme)',
+        r'(layout|grid|flex|centered|sidebar)',
+        r'(animation|transition|hover|smooth)',
+        r'(modern|clean|minimal|professional|sleek)',
+        r'(user-friendly|intuitive|accessible)'
+    ]
+    for pattern in ui_patterns:
+        if re.search(pattern, prompt_lower):
+            analysis['has_ui_requirements'] = True
+            analysis['strengths'].append('Includes UI/UX requirements')
+            break
+    
+    if not analysis['has_ui_requirements']:
+        analysis['issues'].append('No UI preferences - describe the look and feel you want (modern, minimal, responsive, etc.)')
+    
+    # Check for functionality descriptions
+    functionality_patterns = [
+        r'(crud|create|read|update|delete)',
+        r'(fetch|load|save|store|display)',
+        r'(validate|check|verify|confirm)',
+        r'(when|if|after|before|on click|on submit)',
+        r'(user can|should be able to|allow|enable)'
+    ]
+    for pattern in functionality_patterns:
+        if re.search(pattern, prompt_lower):
+            analysis['has_functionality'] = True
+            analysis['strengths'].append('Describes functionality and user actions')
+            break
+    
+    if not analysis['has_functionality']:
+        analysis['issues'].append('Missing functionality details - explain what users should be able to do')
+    
+    # Check for styling preferences
+    styling_patterns = [
+        r'(color|colours?|blue|green|red|purple|gradient)',
+        r'(font|typography|text|heading)',
+        r'(spacing|padding|margin|gap)',
+        r'(border|rounded|shadow|blur)',
+        r'(icon|image|logo|avatar)'
+    ]
+    for pattern in styling_patterns:
+        if re.search(pattern, prompt_lower):
+            analysis['has_styling'] = True
+            analysis['strengths'].append('Includes styling preferences')
+            break
+    
+    if not analysis['has_styling']:
+        analysis['issues'].append('No styling details - consider specifying colors, fonts, or visual style')
+    
+    # Calculate score
+    score = 2  # Base score
+    if analysis['has_tech_stack']: score += 2
+    if analysis['has_feature_description']: score += 2
+    if analysis['has_ui_requirements']: score += 2
+    if analysis['has_functionality']: score += 1
+    if analysis['has_styling']: score += 1
+    
+    # Length considerations
+    if analysis['word_count'] < 10:
+        score -= 1
+        analysis['issues'].append('Prompt is too short - AI builders work better with detailed prompts')
+    elif analysis['word_count'] > 500:
+        analysis['strengths'].append('Detailed prompt - good for complex apps')
+    
+    analysis['score'] = min(10, max(1, score))
+    
+    return analysis
+
+@app.route('/improve-prompt', methods=['POST'])
+@login_required
+def improve_prompt():
+    if not current_user.can_analyze():
+        if current_user.is_paid:
+            flash('Monthly fair use limit reached (200/month). Your limit resets at the start of next month.')
+            return redirect(url_for('home'))
+        else:
+            flash('Free tier limit reached. Please upgrade for 200 analyses per month!')
+            return redirect(url_for('upgrade'))
+    
+    prompt_content = request.form.get('prompt_content', '')
+    if not prompt_content.strip():
+        flash('Please enter a prompt to improve.')
+        return redirect(url_for('home'))
+    
+    # Analyze the prompt
+    rule_analysis = rule_based_prompt_analysis(prompt_content)
+    ai_analysis, improved_prompt = improve_prompt_with_ai(prompt_content)
+    
+    # Store results in session
+    session['prompt_result'] = {
+        'original_prompt': prompt_content,
+        'improved_prompt': improved_prompt or '(Could not generate improved prompt. Please try again.)',
+        'ai_analysis': ai_analysis,
+        'rule_analysis': rule_analysis
+    }
+    
+    # Increment analysis count
+    current_user.increment_analysis()
+    
+    return redirect(url_for('prompt_result'))
+
+@app.route('/prompt-result')
+@login_required
+def prompt_result():
+    prompt_data = session.get('prompt_result', {})
+    
+    if not prompt_data:
+        return redirect(url_for('home'))
+    
+    return render_template('prompt_result.html', 
+                         prompt_data=prompt_data,
                          paid=current_user.is_paid)
 
 @app.route('/contact')

@@ -54,7 +54,7 @@ class User(UserMixin, db.Model):
         if self.is_paid:
             self._check_monthly_reset()
             return self.monthly_analysis_count < MONTHLY_ANALYSIS_LIMIT
-        return self.analysis_count < 3
+        return self.analysis_count < 6
     
     def increment_analysis(self):
         """Increment analysis count"""
@@ -80,7 +80,7 @@ class User(UserMixin, db.Model):
             self._check_monthly_reset()
             remaining = MONTHLY_ANALYSIS_LIMIT - self.monthly_analysis_count
             return f"{remaining}/month"
-        return max(0, 3 - self.analysis_count)
+        return max(0, 6 - self.analysis_count)
     
     def get_monthly_usage(self):
         """Get current monthly usage stats for paid users"""

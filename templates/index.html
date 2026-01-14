@@ -3,8 +3,8 @@
 {% block content %}
     <div class="container">
         <div class="hero-section">
-            <h1>Cold DM & Email Analyzer</h1>
-            <p>Analyze your cold DM or cold email for spam indicators, personalization, and optimization opportunities.</p>
+            <h1>Your Writing Analyzer</h1>
+            <p>Analyze your cold DMs, emails, and prompts for optimization opportunities and improvements.</p>
             {% if current_user.is_authenticated %}
                 {% if paid %}
                     <div class="status-banner status-banner--success">
@@ -14,7 +14,7 @@
                 {% else %}
                     <div class="status-banner status-banner--warning">
                         <span class="status-dot"></span>
-                        <span class="status-text">Free analyses left: {{ remaining }} / 3</span>
+                        <span class="status-text">Free analyses left: {{ remaining }} / 6</span>
                     </div>
                     <div class="status-actions">
                         <a href="/upgrade" class="btn btn-primary">Upgrade to Unlimited ($20)</a>
@@ -23,7 +23,7 @@
             {% else %}
                 <div class="status-banner status-banner--warning">
                     <span class="status-dot"></span>
-                    <span class="status-text">Free analyses left: {{ remaining }} / 3</span>
+                    <span class="status-text">Free analyses left: {{ remaining }} / 6</span>
                 </div>
                 <div class="status-actions">
                     <a href="/login" class="btn btn-primary">Login</a>
@@ -32,7 +32,20 @@
             {% endif %}
         </div>
         
-        <form action="/analyze" method="POST" class="email-form">
+        <!-- Tool Selection Tabs -->
+        <div class="tool-tabs">
+            <button class="tool-tab active" data-tool="email" onclick="switchTool('email')">
+                <span class="tab-icon">📧</span>
+                <span class="tab-text">Cold DM/Email Analyzer</span>
+            </button>
+            <button class="tool-tab" data-tool="prompt" onclick="switchTool('prompt')">
+                <span class="tab-icon">✨</span>
+                <span class="tab-text">AI Builder Prompt Improver</span>
+            </button>
+        </div>
+        
+        <!-- Cold DM/Email Form -->
+        <form action="/analyze" method="POST" class="email-form tool-form" id="email-form">
             <div class="form-group">
                 <label for="email_content">Enter your cold DM or cold email content:</label>
                 <textarea 
@@ -45,6 +58,23 @@
             <button type="submit" class="analyze-btn">
                 <span class="btn-text">Analyze Cold DM/Email</span>
                 <span class="btn-icon">→</span>
+            </button>
+        </form>
+        
+        <!-- Prompt Improver Form -->
+        <form action="/improve-prompt" method="POST" class="email-form tool-form" id="prompt-form" style="display: none;">
+            <div class="form-group">
+                <label for="prompt_content">Enter your AI app builder prompt to improve:</label>
+                <textarea 
+                    id="prompt_content" 
+                    name="prompt_content" 
+                    rows="12" 
+                    placeholder="Paste your AI app builder prompt here...&#10;&#10;Example:&#10;Build me a todo app with React&#10;&#10;Or:&#10;Create a landing page for my SaaS startup with a signup form and pricing section&#10;&#10;Or:&#10;Make a dashboard that shows user analytics with charts"
+                    required></textarea>
+            </div>
+            <button type="submit" class="analyze-btn prompt-btn">
+                <span class="btn-text">Improve My Prompt</span>
+                <span class="btn-icon">✨</span>
             </button>
         </form>
 
@@ -66,6 +96,11 @@
                     <h4>Personalization</h4>
                     <p>Check for proper greetings and personal touch in your cold DM or cold email</p>
                 </div>
+                <div class="feature-card">
+                    <div class="feature-icon">✨</div>
+                    <h4>Prompt Improver</h4>
+                    <p>Optimize your AI app builder prompts for better code and features</p>
+                </div>
             </div>
         </div>
     </div>
@@ -74,10 +109,32 @@
 {% block extra_js %}
     <script>
         // Auto-resize textarea
-        const textarea = document.getElementById('email_content');
-        textarea.addEventListener('input', function() {
+        const emailTextarea = document.getElementById('email_content');
+        const promptTextarea = document.getElementById('prompt_content');
+        
+        emailTextarea.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = this.scrollHeight + 'px';
         });
+        
+        promptTextarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+        
+        // Tool tab switching
+        function switchTool(tool) {
+            // Update tab buttons
+            document.querySelectorAll('.tool-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`.tool-tab[data-tool="${tool}"]`).classList.add('active');
+            
+            // Update forms
+            document.querySelectorAll('.tool-form').forEach(form => {
+                form.style.display = 'none';
+            });
+            document.getElementById(`${tool}-form`).style.display = 'block';
+        }
     </script>
 {% endblock %} 

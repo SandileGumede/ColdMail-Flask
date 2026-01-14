@@ -2632,4 +2632,179 @@ body.dark .alternative-options {
     #paypal-button-container {
         max-width: 100%;
     }
+}
+
+/* ===== TOOL TABS ===== */
+.tool-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+    padding: 8px;
+    background: #f3f4f6;
+    border-radius: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.tool-tab {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    color: #4b5563;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+.tool-tab:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+}
+
+.tool-tab.active {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.tab-icon {
+    font-size: 1.2em;
+}
+
+.tab-text {
+    display: inline;
+}
+
+/* Dark mode tool tabs */
+body.dark .tool-tabs {
+    background: #1f2937;
+}
+
+body.dark .tool-tab {
+    color: #9ca3af;
+}
+
+body.dark .tool-tab:hover {
+    background: rgba(124, 140, 255, 0.15);
+    color: #a5b4fc;
+}
+
+body.dark .tool-tab.active {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+/* Prompt improver button style */
+.prompt-btn {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3), 0 2px 4px -1px rgba(16, 185, 129, 0.2);
+}
+
+.prompt-btn:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4), 0 4px 6px -2px rgba(16, 185, 129, 0.3);
+}
+
+/* Featured card style */
+.featured-card {
+    border: 2px solid rgba(102, 126, 234, 0.3);
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+.featured-card:hover {
+    border-color: rgba(102, 126, 234, 0.5);
+}
+
+body.dark .featured-card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-color: rgba(124, 140, 255, 0.3);
+}
+
+/* Copy section styling */
+.copy-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+}
+
+body.dark .copy-section {
+    border-top-color: #374151;
+}
+
+.copy-btn.btn-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+/* Strengths and Issues lists */
+.strengths-list,
+.issues-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.strengths-list li,
+.issues-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 0.95em;
+    line-height: 1.5;
+}
+
+.strengths-list li:last-child,
+.issues-list li:last-child {
+    border-bottom: none;
+}
+
+.success-item {
+    color: #065f46;
+}
+
+.warning-item {
+    color: #92400e;
+}
+
+body.dark .strengths-list li,
+body.dark .issues-list li {
+    border-bottom-color: #374151;
+}
+
+body.dark .success-item {
+    color: #6ee7b7;
+}
+
+body.dark .warning-item {
+    color: #fcd34d;
+}
+
+/* Mobile responsive for tool tabs */
+@media (max-width: 768px) {
+    .tool-tabs {
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+    }
+    
+    .tool-tab {
+        width: 100%;
+        justify-content: center;
+        padding: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tab-text {
+        font-size: 0.9em;
+    }
+    
+    .tab-icon {
+        font-size: 1.1em;
+    }
 } 
