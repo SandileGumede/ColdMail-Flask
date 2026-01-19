@@ -2,6 +2,170 @@
 
 {% block title %}ColdMail - Improved Prompt{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Prompt Statistics Enhanced Styling */
+    .prompt-stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .prompt-stats-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        pointer-events: none;
+    }
+    
+    .prompt-stats-card .card-header {
+        border-bottom-color: rgba(255,255,255,0.2);
+    }
+    
+    .prompt-stats-card .card-header h3 {
+        color: white;
+    }
+    
+    .prompt-stats-card .card-icon {
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+    }
+    
+    .prompt-stats-card .card-content p {
+        color: rgba(255,255,255,0.9);
+    }
+    
+    .prompt-stats-card .card-content strong {
+        color: white;
+    }
+    
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-item {
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        transition: transform 0.2s ease, background 0.2s ease;
+    }
+    
+    .stat-item:hover {
+        background: rgba(255,255,255,0.25);
+        transform: translateY(-2px);
+    }
+    
+    .stat-number {
+        font-size: 2.5em;
+        font-weight: 800;
+        color: white;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+    
+    .stat-label {
+        font-size: 0.9em;
+        color: rgba(255,255,255,0.8);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 500;
+    }
+    
+    .prompt-stats-card .success-message,
+    .prompt-stats-card .warning-message,
+    .prompt-stats-card .info-message {
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.3);
+        border-left: 4px solid rgba(255,255,255,0.8);
+        color: white;
+    }
+    
+    .prompt-stats-card .success-message p,
+    .prompt-stats-card .warning-message p,
+    .prompt-stats-card .info-message p {
+        color: white;
+        margin: 0;
+    }
+    
+    /* Dark mode adjustments */
+    body.dark .prompt-stats-card {
+        background: linear-gradient(135deg, #4c5fd5 0%, #5d3f8e 100%);
+    }
+    
+    /* Checklist card enhancements */
+    .checklist-card .checklist {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .checklist-card .checklist li {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        background: #f8fafc;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    
+    .checklist-card .checklist li:hover {
+        background: #f1f5f9;
+        transform: translateX(4px);
+    }
+    
+    body.dark .checklist-card .checklist li {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    
+    body.dark .checklist-card .checklist li:hover {
+        background: #334155;
+    }
+    
+    .checklist-card .check-yes {
+        font-size: 1.2em;
+        background: linear-gradient(135deg, #10b981, #059669);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .checklist-card .check-no {
+        font-size: 1.2em;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    /* Mobile responsive */
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
     <div class="container">
         <div class="results-header">
@@ -58,32 +222,40 @@
         <!-- Analysis Cards Grid -->
         <div class="analysis-grid">
             <!-- Prompt Stats Card -->
-            <div class="analysis-card">
+            <div class="analysis-card prompt-stats-card">
                 <div class="card-header">
                     <div class="card-icon spam-icon">📊</div>
                     <h3>Prompt Statistics</h3>
                 </div>
                 <div class="card-content">
-                    <p><strong>Word Count:</strong> {{ prompt_data.rule_analysis.word_count }}</p>
-                    <p><strong>Character Count:</strong> {{ prompt_data.rule_analysis.char_count }}</p>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number">{{ prompt_data.rule_analysis.word_count }}</div>
+                            <div class="stat-label">Words</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">{{ prompt_data.rule_analysis.char_count }}</div>
+                            <div class="stat-label">Characters</div>
+                        </div>
+                    </div>
                     {% if prompt_data.rule_analysis.word_count < 10 %}
                         <div class="warning-message">
                             <p>⚠️ Your prompt is quite short. More detail typically leads to better results.</p>
                         </div>
                     {% elif prompt_data.rule_analysis.word_count > 500 %}
                         <div class="info-message">
-                            <p>ℹ️ Your prompt is lengthy. Consider if all details are necessary.</p>
+                            <p>ℹ️ Detailed prompt detected — great for complex apps!</p>
                         </div>
                     {% else %}
                         <div class="success-message">
-                            <p>✅ Good prompt length for detailed responses.</p>
+                            <p>✅ Good prompt length for detailed AI responses.</p>
                         </div>
                     {% endif %}
                 </div>
             </div>
 
             <!-- Prompt Checklist Card -->
-            <div class="analysis-card">
+            <div class="analysis-card checklist-card">
                 <div class="card-header">
                     <div class="card-icon personalization-icon">✅</div>
                     <h3>AI Builder Prompt Checklist</h3>
