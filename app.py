@@ -909,7 +909,7 @@ def process_payment():
         "transactions": [{
             "item_list": {
                 "items": [{
-                    "name": "PitchAI Unlimited Analyses",
+                    "name": "PitchAI Pro Access",
                     "sku": "001",
                     "price": "20.00",
                     "currency": "USD",
@@ -920,7 +920,7 @@ def process_payment():
                 "total": "20.00",
                 "currency": "USD"
             },
-            "description": "Unlimited analyses upgrade for PitchAI."
+            "description": "Pro access upgrade for ColdMail (200/month)."
         }]
     })
     if payment.create():
@@ -947,7 +947,7 @@ def create_paypal_order():
                     "currency_code": "USD",
                     "value": "20.00"
                 },
-                "description": "PitchAI Unlimited Analyses Upgrade",
+                "description": "ColdMail Pro Access Upgrade",
                 "custom_id": f"user_{current_user.id}_upgrade"
             }],
             "application_context": {
@@ -1040,11 +1040,11 @@ def create_payment():
                     "total": "20.00",
                     "currency": "USD"
                 },
-                "description": "ColdMail Unlimited Analyses Upgrade",
+                "description": "ColdMail Pro Access Upgrade (200/month)",
                 "item_list": {
                     "items": [{
-                        "name": "ColdMail Unlimited Analyses",
-                        "sku": "unlimited_analyses",
+                        "name": "ColdMail Pro Access",
+                        "sku": "pro_analyses",
                         "price": "20.00",
                         "currency": "USD",
                         "quantity": 1
@@ -1111,7 +1111,7 @@ def execute_payment(payment_id):
                 # Send confirmation email
                 send_payment_confirmation(current_user.email)
                 
-                flash('Payment successful! You now have unlimited analyses.')
+                flash('Payment successful! You now have Pro access (200 analyses/month).')
                 return redirect(url_for('home'))
             else:
                 flash(f'Payment not approved. Status: {payment.state}')
@@ -1169,7 +1169,7 @@ def payment_success():
     if payment.execute({"payer_id": payer_id}):
         current_user.mark_paid()
         send_payment_confirmation(current_user.email)
-        flash('Payment successful! Unlimited analyses unlocked.')
+        flash('Payment successful! Pro access unlocked (200/month).')
         return redirect(url_for('home'))
     else:
         flash('Payment execution failed: ' + payment.error.get('message', 'Unknown error'))
@@ -1218,7 +1218,7 @@ def home():
         print(f"User {current_user.email} is authenticated, remaining analyses: {remaining}")
         
         if payment_success:
-            flash('🎉 Payment successful! You now have unlimited analyses.')
+            flash('🎉 Payment successful! You now have Pro access (200/month).')
             
         return render_template('index.html', remaining=remaining, paid=current_user.is_paid)
     else:

@@ -86,7 +86,7 @@ const paypalButtons = window.paypal.Buttons({
                 resultMessage(
                     `<div class="success-message">
                         <h3>🎉 Payment Successful!</h3>
-                        <p>Your account has been upgraded to unlimited analyses.</p>
+                        <p>Your account has been upgraded to Pro access (200/month).</p>
                         <p>Transaction ID: ${transaction.id}</p>
                         <a href="/" class="btn-primary">Start Analyzing</a>
                     </div>`
