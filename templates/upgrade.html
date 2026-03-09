@@ -21,473 +21,258 @@
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/dark-mode.css">
     <style>
-        /* ===== UPGRADE PAGE CLEAN STYLES ===== */
+        /* ===== UPGRADE PAGE STYLES ===== */
         
-        /* Whop Checkout Container - Centered & Beautiful */
-        .whop-checkout-container {
-            max-width: 420px;
-            margin: 2rem auto;
-            padding: 2.5rem;
-            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
-            border: 2px solid rgba(102, 126, 234, 0.15);
-            border-radius: 20px;
-            box-shadow: 
-                0 10px 40px rgba(102, 126, 234, 0.12),
-                0 4px 12px rgba(0, 0, 0, 0.05);
+        .upgrade-container {
+            max-width: 540px;
+            margin: 0 auto;
+        }
+        
+        .upgrade-hero {
             text-align: center;
+            padding: 2rem 0 1rem;
         }
         
-        .whop-checkout-container::before {
-            content: '🔐 Secure Checkout via Whop';
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #667eea;
-            margin-bottom: 1.5rem;
-            letter-spacing: 0.5px;
+        .upgrade-hero h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
-        /* Whop Checkout Button */
-        .whop-checkout-btn {
+        .upgrade-hero p {
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+        
+        /* Main Pricing Card */
+        .pricing-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+        }
+        
+        .price-display {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .price-amount {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: #1a202c;
+            line-height: 1;
+        }
+        
+        .price-period {
+            font-size: 1rem;
+            color: #64748b;
+            margin-top: 0.5rem;
+        }
+        
+        /* Features List */
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 2rem 0;
+        }
+        
+        .features-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+            color: #374151;
+            font-size: 0.95rem;
+        }
+        
+        .features-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .check-icon {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
+            flex-shrink: 0;
+        }
+        
+        .check-icon svg {
+            width: 12px;
+            height: 12px;
+            color: white;
+        }
+        
+        /* Checkout Button */
+        .checkout-btn {
+            display: block;
             width: 100%;
-            padding: 18px 32px;
+            padding: 18px 24px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            font-size: 1.15rem;
-            font-weight: 700;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
             text-decoration: none;
-            border-radius: 14px;
+            border-radius: 12px;
             border: none;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
         }
         
-        .whop-checkout-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
-            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-        }
-        
-        .whop-checkout-btn:active {
-            transform: translateY(-1px);
-        }
-        
-        .whop-checkout-btn .btn-icon {
-            font-size: 1.3rem;
-        }
-        
-        /* Payment Methods Display */
-        .payment-methods {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 1.5rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid #e5e7eb;
-        }
-        
-        .payment-methods span {
-            font-size: 0.85rem;
-            color: #64748b;
-            background: #f8fafc;
-            padding: 6px 12px;
-            border-radius: 20px;
-            border: 1px solid #e5e7eb;
-        }
-        
-        /* Payment Section Card */
-        .payment-section.card {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 24px;
-            padding: 3rem 2rem;
-            margin: 2.5rem 0;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
-            text-align: center;
-        }
-        
-        .payment-section h3 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: #1a202c;
-            margin-bottom: 0.75rem;
-        }
-        
-        .payment-section > p {
-            color: #64748b;
-            font-size: 1.05rem;
-            max-width: 480px;
-            margin: 0 auto 2rem;
-            line-height: 1.6;
-        }
-        
-        /* Alternative Options */
-        .alternative-options {
-            margin-top: 2.5rem;
-            padding-top: 2rem;
-            border-top: 1px solid #e5e7eb;
-        }
-        
-        .alternative-options p {
-            color: #6b7280;
-            margin-bottom: 1.25rem;
-            font-size: 0.95rem;
-        }
-        
-        .alt-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .alt-buttons .btn {
-            min-width: 160px;
-            padding: 0.875rem 1.5rem;
-            font-size: 0.95rem;
-            font-weight: 600;
-            border-radius: 12px;
-            transition: all 0.2s ease;
-        }
-        
-        /* Trust Section */
-        .trust-section.card {
-            background: linear-gradient(145deg, #f8fafc 0%, #ffffff 100%);
-            border: 1px solid #e5e7eb;
-            border-radius: 24px;
-            padding: 3rem 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-        }
-        
-        .trust-section h3 {
-            text-align: center;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #1a202c;
-            margin-bottom: 2rem;
-        }
-        
-        .trust-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-        }
-        
-        .trust-item {
-            text-align: center;
-            padding: 1.5rem 1rem;
-            background: #ffffff;
-            border-radius: 16px;
-            border: 1px solid #f1f5f9;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        
-        .trust-item:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-        }
-        
-        .trust-icon {
-            font-size: 2.5rem;
-            margin-bottom: 0.75rem;
-        }
-        
-        .trust-item h4 {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #1a202c;
-            margin-bottom: 0.5rem;
-        }
-        
-        .trust-item p {
-            font-size: 0.875rem;
-            color: #64748b;
-            line-height: 1.5;
-        }
-        
-        /* Pricing Card */
-        .pricing-card {
-            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
-            border: 2px solid rgba(102, 126, 234, 0.1);
-            border-radius: 24px;
-            padding: 3rem 2rem;
-            margin: 2rem 0;
-            box-shadow: 0 12px 48px rgba(102, 126, 234, 0.1);
-            text-align: center;
-        }
-        
-        /* Features Grid */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 1.25rem;
-            margin-top: 2rem;
-            text-align: left;
-        }
-        
-        .feature-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 1rem;
-            padding: 1.25rem;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 14px;
-            transition: all 0.2s ease;
-        }
-        
-        .feature-item:hover {
+        .checkout-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.1);
-            border-color: rgba(102, 126, 234, 0.3);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
         }
         
-        .feature-icon {
-            font-size: 1.75rem;
-            flex-shrink: 0;
-            width: 2.75rem;
-            height: 2.75rem;
+        .checkout-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Payment Info */
+        .payment-info {
             display: flex;
-            align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #f0f4ff 0%, #e8ecff 100%);
-            border-radius: 12px;
+            gap: 16px;
+            margin-top: 1.25rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid #f1f5f9;
         }
         
-        .feature-content h4 {
-            margin: 0 0 0.35rem;
-            font-size: 1rem;
-            font-weight: 600;
-            color: #1a202c;
-        }
-        
-        .feature-content p {
-            margin: 0;
-            font-size: 0.875rem;
-            color: #64748b;
-            line-height: 1.5;
-        }
-        
-        /* ===== DARK MODE ===== */
-        body.dark .whop-checkout-container,
-        [data-theme="dark"] .whop-checkout-container {
-            background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
-            border-color: rgba(102, 126, 234, 0.25);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-        }
-        
-        body.dark .whop-checkout-container::before,
-        [data-theme="dark"] .whop-checkout-container::before {
-            color: #818cf8;
-        }
-        
-        body.dark .payment-methods,
-        [data-theme="dark"] .payment-methods {
-            border-top-color: #334155;
-        }
-        
-        body.dark .payment-methods span,
-        [data-theme="dark"] .payment-methods span {
-            background: #0f172a;
-            border-color: #334155;
+        .payment-info span {
+            font-size: 0.8rem;
             color: #94a3b8;
         }
         
-        body.dark .payment-section.card,
-        [data-theme="dark"] .payment-section.card {
+        /* Trust Badges */
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #f1f5f9;
+        }
+        
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        
+        .trust-badge svg {
+            width: 16px;
+            height: 16px;
+            color: #10b981;
+        }
+        
+        /* Back Link */
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #64748b;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .back-link:hover {
+            color: #667eea;
+        }
+        
+        /* ===== DARK MODE ===== */
+        body.dark .pricing-card,
+        [data-theme="dark"] .pricing-card {
             background: #1e293b;
             border-color: #334155;
         }
         
-        body.dark .payment-section h3,
-        [data-theme="dark"] .payment-section h3 {
+        body.dark .price-amount,
+        [data-theme="dark"] .price-amount {
             color: #f1f5f9;
         }
         
-        body.dark .payment-section > p,
-        [data-theme="dark"] .payment-section > p {
+        body.dark .price-period,
+        body.dark .features-list li,
+        [data-theme="dark"] .price-period,
+        [data-theme="dark"] .features-list li {
+            color: #cbd5e1;
+        }
+        
+        body.dark .features-list li,
+        [data-theme="dark"] .features-list li {
+            border-bottom-color: #334155;
+        }
+        
+        body.dark .payment-info,
+        body.dark .trust-badges,
+        [data-theme="dark"] .payment-info,
+        [data-theme="dark"] .trust-badges {
+            border-top-color: #334155;
+        }
+        
+        body.dark .payment-info span,
+        body.dark .trust-badge,
+        body.dark .back-link,
+        [data-theme="dark"] .payment-info span,
+        [data-theme="dark"] .trust-badge,
+        [data-theme="dark"] .back-link {
             color: #94a3b8;
         }
         
-        body.dark .alternative-options,
-        [data-theme="dark"] .alternative-options {
-            border-color: #334155;
+        body.dark .back-link:hover,
+        [data-theme="dark"] .back-link:hover {
+            color: #818cf8;
         }
         
-        body.dark .trust-section.card,
-        [data-theme="dark"] .trust-section.card {
-            background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
-            border-color: #334155;
-        }
-        
-        body.dark .trust-item,
-        [data-theme="dark"] .trust-item {
-            background: #0f172a;
-            border-color: #334155;
-        }
-        
-        body.dark .trust-item h4,
-        body.dark .trust-section h3,
-        [data-theme="dark"] .trust-item h4,
-        [data-theme="dark"] .trust-section h3 {
-            color: #f1f5f9;
-        }
-        
-        body.dark .trust-item p,
-        [data-theme="dark"] .trust-item p {
-            color: #94a3b8;
-        }
-        
-        body.dark .pricing-card,
-        [data-theme="dark"] .pricing-card {
-            background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
-            border-color: rgba(102, 126, 234, 0.2);
-        }
-        
-        body.dark .feature-item,
-        [data-theme="dark"] .feature-item {
-            background: #0f172a;
-            border-color: #334155;
-        }
-        
-        body.dark .feature-item:hover,
-        [data-theme="dark"] .feature-item:hover {
-            border-color: rgba(102, 126, 234, 0.4);
-        }
-        
-        body.dark .feature-icon,
-        [data-theme="dark"] .feature-icon {
-            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-        }
-        
-        body.dark .feature-content h4,
-        [data-theme="dark"] .feature-content h4 {
-            color: #f1f5f9;
-        }
-        
-        body.dark .feature-content p,
-        [data-theme="dark"] .feature-content p {
-            color: #94a3b8;
-        }
-        
-        /* ===== MOBILE RESPONSIVE ===== */
-        @media (max-width: 768px) {
-            .whop-checkout-container {
-                margin: 1.5rem auto;
-                padding: 1.75rem 1.25rem;
+        /* ===== MOBILE ===== */
+        @media (max-width: 600px) {
+            .upgrade-container {
+                padding: 0 1rem;
+            }
+            
+            .upgrade-hero h1 {
+                font-size: 1.75rem;
+            }
+            
+            .pricing-card {
+                padding: 2rem 1.5rem;
                 border-radius: 16px;
             }
             
-            .whop-checkout-container::before {
-                font-size: 0.8rem;
-                margin-bottom: 1.25rem;
+            .price-amount {
+                font-size: 3rem;
             }
             
-            .whop-checkout-btn {
-                padding: 16px 24px;
-                font-size: 1.05rem;
-            }
-            
-            .payment-methods {
-                gap: 8px;
-            }
-            
-            .payment-methods span {
-                font-size: 0.8rem;
-                padding: 5px 10px;
-            }
-            
-            .payment-section.card {
-                padding: 2rem 1.25rem;
-                margin: 1.5rem 0;
-                border-radius: 18px;
-            }
-            
-            .payment-section h3 {
-                font-size: 1.5rem;
-            }
-            
-            .payment-section > p {
-                font-size: 0.95rem;
-            }
-            
-            .alt-buttons {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .alt-buttons .btn {
-                width: 100%;
-                min-width: auto;
-                padding: 1rem;
-            }
-            
-            .trust-grid {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-            
-            .trust-section.card {
-                padding: 2rem 1.25rem;
-                border-radius: 18px;
-            }
-            
-            .trust-item {
-                padding: 1.25rem;
-            }
-            
-            .pricing-card {
-                padding: 2rem 1.25rem;
-                border-radius: 18px;
-            }
-            
-            .features-grid {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-            
-            .feature-item {
-                padding: 1rem;
-            }
-            
-            .feature-icon {
-                width: 2.5rem;
-                height: 2.5rem;
-                font-size: 1.5rem;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .whop-checkout-container {
-                padding: 1.5rem 1rem;
-                margin: 1rem auto;
-            }
-            
-            .whop-checkout-btn {
-                padding: 14px 20px;
+            .checkout-btn {
+                padding: 16px 20px;
                 font-size: 1rem;
             }
             
-            .payment-section.card,
-            .trust-section.card,
-            .pricing-card {
-                padding: 1.5rem 1rem;
-                border-radius: 14px;
+            .payment-info {
+                flex-wrap: wrap;
+                gap: 8px;
             }
             
-            .payment-section h3 {
-                font-size: 1.35rem;
-            }
-            
-            .trust-section h3 {
-                font-size: 1.25rem;
+            .trust-badges {
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
             }
         }
     </style>
@@ -503,7 +288,6 @@
                 <a href="/" class="nav-link">Home</a>
                 <a href="/faq" class="nav-link">FAQ</a>
                 <a href="/contact" class="nav-link">Contact</a>
-                <!-- Theme toggle menu item will be added here by dark-mode.js -->
             </div>
             <div class="nav-toggle" id="navToggle">
                 <span></span>
@@ -514,144 +298,112 @@
     </nav>
 
     <div class="container">
-        <div class="hero-section">
-            <h1>Upgrade to Pro Access</h1>
-            <p>Unlock 200 analyses per month for all your writing needs</p>
-        </div>
-        
-        <!-- Pricing Card -->
-        <div class="pricing-card">
-            <div class="pricing-header">
-                <div class="price">$20</div>
-                <div class="price-subtitle">One-time payment</div>
-                <div class="price-description">No recurring fees, no hidden charges</div>
+        <div class="upgrade-container">
+            <div class="upgrade-hero">
+                <h1>Upgrade to Pro</h1>
+                <p>Get more out of your writing analysis</p>
             </div>
             
-            <div class="pricing-features">
-                <h3>What's Included:</h3>
-                <div class="features-grid">
-                    <div class="feature-item">
-                        <div class="feature-icon">🚀</div>
-                        <div class="feature-content">
-                            <h4>200 Analyses/Month</h4>
-                            <p>Analyze cold DMs, emails, and prompts with generous monthly limits</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-icon">🤖</div>
-                        <div class="feature-content">
-                            <h4>AI-Powered Insights</h4>
-                            <p>Advanced AI suggestions for better personalization and structure</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-icon">📊</div>
-                        <div class="feature-content">
-                            <h4>PDF Reports</h4>
-                            <p>Export detailed analysis reports as professional PDFs</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-icon">🎯</div>
-                        <div class="feature-content">
-                            <h4>Spam Detection</h4>
-                            <p>Advanced spam trigger detection and avoidance tips</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-icon">📈</div>
-                        <div class="feature-content">
-                            <h4>Performance Analytics</h4>
-                            <p>Detailed scoring and improvement recommendations</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-icon">🎨</div>
-                        <div class="feature-content">
-                            <h4>Email Templates</h4>
-                            <p>Professional templates and best practice examples</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-icon">⚡</div>
-                        <div class="feature-content">
-                            <h4>Priority Support</h4>
-                            <p>Fast-track customer support for all premium users</p>
-                        </div>
-                    </div>
+            <div class="pricing-card">
+                <div class="price-display">
+                    <div class="price-amount">$20</div>
+                    <div class="price-period">One-time payment</div>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Payment Section -->
-        <div class="payment-section card">
-            <h3>Secure Payment</h3>
-            <p>Complete your upgrade with our secure checkout. Pay with card, Cash App, crypto, or bank transfer.</p>
-            
-            <!-- Whop Checkout Button Container -->
-            <div class="whop-checkout-container">
-                <a href="https://whop.com/checkout/plan_oVoJV4oPX6qGJ" class="whop-checkout-btn" target="_blank">
-                    <span class="btn-icon">💳</span>
-                    <span class="btn-text">Pay $20 - Get Pro Access</span>
+                
+                <ul class="features-list">
+                    <li>
+                        <span class="check-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </span>
+                        200 analyses per month
+                    </li>
+                    <li>
+                        <span class="check-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </span>
+                        AI-powered writing improvements
+                    </li>
+                    <li>
+                        <span class="check-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </span>
+                        Advanced spam detection
+                    </li>
+                    <li>
+                        <span class="check-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </span>
+                        PDF report exports
+                    </li>
+                    <li>
+                        <span class="check-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </span>
+                        Priority support
+                    </li>
+                </ul>
+                
+                <a href="https://whop.com/checkout/plan_oVoJV4oPX6qGJ" class="checkout-btn" target="_blank">
+                    Get Pro Access
                 </a>
-                <p class="payment-methods">
-                    <span>💳 Card</span>
-                    <span>📱 Cash App</span>
-                    <span>🪙 Crypto</span>
-                    <span>🏦 Bank Transfer</span>
-                </p>
+                
+                <div class="payment-info">
+                    <span>Card</span>
+                    <span>•</span>
+                    <span>Cash App</span>
+                    <span>•</span>
+                    <span>Crypto</span>
+                    <span>•</span>
+                    <span>Bank</span>
+                </div>
+                
+                <div class="trust-badges">
+                    <div class="trust-badge">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                        Secure checkout
+                    </div>
+                    <div class="trust-badge">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        7-day money back
+                    </div>
+                    <div class="trust-badge">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        Instant access
+                    </div>
+                </div>
             </div>
             
-            <!-- Alternative Options -->
-            <div class="alternative-options">
-                <p>Need help or have questions?</p>
-                <div class="alt-buttons">
-                    <a href="/contact" class="btn btn-secondary">Contact Support</a>
-                    <a href="/" class="btn btn-secondary">Back to Analyzer</a>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Trust Indicators -->
-        <div class="trust-section card">
-            <h3>Why Choose ColdMail Pro?</h3>
-            <div class="trust-grid">
-                <div class="trust-item">
-                    <div class="trust-icon">🔒</div>
-                    <h4>Secure & Private</h4>
-                    <p>Your data is never stored or shared</p>
-                </div>
-                <div class="trust-item">
-                    <div class="trust-icon">⚡</div>
-                    <h4>Instant Access</h4>
-                    <p>Unlock features immediately after payment</p>
-                </div>
-                <div class="trust-item">
-                    <div class="trust-icon">💯</div>
-                    <h4>Money Back Guarantee</h4>
-                    <p>7-day refund if not satisfied</p>
-                </div>
-            </div>
+            <a href="/" class="back-link">← Back to analyzer</a>
         </div>
     </div>
 
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
-                    <div class="footer-links">
-            <a href="/faq">FAQ</a>
-            <a href="/terms">Terms of Service</a>
-            <a href="/privacy">Privacy Policy</a>
-        </div>
-        <div class="footer-copyright">
-            <p>&copy; 2025 ColdMail. All rights reserved.</p>
-        </div>
+            <div class="footer-links">
+                <a href="/faq">FAQ</a>
+                <a href="/terms">Terms of Service</a>
+                <a href="/privacy">Privacy Policy</a>
+            </div>
+            <div class="footer-copyright">
+                <p>&copy; 2025 ColdMail. All rights reserved.</p>
+            </div>
         </div>
     </footer>
 
@@ -659,11 +411,10 @@
     <script src="/static/dark-mode.js"></script>
     
     <script>
-        // Mobile navigation toggle
         document.getElementById('navToggle').addEventListener('click', function() {
             document.querySelector('.nav-links').classList.toggle('active');
             this.classList.toggle('active');
         });
     </script>
 </body>
-</html> 
+</html>
