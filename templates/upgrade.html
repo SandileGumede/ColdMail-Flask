@@ -23,8 +23,8 @@
     <style>
         /* ===== UPGRADE PAGE CLEAN STYLES ===== */
         
-        /* PayPal Checkout Container - Centered & Beautiful */
-        .paypal-checkout-container {
+        /* Whop Checkout Container - Centered & Beautiful */
+        .whop-checkout-container {
             max-width: 420px;
             margin: 2rem auto;
             padding: 2.5rem;
@@ -37,8 +37,8 @@
             text-align: center;
         }
         
-        .paypal-checkout-container::before {
-            content: '🔐 Secure Checkout';
+        .whop-checkout-container::before {
+            content: '🔐 Secure Checkout via Whop';
             display: block;
             font-size: 0.85rem;
             font-weight: 600;
@@ -47,42 +47,58 @@
             letter-spacing: 0.5px;
         }
         
-        /* PayPal Button Container */
-        #paypal-button-container {
-            min-height: 55px;
-            width: 100%;
+        /* Whop Checkout Button */
+        .whop-checkout-btn {
             display: flex;
+            align-items: center;
             justify-content: center;
-            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 18px 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 1.15rem;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 14px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
         
-        #paypal-button-container > div {
-            width: 100% !important;
+        .whop-checkout-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
         }
         
-        /* Payment Status Spinner */
-        .payment-status {
-            padding: 2rem;
+        .whop-checkout-btn:active {
+            transform: translateY(-1px);
         }
         
-        .status-message {
+        .whop-checkout-btn .btn-icon {
+            font-size: 1.3rem;
+        }
+        
+        /* Payment Methods Display */
+        .payment-methods {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e7eb;
         }
         
-        .spinner {
-            width: 48px;
-            height: 48px;
-            border: 4px solid #e5e7eb;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .payment-methods span {
+            font-size: 0.85rem;
+            color: #64748b;
+            background: #f8fafc;
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid #e5e7eb;
         }
         
         /* Payment Section Card */
@@ -260,16 +276,28 @@
         }
         
         /* ===== DARK MODE ===== */
-        body.dark .paypal-checkout-container,
-        [data-theme="dark"] .paypal-checkout-container {
+        body.dark .whop-checkout-container,
+        [data-theme="dark"] .whop-checkout-container {
             background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
             border-color: rgba(102, 126, 234, 0.25);
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
         }
         
-        body.dark .paypal-checkout-container::before,
-        [data-theme="dark"] .paypal-checkout-container::before {
+        body.dark .whop-checkout-container::before,
+        [data-theme="dark"] .whop-checkout-container::before {
             color: #818cf8;
+        }
+        
+        body.dark .payment-methods,
+        [data-theme="dark"] .payment-methods {
+            border-top-color: #334155;
+        }
+        
+        body.dark .payment-methods span,
+        [data-theme="dark"] .payment-methods span {
+            background: #0f172a;
+            border-color: #334155;
+            color: #94a3b8;
         }
         
         body.dark .payment-section.card,
@@ -351,15 +379,29 @@
         
         /* ===== MOBILE RESPONSIVE ===== */
         @media (max-width: 768px) {
-            .paypal-checkout-container {
+            .whop-checkout-container {
                 margin: 1.5rem auto;
                 padding: 1.75rem 1.25rem;
                 border-radius: 16px;
             }
             
-            .paypal-checkout-container::before {
+            .whop-checkout-container::before {
                 font-size: 0.8rem;
                 margin-bottom: 1.25rem;
+            }
+            
+            .whop-checkout-btn {
+                padding: 16px 24px;
+                font-size: 1.05rem;
+            }
+            
+            .payment-methods {
+                gap: 8px;
+            }
+            
+            .payment-methods span {
+                font-size: 0.8rem;
+                padding: 5px 10px;
             }
             
             .payment-section.card {
@@ -423,9 +465,14 @@
         }
         
         @media (max-width: 480px) {
-            .paypal-checkout-container {
+            .whop-checkout-container {
                 padding: 1.5rem 1rem;
                 margin: 1rem auto;
+            }
+            
+            .whop-checkout-btn {
+                padding: 14px 20px;
+                font-size: 1rem;
             }
             
             .payment-section.card,
@@ -545,17 +592,20 @@
         <!-- Payment Section -->
         <div class="payment-section card">
             <h3>Secure Payment</h3>
-            <p>Complete your upgrade with our secure PayPal checkout. No redirects, everything happens right here.</p>
+            <p>Complete your upgrade with our secure checkout. Pay with card, Cash App, crypto, or bank transfer.</p>
             
-            <!-- PayPal Checkout Button Container -->
-            <div class="paypal-checkout-container">
-                <div id="paypal-button-container"></div>
-                <div id="payment-status" class="payment-status" style="display: none;">
-                    <div class="status-message">
-                        <div class="spinner"></div>
-                        <p>Processing your payment...</p>
-                    </div>
-                </div>
+            <!-- Whop Checkout Button Container -->
+            <div class="whop-checkout-container">
+                <a href="https://whop.com/checkout/plan_oVoJV4oPX6qGJ" class="whop-checkout-btn" target="_blank">
+                    <span class="btn-icon">💳</span>
+                    <span class="btn-text">Pay $20 - Get Pro Access</span>
+                </a>
+                <p class="payment-methods">
+                    <span>💳 Card</span>
+                    <span>📱 Cash App</span>
+                    <span>🪙 Crypto</span>
+                    <span>🏦 Bank Transfer</span>
+                </p>
             </div>
             
             <!-- Alternative Options -->
@@ -605,9 +655,6 @@
         </div>
     </footer>
 
-    <!-- Include PayPal JavaScript SDK -->
-    <script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&currency=USD&intent=capture"></script>
-    
     <!-- Include dark mode JavaScript -->
     <script src="/static/dark-mode.js"></script>
     
@@ -617,77 +664,6 @@
             document.querySelector('.nav-links').classList.toggle('active');
             this.classList.toggle('active');
         });
-
-        // PayPal Integration
-        paypal.Buttons({
-            style: {
-                layout: 'vertical',
-                color: 'blue',
-                shape: 'rect',
-                label: 'paypal',
-                height: 50,
-                tagline: false
-            },
-            createOrder: function(data, actions) {
-                return actions.order.create({
-                    purchase_units: [{
-                        amount: {
-                            value: '20.00',
-                            currency_code: 'USD'
-                        },
-                        description: 'ColdMail Pro Analyses Upgrade',
-                        custom_id: 'pro_analyses_upgrade'
-                    }]
-                });
-            },
-            onApprove: function(data, actions) {
-                // Show loading state
-                document.getElementById('payment-status').style.display = 'block';
-                document.getElementById('paypal-button-container').style.display = 'none';
-                
-                return actions.order.capture().then(function(details) {
-                    // Payment successful
-                    if (details.status === 'COMPLETED') {
-                        // Send payment confirmation to backend
-                        fetch('/api/orders/' + data.orderID + '/capture', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || ''
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === 'COMPLETED') {
-                                // Success - redirect to home with success message
-                                window.location.href = '/?payment=success';
-                            } else {
-                                throw new Error('Payment verification failed');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Payment verification error:', error);
-                            alert('Payment completed but verification failed. Please contact support.');
-                            window.location.href = '/';
-                        });
-                    }
-                }).catch(function(error) {
-                    console.error('PayPal capture error:', error);
-                    alert('Payment failed. Please try again.');
-                    // Reset UI
-                    document.getElementById('payment-status').style.display = 'none';
-                    document.getElementById('paypal-button-container').style.display = 'block';
-                });
-            },
-            onError: function(err) {
-                console.error('PayPal error:', err);
-                alert('Payment failed. Please try again.');
-            },
-            onCancel: function(data) {
-                console.log('Payment cancelled:', data);
-                // User cancelled - no action needed
-            }
-        }).render('#paypal-button-container');
     </script>
 </body>
 </html> 

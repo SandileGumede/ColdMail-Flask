@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PayPal Checkout - ColdMail</title>
+    <title>Checkout - ColdMail</title>
     
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-3G18XBK27S"></script>
@@ -14,85 +14,11 @@
       gtag('config', 'G-3G18XBK27S');
     </script>
     
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='my_simple_logo.png') }}">
-    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='my_simple_logo.png') }}">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='my_simple_logo.png') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='dark-mode.css') }}">
+    <!-- Redirect to upgrade page -->
+    <meta http-equiv="refresh" content="0;url=/upgrade">
 </head>
 <body>
-    <!-- Navigation Header -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <img src="/static/my_simple_logo.png" alt="ColdMail Logo" class="nav-logo">
-            </div>
-            <div class="nav-links">
-                <a href="{{ url_for('home') }}" class="nav-link">Home</a>
-                <a href="{{ url_for('faq') }}" class="nav-link">FAQ</a>
-                <a href="{{ url_for('contact') }}" class="nav-link">Contact</a>
-                <!-- Theme toggle menu item will be added here by dark-mode.js -->
-            </div>
-            <div class="nav-toggle" id="navToggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    </nav>
-
-    <div class="paypal-container">
-        <h1>Get More Access</h1>
-        <p>Get 200 analyses per month for just $20.00</p>
-        
-        <div id="paypal-button-container"></div>
-        <p id="result-message"></p>
-        
-        <div class="features">
-            <h3>What you get:</h3>
-            <ul>
-                <li>✓ 200 analyses per month</li>
-                <li>✓ Advanced AI-powered insights</li>
-                <li>✓ Spam detection and scoring</li>
-                <li>✓ Personalization recommendations</li>
-                <li>✓ Subject line optimization</li>
-            </ul>
-        </div>
-        
-        <a href="https://www.paypal.com/ncp/payment/L2XE6X7QDP7H2" target="_blank" class="btn-secondary"
-        style="background-color: #0070ba; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 20px;"
-        >Pay with PayPal</a>
-    </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-links">
-                <a href="{{ url_for('faq') }}">FAQ</a>
-                <a href="{{ url_for('terms') }}">Terms of Service</a>
-                <a href="{{ url_for('privacy') }}">Privacy Policy</a>
-            </div>
-            <div class="footer-copyright">
-                <p>&copy; 2025 ColdMail. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Include dark mode JavaScript -->
-    <script src="{{ url_for('static', filename='dark-mode.js') }}"></script>
-    <script>
-        // Mobile navigation toggle
-        document.getElementById('navToggle').addEventListener('click', function() {
-            document.querySelector('.nav-links').classList.toggle('active');
-            this.classList.toggle('active');
-        });
-    </script>
-    <!-- Initialize the JS-SDK -->
-    <script
-        src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&buyer-country=US&currency=USD&components=buttons&enable-funding=venmo,paylater,card"
-        data-sdk-integration-source="developer-studio"
-    ></script>
-    <script src="{{ url_for('static', filename='paypal.js') }}"></script>
+    <p>Redirecting to checkout...</p>
+    <script>window.location.href = '/upgrade';</script>
 </body>
 </html>

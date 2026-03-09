@@ -886,13 +886,13 @@ def verify_email():
 @app.route('/upgrade')
 @login_required
 def upgrade():
-    return render_template('upgrade.html', paypal_client_id=PAYPAL_CLIENT_ID)
+    return render_template('upgrade.html')
 
 @app.route('/paypal-checkout')
 @login_required
 def paypal_checkout():
-    """Direct PayPal checkout page"""
-    return render_template('upgrade.html', paypal_client_id=PAYPAL_CLIENT_ID)
+    """Legacy route - redirects to upgrade page"""
+    return redirect(url_for('upgrade'))
 
 @app.route('/process_payment', methods=['POST'])
 @login_required
@@ -1159,6 +1159,80 @@ def paypal_webhook():
     except Exception as e:
         print(f"PayPal webhook error: {e}")
         return jsonify({'success': False, 'message': 'Internal server error'}), 500
+
+# --- Whop Webhook Integration ---
+@app.route('/whop/webhook', methods=['POST'])
+def whop_webhook():
+    """
+    Handle Whop payment webhook notifications.
+    Whop sends a POST request when a payment is completed.
+    """
+    try:
+        # Get webhook data
+        data = request.get_json()
+        
+        if not data:
+            print("Whop webhook: No data received")
+            return jsonify({'success': False, 'message': 'No data received'}), 400
+        
+        print(f"Whop webhook received: {data}")
+        
+        # Get event type - Whop sends different event types
+        event_type = data.get('event') or data.get('action') or data.get('type')
+        
+        # Handle membership/payment events
+        # Whop typically sends events like: membership.went_valid, payment.succeeded, etc.
+        if event_type in ['membership.went_valid', 'payment.succeeded', 'membership_went_valid', 'payment_succeeded']:
+            # Extract user email from the webhook data
+            # Whop includes user info in the webhook payload
+            user_data = data.get('data', {})
+            user_info = user_data.get('user', {}) or data.get('user', {})
+            email = user_info.get('email') or user_data.get('email') or data.get('email')
+            
+            if email:
+                # Find user by email and mark as paid
+                user = User.query.filter_by(email=email).first()
+                if user:
+                    if not user.is_paid:
+                        user.mark_paid()
+                        send_payment_confirmation(user.email)
+                        print(f"Whop webhook: User {email} upgraded to paid")
+                    else:
+                        print(f"Whop webhook: User {email} already paid")
+                    return jsonify({'success': True, 'message': 'User upgraded'}), 200
+                else:
+                    print(f"Whop webhook: User {email} not found in database")
+                    return jsonify({'success': False, 'message': 'User not found'}), 404
+            else:
+                print("Whop webhook: No email in webhook data")
+                return jsonify({'success': False, 'message': 'No email provided'}), 400
+        
+        # For other event types, just acknowledge receipt
+        print(f"Whop webhook: Received event type: {event_type}")
+        return jsonify({'success': True, 'message': 'Webhook received'}), 200
+        
+    except Exception as e:
+        print(f"Whop webhook error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': 'Internal server error'}), 500
+
+@app.route('/whop/verify', methods=['POST'])
+@login_required
+def whop_verify_payment():
+    """
+    Manual verification endpoint - user can click to verify their Whop payment.
+    This is a fallback if the webhook doesn't fire.
+    """
+    try:
+        # For now, this is a manual verification that an admin would need to confirm
+        # In production, you could integrate with Whop's API to verify membership
+        flash('Payment verification requested. If you completed payment on Whop, your access will be activated shortly. Contact support if you need assistance.')
+        return redirect(url_for('home'))
+    except Exception as e:
+        print(f"Whop verify error: {e}")
+        flash('Error verifying payment. Please contact support.')
+        return redirect(url_for('home'))
 
 @app.route('/payment_success')
 @login_required
