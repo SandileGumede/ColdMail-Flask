@@ -1,134 +1,60 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FAQ - ColdMail Your Writing Analyzer</title>
-    
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3G18XBK27S"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-3G18XBK27S');
-    </script>
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/static/my_simple_logo.png">
-    <link rel="shortcut icon" type="image/png" href="/static/my_simple_logo.png">
-    <link rel="apple-touch-icon" href="/static/my_simple_logo.png">
-    <link rel="stylesheet" href="/static/style.css">
-    <link rel="stylesheet" href="/static/dark-mode.css">
-</head>
-<body>
-    <!-- Navigation Header -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <img src="/static/my_simple_logo.png" alt="ColdMail Logo" class="nav-logo">
-            </div>
-            <div class="nav-links">
-                <a href="/" class="nav-link">Home</a>
-                <a href="/faq" class="nav-link active">FAQ</a>
-                <a href="/contact" class="nav-link">Contact</a>
-                <!-- Theme toggle menu item will be added here by dark-mode.js -->
-            </div>
-            <div class="nav-toggle" id="navToggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    </nav>
+{% extends "base.html" %}
 
+{% block title %}FAQ - ColdMail{% endblock %}
+
+{% block content %}
     <div class="faq-container card">
         <div class="faq-title">Frequently Asked Questions</div>
 
         <details>
-            <summary>How does the tool analyze my content?</summary>
-            <p>We use rule-based checks (spam triggers, personalization markers, prompt structure) + lightweight AI. No data is stored after analysis.</p>
+            <summary>What is ColdMail?</summary>
+            <p>ColdMail is an AI prompt optimizer. We help you write better prompts for AI image/video generators (Midjourney, DALL-E 3, Stable Diffusion, Veo, Runway, Sora) and AI app builders (Cursor, v0, Bolt, Lovable, Replit Agent). Better prompts = better results.</p>
         </details>
         <details>
             <summary>What tools are available?</summary>
-            <p>ColdMail offers two powerful tools: 1) Cold DM/Email Analyzer for optimizing your outreach messages, and 2) Prompt Improver for developers and vibe coders to get better results from AI app builders like Cursor, v0, Bolt, and Lovable.</p>
+            <p>ColdMail offers two tools: 1) <strong>Image & Video Prompt Optimizer</strong> — improve prompts for any AI image or video generation model, with a dropdown to select your specific tool. 2) <strong>App Builder Prompt Optimizer</strong> — improve prompts for AI coding tools like Cursor, v0, and Bolt.</p>
         </details>
         <details>
-            <summary>Why is my improved content blank/weird?</summary>
-            <p>This happens with extremely short content. Try adding more context for better results.</p>
+            <summary>Which AI models are supported?</summary>
+            <p>For image & video: Midjourney, DALL-E 3, Stable Diffusion XL, Google Veo, Runway Gen-3, OpenAI Sora, Flux, Leonardo AI, and Ideogram. For app builders: Cursor, v0, Bolt, Lovable, and Replit Agent.</p>
         </details>
         <details>
-            <summary>Is there a free trial?</summary>
-            <p>Yes! You get 6 free analyses total (shared between both tools). Upgrade to unlock up to 200 analyses per month and PDF reports.</p>
+            <summary>How does the optimizer work?</summary>
+            <p>Paste your prompt, select your AI model, and hit optimize. Our AI analyzes your prompt for key elements (style, lighting, composition for images; tech stack, features, UI for apps) and produces an enhanced version tuned for your specific model.</p>
         </details>
         <details>
-            <summary>Can I get a refund if I don't get more replies?</summary>
-            <p>We offer 7-day refunds if the tool malfunctions. Results depend on your content quality - we can't guarantee specific outcomes.</p>
+            <summary>What are UGC templates?</summary>
+            <p>UGC (User Generated Content) templates are proven prompt structures for creating marketing content — product shots, testimonials, lifestyle imagery, and before/after comparisons. They're designed for marketers and creators who want to use AI for product promotion and brand awareness.</p>
         </details>
         <details>
-            <summary>Does this work for cold DMs as well as emails?</summary>
-            <p>Yes! The email analyzer works for both cold DMs and cold emails for best practices and spam triggers.</p>
+            <summary>Is there a free tier?</summary>
+            <p>Yes! You get 6 free prompt improvements. After that, upgrade to Pro for 200 improvements per month at $9.99/mo.</p>
         </details>
         <details>
-            <summary>How does the Prompt Improver work?</summary>
-            <p>The Prompt Improver is designed for developers and vibe coders using AI app builders. It analyzes your prompts for tech stack specifications, feature details, UI/UX requirements, functionality descriptions, and styling preferences. It then generates an optimized prompt that will get you better code and features from tools like Cursor, v0, Bolt, Lovable, and Replit Agent.</p>
+            <summary>How much does Pro cost?</summary>
+            <p>Pro is $9.99/month. You get 200 prompt improvements per month, access to all AI models, UGC templates, and priority support. Cancel anytime.</p>
+        </details>
+        <details>
+            <summary>Can I get a refund?</summary>
+            <p>Yes — we offer a 7-day money-back guarantee. Contact us at <a href="mailto:sptcoldmail@gmail.com">sptcoldmail@gmail.com</a> to request a refund.</p>
         </details>
         <details>
             <summary>Is my data private?</summary>
-            <p>Absolutely. We do not store your content after analysis. Your data is never shared.</p>
-        </details>
-        <details>
-            <summary>What counts as an analysis for the free tier?</summary>
-            <p>Each time you submit content for analysis (whether it's an email or a prompt), it counts toward your 6 free analyses total.</p>
-        </details>
-        <details>
-            <summary>How do I get more analyses?</summary>
-            <p>Click the "Get More Access" button on the homepage and follow the instructions. Pro users get 200 analyses per month.</p>
-        </details>
-        <details>
-            <summary>Can I export my results?</summary>
-            <p>Paid users can export their analysis as a PDF report from the results page.</p>
+            <p>Absolutely. We do not store your prompts after analysis. Your content is processed in real-time and immediately discarded. We never share your data.</p>
         </details>
         <details>
             <summary>Who can I contact for support?</summary>
-            <p>Use the Contact page to reach out. We're happy to help!</p>
+            <p>Use the <a href="/contact">Contact page</a> or email us at <a href="mailto:sptcoldmail@gmail.com">sptcoldmail@gmail.com</a>.</p>
         </details>
 
-        <a href="/" class="back-btn">← Back to Analyzer</a>
-        
-        <!-- Upgrade Section -->
+        <a href="/" class="back-btn">← Back to Home</a>
+
         <div class="faq-payment-section card">
-            <h3>Ready to Upgrade?</h3>
-            <p>Get up to 200 analyses per month and PDF exports for just $20</p>
+            <h3>Ready to Go Pro?</h3>
+            <p>200 prompt improvements per month for just $9.99/mo</p>
             <div class="payment-buttons">
-                <a href="/upgrade" class="btn btn-primary">Upgrade Now</a>
+                <a href="/upgrade" class="btn btn-primary">Go Pro</a>
             </div>
         </div>
     </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-                    <div class="footer-links">
-            <a href="/faq">FAQ</a>
-            <a href="/terms">Terms of Service</a>
-            <a href="/privacy">Privacy Policy</a>
-        </div>
-        <div class="footer-copyright">
-            <p>&copy; 2025 ColdMail. All rights reserved.</p>
-        </div>
-        </div>
-    </footer>
-
-    <!-- Include dark mode JavaScript -->
-    <script src="/static/dark-mode.js"></script>
-    
-    <script>
-        // Mobile navigation toggle
-        document.getElementById('navToggle').addEventListener('click', function() {
-            document.querySelector('.nav-links').classList.toggle('active');
-            this.classList.toggle('active');
-        });
-    </script>
-</body>
-</html> 
+{% endblock %}

@@ -4,7 +4,6 @@
 
 {% block extra_css %}
 <style>
-    /* Prompt Statistics Enhanced Styling */
     .prompt-stats-card {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border: none;
@@ -12,47 +11,26 @@
         position: relative;
         overflow: hidden;
     }
-    
     .prompt-stats-card::before {
         content: '';
         position: absolute;
-        top: -50%;
-        right: -50%;
-        width: 100%;
-        height: 100%;
+        top: -50%; right: -50%;
+        width: 100%; height: 100%;
         background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
         pointer-events: none;
     }
-    
-    .prompt-stats-card .card-header {
-        border-bottom-color: rgba(255,255,255,0.2);
-    }
-    
-    .prompt-stats-card .card-header h3 {
-        color: white;
-    }
-    
-    .prompt-stats-card .card-icon {
-        background: rgba(255,255,255,0.2);
-        backdrop-filter: blur(10px);
-    }
-    
-    .prompt-stats-card .card-content p {
-        color: rgba(255,255,255,0.9);
-    }
-    
-    .prompt-stats-card .card-content strong {
-        color: white;
-    }
-    
-    /* Stats Grid */
+    .prompt-stats-card .card-header { border-bottom-color: rgba(255,255,255,0.2); }
+    .prompt-stats-card .card-header h3 { color: white; }
+    .prompt-stats-card .card-icon { background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); }
+    .prompt-stats-card .card-content p { color: rgba(255,255,255,0.9); }
+    .prompt-stats-card .card-content strong { color: white; }
+
     .stats-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 16px;
         margin-bottom: 20px;
     }
-    
     .stat-item {
         background: rgba(255,255,255,0.15);
         backdrop-filter: blur(10px);
@@ -61,12 +39,10 @@
         text-align: center;
         transition: transform 0.2s ease, background 0.2s ease;
     }
-    
     .stat-item:hover {
         background: rgba(255,255,255,0.25);
         transform: translateY(-2px);
     }
-    
     .stat-number {
         font-size: 2.5em;
         font-weight: 800;
@@ -74,7 +50,6 @@
         line-height: 1;
         margin-bottom: 4px;
     }
-    
     .stat-label {
         font-size: 0.9em;
         color: rgba(255,255,255,0.8);
@@ -82,7 +57,7 @@
         letter-spacing: 0.5px;
         font-weight: 500;
     }
-    
+
     .prompt-stats-card .success-message,
     .prompt-stats-card .warning-message,
     .prompt-stats-card .info-message {
@@ -91,26 +66,19 @@
         border-left: 4px solid rgba(255,255,255,0.8);
         color: white;
     }
-    
     .prompt-stats-card .success-message p,
     .prompt-stats-card .warning-message p,
-    .prompt-stats-card .info-message p {
-        color: white;
-        margin: 0;
-    }
-    
-    /* Dark mode adjustments */
+    .prompt-stats-card .info-message p { color: white; margin: 0; }
+
     body.dark .prompt-stats-card {
         background: linear-gradient(135deg, #4c5fd5 0%, #5d3f8e 100%);
     }
-    
-    /* Checklist card enhancements */
+
     .checklist-card .checklist {
         display: flex;
         flex-direction: column;
         gap: 8px;
     }
-    
     .checklist-card .checklist li {
         display: flex;
         align-items: center;
@@ -122,21 +90,15 @@
         font-weight: 500;
         transition: all 0.2s ease;
     }
-    
     .checklist-card .checklist li:hover {
         background: #f1f5f9;
         transform: translateX(4px);
     }
-    
     body.dark .checklist-card .checklist li {
         background: #1e293b;
         border-color: #334155;
     }
-    
-    body.dark .checklist-card .checklist li:hover {
-        background: #334155;
-    }
-    
+    body.dark .checklist-card .checklist li:hover { background: #334155; }
     .checklist-card .check-yes {
         font-size: 1.2em;
         background: linear-gradient(135deg, #10b981, #059669);
@@ -144,7 +106,6 @@
         -webkit-text-fill-color: transparent;
         background-clip: text;
     }
-    
     .checklist-card .check-no {
         font-size: 1.2em;
         background: linear-gradient(135deg, #ef4444, #dc2626);
@@ -152,32 +113,55 @@
         -webkit-text-fill-color: transparent;
         background-clip: text;
     }
-    
-    /* Mobile responsive */
+
+    .model-badge {
+        display: inline-block;
+        padding: 6px 14px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-radius: 20px;
+        font-size: 0.85em;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .fade-in {
+        animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
     @media (max-width: 480px) {
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .stat-number {
-            font-size: 2em;
-        }
+        .stats-grid { grid-template-columns: 1fr; }
+        .stat-number { font-size: 2em; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-    <div class="container">
+    <div class="container fade-in">
         <div class="results-header">
-            <h1>AI Builder Prompt Results</h1>
-            <p style="text-align: center;">Here's your improved prompt optimized for AI app builders like Cursor, v0, Bolt & more</p>
+            {% if prompt_data.tool_type == 'image_video' %}
+                <span class="model-badge">{{ prompt_data.model }}</span>
+                <h1>Image & Video Prompt Results</h1>
+                <p style="text-align: center;">Your optimized prompt for {{ prompt_data.model }}</p>
+            {% else %}
+                <h1>App Builder Prompt Results</h1>
+                <p style="text-align: center;">Your optimized prompt for AI app builders like Cursor, v0, Bolt & more</p>
+            {% endif %}
         </div>
-        
+
         <!-- Overall Score Card -->
         <div class="score-card-main">
             <div class="score-header">
                 <h2>Prompt Quality Score</h2>
-                <p class="score-subtitle">Based on tech stack, features, UI requirements, and functionality</p>
+                {% if prompt_data.tool_type == 'image_video' %}
+                    <p class="score-subtitle">Based on subject clarity, style, lighting, composition, and mood</p>
+                {% else %}
+                    <p class="score-subtitle">Based on tech stack, features, UI requirements, and functionality</p>
+                {% endif %}
             </div>
             <div class="score-display">
                 <div class="score-circle {{ 'excellent' if prompt_data.rule_analysis.score >= 8 else 'good' if prompt_data.rule_analysis.score >= 6 else 'warning' if prompt_data.rule_analysis.score >= 4 else 'poor' }}">
@@ -195,14 +179,14 @@
                         <span class="label warning">Needs Work</span>
                         <p>Your prompt could use more detail and structure.</p>
                     {% else %}
-                        <span class="label poor">Requires Attention</span>
-                        <p>Significant improvements needed for better AI responses.</p>
+                        <span class="label poor">Needs Attention</span>
+                        <p>More detail will significantly improve your results.</p>
                     {% endif %}
                 </div>
             </div>
         </div>
 
-        <!-- Improved Prompt Card - Featured -->
+        <!-- Improved Prompt Card -->
         <div class="email-preview-card featured-card">
             <div class="card-header">
                 <div class="card-icon preview-icon">✨</div>
@@ -221,7 +205,7 @@
 
         <!-- Analysis Cards Grid -->
         <div class="analysis-grid">
-            <!-- Prompt Stats Card -->
+            <!-- Stats Card -->
             <div class="analysis-card prompt-stats-card">
                 <div class="card-header">
                     <div class="card-icon spam-icon">📊</div>
@@ -239,66 +223,76 @@
                         </div>
                     </div>
                     {% if prompt_data.rule_analysis.word_count < 10 %}
-                        <div class="warning-message">
-                            <p>⚠️ Your prompt is quite short. More detail typically leads to better results.</p>
-                        </div>
-                    {% elif prompt_data.rule_analysis.word_count > 500 %}
-                        <div class="info-message">
-                            <p>ℹ️ Detailed prompt detected — great for complex apps!</p>
-                        </div>
+                        <div class="warning-message"><p>Your prompt is quite short. More detail typically leads to better results.</p></div>
+                    {% elif prompt_data.rule_analysis.word_count > 100 %}
+                        <div class="success-message"><p>Detailed prompt detected — great for precise results!</p></div>
                     {% else %}
-                        <div class="success-message">
-                            <p>✅ Good prompt length for detailed AI responses.</p>
-                        </div>
+                        <div class="success-message"><p>Good prompt length for detailed AI responses.</p></div>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Prompt Checklist Card -->
+            <!-- Checklist Card -->
             <div class="analysis-card checklist-card">
                 <div class="card-header">
                     <div class="card-icon personalization-icon">✅</div>
-                    <h3>AI Builder Prompt Checklist</h3>
+                    {% if prompt_data.tool_type == 'image_video' %}
+                        <h3>Visual Prompt Checklist</h3>
+                    {% else %}
+                        <h3>App Builder Checklist</h3>
+                    {% endif %}
                 </div>
                 <div class="card-content">
                     <div class="personalization-checklist">
                         <ul class="checklist">
+                            {% if prompt_data.tool_type == 'image_video' %}
                             <li>
-                                <span class="{% if prompt_data.rule_analysis.has_tech_stack %}check-yes{% else %}check-no{% endif %}">
-                                    {{ '✓' if prompt_data.rule_analysis.has_tech_stack else '✗' }}
-                                </span>
+                                <span class="{{ 'check-yes' if prompt_data.rule_analysis.has_subject else 'check-no' }}">{{ '✓' if prompt_data.rule_analysis.has_subject else '✗' }}</span>
+                                Clear Subject
+                            </li>
+                            <li>
+                                <span class="{{ 'check-yes' if prompt_data.rule_analysis.has_style else 'check-no' }}">{{ '✓' if prompt_data.rule_analysis.has_style else '✗' }}</span>
+                                Visual Style
+                            </li>
+                            <li>
+                                <span class="{{ 'check-yes' if prompt_data.rule_analysis.has_lighting else 'check-no' }}">{{ '✓' if prompt_data.rule_analysis.has_lighting else '✗' }}</span>
+                                Lighting Details
+                            </li>
+                            <li>
+                                <span class="{{ 'check-yes' if prompt_data.rule_analysis.has_composition else 'check-no' }}">{{ '✓' if prompt_data.rule_analysis.has_composition else '✗' }}</span>
+                                Composition/Camera
+                            </li>
+                            <li>
+                                <span class="{{ 'check-yes' if prompt_data.rule_analysis.has_mood else 'check-no' }}">{{ '✓' if prompt_data.rule_analysis.has_mood else '✗' }}</span>
+                                Mood/Atmosphere
+                            </li>
+                            {% else %}
+                            <li>
+                                <span class="{{ 'check-yes' if prompt_data.rule_analysis.has_tech_stack else 'check-no' }}">{{ '✓' if prompt_data.rule_analysis.has_tech_stack else '✗' }}</span>
                                 Tech Stack/Framework
                             </li>
                             <li>
-                                <span class="{% if prompt_data.rule_analysis.has_feature_description %}check-yes{% else %}check-no{% endif %}">
-                                    {{ '✓' if prompt_data.rule_analysis.has_feature_description else '✗' }}
-                                </span>
+                                <span class="{{ 'check-yes' if prompt_data.rule_analysis.has_feature_description else 'check-no' }}">{{ '✓' if prompt_data.rule_analysis.has_feature_description else '✗' }}</span>
                                 Feature/Component Details
                             </li>
                             <li>
-                                <span class="{% if prompt_data.rule_analysis.has_ui_requirements %}check-yes{% else %}check-no{% endif %}">
-                                    {{ '✓' if prompt_data.rule_analysis.has_ui_requirements else '✗' }}
-                                </span>
+                                <span class="{{ 'check-yes' if prompt_data.rule_analysis.has_ui_requirements else 'check-no' }}">{{ '✓' if prompt_data.rule_analysis.has_ui_requirements else '✗' }}</span>
                                 UI/UX Requirements
                             </li>
                             <li>
-                                <span class="{% if prompt_data.rule_analysis.has_functionality %}check-yes{% else %}check-no{% endif %}">
-                                    {{ '✓' if prompt_data.rule_analysis.has_functionality else '✗' }}
-                                </span>
+                                <span class="{{ 'check-yes' if prompt_data.rule_analysis.has_functionality else 'check-no' }}">{{ '✓' if prompt_data.rule_analysis.has_functionality else '✗' }}</span>
                                 Functionality Description
                             </li>
                             <li>
-                                <span class="{% if prompt_data.rule_analysis.has_styling %}check-yes{% else %}check-no{% endif %}">
-                                    {{ '✓' if prompt_data.rule_analysis.has_styling else '✗' }}
-                                </span>
+                                <span class="{{ 'check-yes' if prompt_data.rule_analysis.has_styling else 'check-no' }}">{{ '✓' if prompt_data.rule_analysis.has_styling else '✗' }}</span>
                                 Styling Preferences
                             </li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div>
             </div>
 
-            <!-- Strengths Card -->
             {% if prompt_data.rule_analysis.strengths %}
             <div class="analysis-card">
                 <div class="card-header">
@@ -307,15 +301,14 @@
                 </div>
                 <div class="card-content">
                     <ul class="strengths-list">
-                        {% for strength in prompt_data.rule_analysis.strengths %}
-                        <li class="success-item">✅ {{ strength }}</li>
+                        {% for s in prompt_data.rule_analysis.strengths %}
+                        <li class="success-item">✅ {{ s }}</li>
                         {% endfor %}
                     </ul>
                 </div>
             </div>
             {% endif %}
 
-            <!-- Issues/Improvements Card -->
             {% if prompt_data.rule_analysis.issues %}
             <div class="analysis-card">
                 <div class="card-header">
@@ -333,7 +326,6 @@
             {% endif %}
         </div>
 
-        <!-- AI Analysis Card -->
         {% if prompt_data.ai_analysis %}
         <div class="email-preview-card">
             <div class="card-header">
@@ -346,7 +338,6 @@
         </div>
         {% endif %}
 
-        <!-- Original Prompt Preview -->
         <div class="email-preview-card">
             <div class="card-header">
                 <div class="card-icon preview-icon">📝</div>
@@ -357,7 +348,6 @@
             </div>
         </div>
 
-        <!-- Action Buttons -->
         <div class="action-buttons">
             <a href="/" class="btn btn-primary">
                 <span class="btn-icon">←</span>
@@ -368,14 +358,13 @@
                 <span class="btn-text">Print Results</span>
             </button>
         </div>
-        
-        <!-- Upgrade Section for Non-Paid Users -->
+
         {% if not paid %}
         <div class="faq-payment-section">
-            <h3>Want More Access?</h3>
-            <p>Upgrade to 200 analyses/month and PDF exports for just $20</p>
+            <h3>Want More Improvements?</h3>
+            <p>Go Pro for 200 prompt improvements per month — just $9.99/mo</p>
             <div class="payment-buttons">
-                <a href="/upgrade" class="btn btn-primary">Upgrade Now</a>
+                <a href="/upgrade" class="btn btn-primary">Go Pro</a>
             </div>
         </div>
         {% endif %}
@@ -385,17 +374,17 @@
 {% block extra_js %}
 <script>
     function copyToClipboard() {
-        const improvedPrompt = document.querySelector('.featured-card .email-text').textContent;
-        navigator.clipboard.writeText(improvedPrompt).then(function() {
-            const btn = document.querySelector('.copy-btn');
-            const originalText = btn.innerHTML;
+        var text = document.querySelector('.featured-card .email-text').textContent;
+        navigator.clipboard.writeText(text).then(function() {
+            var btn = document.querySelector('.copy-btn');
+            var orig = btn.innerHTML;
             btn.innerHTML = '<span class="btn-icon">✓</span><span class="btn-text">Copied!</span>';
             btn.classList.add('btn-success');
             setTimeout(function() {
-                btn.innerHTML = originalText;
+                btn.innerHTML = orig;
                 btn.classList.remove('btn-success');
             }, 2000);
-        }).catch(function(err) {
+        }).catch(function() {
             alert('Failed to copy. Please select and copy manually.');
         });
     }

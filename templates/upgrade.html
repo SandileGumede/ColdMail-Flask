@@ -1,420 +1,158 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upgrade - ColdMail</title>
-    
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3G18XBK27S"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-3G18XBK27S');
-    </script>
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/static/my_simple_logo.png">
-    <link rel="shortcut icon" type="image/png" href="/static/my_simple_logo.png">
-    <link rel="apple-touch-icon" href="/static/my_simple_logo.png">
-    <link rel="stylesheet" href="/static/style.css">
-    <link rel="stylesheet" href="/static/dark-mode.css">
-    <style>
-        /* ===== UPGRADE PAGE STYLES ===== */
-        
-        .upgrade-container {
-            max-width: 540px;
-            margin: 0 auto;
-        }
-        
-        .upgrade-hero {
-            text-align: center;
-            padding: 2rem 0 1rem;
-        }
-        
-        .upgrade-hero h1 {
-            font-size: 2.25rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .upgrade-hero p {
-            color: #64748b;
-            font-size: 1.1rem;
-        }
-        
-        /* Main Pricing Card */
-        .pricing-card {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 20px;
-            padding: 2.5rem 2rem;
-            margin: 1.5rem 0;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-        }
-        
-        .price-display {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .price-amount {
-            font-size: 3.5rem;
-            font-weight: 800;
-            color: #1a202c;
-            line-height: 1;
-        }
-        
-        .price-period {
-            font-size: 1rem;
-            color: #64748b;
-            margin-top: 0.5rem;
-        }
-        
-        /* Features List */
-        .features-list {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 2rem 0;
-        }
-        
-        .features-list li {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid #f1f5f9;
-            color: #374151;
-            font-size: 0.95rem;
-        }
-        
-        .features-list li:last-child {
-            border-bottom: none;
-        }
-        
-        .check-icon {
-            width: 20px;
-            height: 20px;
-            background: linear-gradient(135deg, #10b981, #059669);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        
-        .check-icon svg {
-            width: 12px;
-            height: 12px;
-            color: white;
-        }
-        
-        /* Checkout Button */
-        .checkout-btn {
-            display: block;
-            width: 100%;
-            padding: 18px 24px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 600;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 12px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
-        }
-        
-        .checkout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-        }
-        
-        .checkout-btn:active {
-            transform: translateY(0);
-        }
-        
-        /* Payment Info */
-        .payment-info {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            margin-top: 1.25rem;
-            padding-top: 1.25rem;
-            border-top: 1px solid #f1f5f9;
-        }
-        
-        .payment-info span {
-            font-size: 0.8rem;
-            color: #94a3b8;
-        }
-        
-        /* Trust Badges */
-        .trust-badges {
-            display: flex;
-            justify-content: center;
-            gap: 24px;
-            margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid #f1f5f9;
-        }
-        
-        .trust-badge {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.85rem;
-            color: #64748b;
-        }
-        
-        .trust-badge svg {
-            width: 16px;
-            height: 16px;
-            color: #10b981;
-        }
-        
-        /* Back Link */
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 1.5rem;
-            color: #64748b;
-            font-size: 0.9rem;
-            text-decoration: none;
-            transition: color 0.2s ease;
-        }
-        
-        .back-link:hover {
-            color: #667eea;
-        }
-        
-        /* ===== DARK MODE ===== */
-        body.dark .pricing-card,
-        [data-theme="dark"] .pricing-card {
-            background: #1e293b;
-            border-color: #334155;
-        }
-        
-        body.dark .price-amount,
-        [data-theme="dark"] .price-amount {
-            color: #f1f5f9;
-        }
-        
-        body.dark .price-period,
-        body.dark .features-list li,
-        [data-theme="dark"] .price-period,
-        [data-theme="dark"] .features-list li {
-            color: #cbd5e1;
-        }
-        
-        body.dark .features-list li,
-        [data-theme="dark"] .features-list li {
-            border-bottom-color: #334155;
-        }
-        
-        body.dark .payment-info,
-        body.dark .trust-badges,
-        [data-theme="dark"] .payment-info,
-        [data-theme="dark"] .trust-badges {
-            border-top-color: #334155;
-        }
-        
-        body.dark .payment-info span,
-        body.dark .trust-badge,
-        body.dark .back-link,
-        [data-theme="dark"] .payment-info span,
-        [data-theme="dark"] .trust-badge,
-        [data-theme="dark"] .back-link {
-            color: #94a3b8;
-        }
-        
-        body.dark .back-link:hover,
-        [data-theme="dark"] .back-link:hover {
-            color: #818cf8;
-        }
-        
-        /* ===== MOBILE ===== */
-        @media (max-width: 600px) {
-            .upgrade-container {
-                padding: 0 1rem;
-            }
-            
-            .upgrade-hero h1 {
-                font-size: 1.75rem;
-            }
-            
-            .pricing-card {
-                padding: 2rem 1.5rem;
-                border-radius: 16px;
-            }
-            
-            .price-amount {
-                font-size: 3rem;
-            }
-            
-            .checkout-btn {
-                padding: 16px 20px;
-                font-size: 1rem;
-            }
-            
-            .payment-info {
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-            
-            .trust-badges {
-                flex-direction: column;
-                align-items: center;
-                gap: 12px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Navigation Header -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <img src="/static/my_simple_logo.png" alt="ColdMail Logo" class="nav-logo">
-            </div>
-            <div class="nav-links">
-                <a href="/" class="nav-link">Home</a>
-                <a href="/faq" class="nav-link">FAQ</a>
-                <a href="/contact" class="nav-link">Contact</a>
-            </div>
-            <div class="nav-toggle" id="navToggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    </nav>
+{% extends "base.html" %}
 
+{% block title %}Upgrade - ColdMail{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upgrade-container { max-width: 540px; margin: 0 auto; }
+
+    .upgrade-hero { text-align: center; padding: 2rem 0 1rem; }
+    .upgrade-hero h1 {
+        font-size: 2.25rem; font-weight: 700; margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .upgrade-hero p { color: #64748b; font-size: 1.1rem; }
+
+    .pricing-card {
+        background: #ffffff; border: 1px solid #e5e7eb; border-radius: 20px;
+        padding: 2.5rem 2rem; margin: 1.5rem 0;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    }
+    .price-display { text-align: center; margin-bottom: 2rem; }
+    .price-amount { font-size: 3.5rem; font-weight: 800; color: #1a202c; line-height: 1; }
+    .price-period { font-size: 1rem; color: #64748b; margin-top: 0.5rem; }
+
+    .features-list { list-style: none; padding: 0; margin: 0 0 2rem 0; }
+    .features-list li {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 0; border-bottom: 1px solid #f1f5f9;
+        color: #374151; font-size: 0.95rem;
+    }
+    .features-list li:last-child { border-bottom: none; }
+    .check-icon {
+        width: 20px; height: 20px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .check-icon svg { width: 12px; height: 12px; color: white; }
+
+    .checkout-btn {
+        display: block; width: 100%; padding: 18px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white; font-size: 1.1rem; font-weight: 600;
+        text-align: center; text-decoration: none;
+        border-radius: 12px; border: none; cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 14px rgba(102,126,234,0.4);
+    }
+    .checkout-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.5); }
+    .checkout-btn:active { transform: translateY(0); }
+
+    .payment-info {
+        display: flex; justify-content: center; gap: 16px;
+        margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid #f1f5f9;
+    }
+    .payment-info span { font-size: 0.8rem; color: #94a3b8; }
+
+    .trust-badges {
+        display: flex; justify-content: center; gap: 24px;
+        margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #f1f5f9;
+    }
+    .trust-badge { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #64748b; }
+    .trust-badge svg { width: 16px; height: 16px; color: #10b981; }
+
+    .back-link {
+        display: block; text-align: center; margin-top: 1.5rem;
+        color: #64748b; font-size: 0.9rem; text-decoration: none; transition: color 0.2s ease;
+    }
+    .back-link:hover { color: #667eea; }
+
+    body.dark .pricing-card { background: #1e293b; border-color: #334155; }
+    body.dark .price-amount { color: #f1f5f9; }
+    body.dark .price-period, body.dark .features-list li { color: #cbd5e1; }
+    body.dark .features-list li { border-bottom-color: #334155; }
+    body.dark .payment-info, body.dark .trust-badges { border-top-color: #334155; }
+    body.dark .payment-info span, body.dark .trust-badge, body.dark .back-link { color: #94a3b8; }
+    body.dark .back-link:hover { color: #818cf8; }
+
+    @media (max-width: 600px) {
+        .upgrade-container { padding: 0 1rem; }
+        .upgrade-hero h1 { font-size: 1.75rem; }
+        .pricing-card { padding: 2rem 1.5rem; border-radius: 16px; }
+        .price-amount { font-size: 3rem; }
+        .checkout-btn { padding: 16px 20px; font-size: 1rem; }
+        .payment-info { flex-wrap: wrap; gap: 8px; }
+        .trust-badges { flex-direction: column; align-items: center; gap: 12px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
     <div class="container">
         <div class="upgrade-container">
             <div class="upgrade-hero">
-                <h1>Upgrade to Pro</h1>
-                <p>Get more out of your writing analysis</p>
+                <h1>Go Pro</h1>
+                <p>Unlock the full power of AI prompt optimization</p>
             </div>
-            
+
             <div class="pricing-card">
                 <div class="price-display">
-                    <div class="price-amount">$20</div>
-                    <div class="price-period">One-time payment</div>
+                    <div class="price-amount">$9.99<span style="font-size: 0.4em; font-weight: 500; color: #64748b;">/mo</span></div>
+                    <div class="price-period">Cancel anytime</div>
                 </div>
-                
+
                 <ul class="features-list">
                     <li>
-                        <span class="check-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                        </span>
-                        200 analyses per month
+                        <span class="check-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                        200 prompt improvements per month
                     </li>
                     <li>
-                        <span class="check-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                        </span>
-                        AI-powered writing improvements
+                        <span class="check-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                        All AI image & video models
                     </li>
                     <li>
-                        <span class="check-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                        </span>
-                        Advanced spam detection
+                        <span class="check-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                        App builder prompt optimizer
                     </li>
                     <li>
-                        <span class="check-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                        </span>
-                        PDF report exports
+                        <span class="check-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
+                        UGC & marketing templates
                     </li>
                     <li>
-                        <span class="check-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                        </span>
+                        <span class="check-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
                         Priority support
                     </li>
                 </ul>
-                
-                <a href="https://whop.com/checkout/plan_oVoJV4oPX6qGJ" class="checkout-btn" target="_blank">
+
+                <a href="https://whop.com/checkout/plan_gXeJUq0tSTGzx" class="checkout-btn" target="_blank">
                     Get Pro Access
                 </a>
-                
+
                 <div class="payment-info">
-                    <span>Card</span>
-                    <span>•</span>
-                    <span>Cash App</span>
-                    <span>•</span>
-                    <span>Crypto</span>
-                    <span>•</span>
+                    <span>Card</span><span>•</span>
+                    <span>Cash App</span><span>•</span>
+                    <span>Crypto</span><span>•</span>
                     <span>Bank</span>
                 </div>
-                
+
                 <div class="trust-badges">
                     <div class="trust-badge">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                        </svg>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                         Secure checkout
                     </div>
                     <div class="trust-badge">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         7-day money back
                     </div>
                     <div class="trust-badge">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                        </svg>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                         Instant access
                     </div>
                 </div>
             </div>
-            
-            <a href="/" class="back-link">← Back to analyzer</a>
+
+            <a href="/" class="back-link">← Back to optimizer</a>
         </div>
     </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-links">
-                <a href="/faq">FAQ</a>
-                <a href="/terms">Terms of Service</a>
-                <a href="/privacy">Privacy Policy</a>
-            </div>
-            <div class="footer-copyright">
-                <p>&copy; 2025 ColdMail. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Include dark mode JavaScript -->
-    <script src="/static/dark-mode.js"></script>
-    
-    <script>
-        document.getElementById('navToggle').addEventListener('click', function() {
-            document.querySelector('.nav-links').classList.toggle('active');
-            this.classList.toggle('active');
-        });
-    </script>
-</body>
-</html>
+{% endblock %}

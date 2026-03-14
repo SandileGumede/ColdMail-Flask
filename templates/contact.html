@@ -1,77 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact Us - ColdMail</title>
-    
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3G18XBK27S"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-3G18XBK27S');
-    </script>
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/static/my_simple_logo.png">
-    <link rel="shortcut icon" type="image/png" href="/static/my_simple_logo.png">
-    <link rel="apple-touch-icon" href="/static/my_simple_logo.png">
-    <link rel="stylesheet" href="/static/style.css">
-    <link rel="stylesheet" href="/static/dark-mode.css">
-</head>
-<body>
-    <!-- Navigation Header -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <img src="/static/my_simple_logo.png" alt="ColdMail Logo" class="nav-logo">
-            </div>
-            <div class="nav-links">
-                <a href="/" class="nav-link">Home</a>
-                <a href="/faq" class="nav-link">FAQ</a>
-                <a href="/contact" class="nav-link active">Contact</a>
-                <!-- Theme toggle menu item will be added here by dark-mode.js -->
-            </div>
-            <div class="nav-toggle" id="navToggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    </nav>
+{% extends "base.html" %}
 
+{% block title %}Contact Us - ColdMail{% endblock %}
+
+{% block content %}
     <div class="container">
         <div class="hero-section">
             <h1>Contact Us</h1>
-            <p>Get in touch with our team. We'd love to hear from you!</p>
+            <p>Got a question or need help? We'd love to hear from you.</p>
         </div>
-        
+
         <div class="contact-form-container card">
             <form id="contactForm" class="contact-form">
                 <div class="form-group">
-                    <label for="email">Your Email:</label>
+                    <label for="email">Your Email</label>
                     <input type="email" id="email" name="email" required>
                 </div>
-                
+
                 <div class="form-group">
-                    <label for="message">Message:</label>
-                    <textarea id="message" name="message" rows="8" placeholder="Tell us how we can help you..." required></textarea>
+                    <label for="message">Message</label>
+                    <textarea id="message" name="message" rows="8" placeholder="How can we help you?" required></textarea>
                 </div>
-                
+
                 <button type="submit" class="btn btn-primary">
-                    <span class="btn-icon">📧</span>
                     <span class="btn-text">Send Message</span>
                 </button>
             </form>
-            
+
             <div id="confirmationMessage" class="confirmation-message flash-message flash-success" style="display: none;">
-                <p>✅ Thank you for your message!</p>
+                <p>Thank you for your message!</p>
                 <p class="message-detail">We'll get back to you as soon as possible.</p>
             </div>
         </div>
-        
+
         <div class="contact-info card">
             <h3>Other Ways to Reach Us</h3>
             <div class="contact-methods">
@@ -84,61 +44,19 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Upgrade Section -->
-        <div class="faq-payment-section card">
-            <h3>Need More Analyses?</h3>
-            <p>Upgrade to 200 analyses per month and PDF exports for just $20</p>
-            <div class="payment-buttons">
-                <a href="/upgrade" class="btn btn-primary">Upgrade Now</a>
-            </div>
-        </div>
     </div>
+{% endblock %}
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-                    <div class="footer-links">
-            <a href="/faq">FAQ</a>
-            <a href="/terms">Terms of Service</a>
-            <a href="/privacy">Privacy Policy</a>
-        </div>
-        <div class="footer-copyright">
-            <p>&copy; 2025 ColdMail. All rights reserved.</p>
-        </div>
-        </div>
-    </footer>
-
-    <!-- Include dark mode JavaScript -->
-    <script src="/static/dark-mode.js"></script>
-    
+{% block extra_js %}
     <script>
-        // Mobile navigation toggle
-        document.getElementById('navToggle').addEventListener('click', function() {
-            document.querySelector('.nav-links').classList.toggle('active');
-            this.classList.toggle('active');
-        });
-
-        // Contact form submission
         document.getElementById('contactForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const message = document.getElementById('message').value;
-            
-            // Create mailto link
-            const mailtoLink = `mailto:sptcoldmail@gmail.com?subject=Message to ColdMail Team&body=From: ${email}%0D%0A%0D%0AMessage:%0D%0A${message}`;
-            
-            // Open default email client
+            var email = document.getElementById('email').value;
+            var message = document.getElementById('message').value;
+            var mailtoLink = 'mailto:sptcoldmail@gmail.com?subject=ColdMail Support&body=From: ' + email + '%0D%0A%0D%0A' + encodeURIComponent(message);
             window.open(mailtoLink);
-            
-            // Show confirmation message
             document.getElementById('contactForm').style.display = 'none';
             document.getElementById('confirmationMessage').style.display = 'block';
-            
-            // Reset form
-            document.getElementById('contactForm').reset();
         });
     </script>
-</body>
-</html> 
+{% endblock %}

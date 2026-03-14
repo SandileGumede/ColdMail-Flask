@@ -1,105 +1,338 @@
 {% extends "base.html" %}
 
+{% block title %}ColdMail - AI Prompt Optimizer{% endblock %}
+
+{% block extra_css %}
+<style>
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+    .loading-overlay.active { display: flex; }
+    .loading-card {
+        background: white;
+        border-radius: 20px;
+        padding: 48px 40px;
+        text-align: center;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+        max-width: 380px;
+        width: 90%;
+        animation: slideUp 0.3s ease;
+    }
+    body.dark .loading-card { background: #1e293b; color: #e2e8f0; }
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .spinner {
+        width: 48px; height: 48px;
+        border: 4px solid #e5e7eb;
+        border-top-color: #667eea;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-card h3 { margin-bottom: 8px; font-size: 1.2em; }
+    .loading-card p { color: #6b7280; font-size: 0.95em; margin: 0; }
+    body.dark .loading-card p { color: #94a3b8; }
+
+    .model-select-group { margin-bottom: 24px; }
+    .model-select {
+        width: 100%;
+        padding: 14px 18px;
+        border: 1px solid #d1d5db;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-family: inherit;
+        background: #fff;
+        color: #111827;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 14px center;
+        background-repeat: no-repeat;
+        background-size: 20px;
+    }
+    .model-select:focus {
+        border-color: #667eea;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+    }
+    body.dark .model-select {
+        background-color: #0f141a;
+        color: #e6e6e6;
+        border-color: #2a3441;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    }
+
+    .ugc-section {
+        margin-top: 48px;
+        padding: 48px 0;
+        border-top: 2px solid #f0f0f0;
+    }
+    body.dark .ugc-section { border-top-color: #2a3441; }
+    .ugc-section h3 {
+        text-align: center;
+        margin-bottom: 12px;
+        font-size: 1.75em;
+    }
+    .ugc-section > p {
+        text-align: center;
+        color: #6b7280;
+        margin-bottom: 32px;
+    }
+    .templates-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+    }
+    .template-card {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 24px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+    .template-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        border-color: #667eea;
+    }
+    body.dark .template-card {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    body.dark .template-card:hover { border-color: #818cf8; }
+    .template-tag {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75em;
+        font-weight: 600;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .tag-product { background: #dbeafe; color: #1e40af; }
+    .tag-brand { background: #fce7f3; color: #9d174d; }
+    .tag-ugc { background: #d1fae5; color: #065f46; }
+    .tag-video { background: #fef3c7; color: #92400e; }
+    body.dark .tag-product { background: rgba(59,130,246,0.2); color: #93c5fd; }
+    body.dark .tag-brand { background: rgba(236,72,153,0.2); color: #f9a8d4; }
+    body.dark .tag-ugc { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+    body.dark .tag-video { background: rgba(245,158,11,0.2); color: #fcd34d; }
+    .template-card h4 { font-size: 1.05em; margin-bottom: 8px; }
+    .template-card p { font-size: 0.9em; color: #4b5563; margin: 0; line-height: 1.5; }
+    body.dark .template-card p { color: #94a3b8; }
+    .template-prompt {
+        display: none;
+        margin-top: 14px;
+        padding: 14px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 0.85em;
+        color: #374151;
+        line-height: 1.6;
+        white-space: pre-wrap;
+    }
+    body.dark .template-prompt {
+        background: #0f172a;
+        border-color: #334155;
+        color: #cbd5e1;
+    }
+    .template-card.expanded .template-prompt { display: block; }
+    .use-template-btn {
+        display: none;
+        margin-top: 10px;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        font-size: 0.85em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .use-template-btn:hover { transform: translateY(-1px); }
+    .template-card.expanded .use-template-btn { display: inline-block; }
+</style>
+{% endblock %}
+
 {% block content %}
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-card">
+            <div class="spinner"></div>
+            <h3>Improving your prompt...</h3>
+            <p>Our AI is optimizing your prompt for better results</p>
+        </div>
+    </div>
+
     <div class="container">
         <div class="hero-section">
-            <h1>Your Writing Analyzer</h1>
-            <p>Analyze your cold DMs, emails, and prompts for optimization opportunities and improvements.</p>
+            <h1>AI Prompt Optimizer</h1>
+            <p>Get better results from AI tools. Optimize prompts for app builders, image generators, and video creators.</p>
             {% if current_user.is_authenticated %}
                 {% if paid %}
                     <div class="status-banner status-banner--success">
                         <span class="status-dot"></span>
-                        <span class="status-text">Pro access enabled (200/month). PDF export available on results page.</span>
+                        <span class="status-text">Pro access active ({{ remaining }} remaining this month)</span>
                     </div>
                 {% else %}
                     <div class="status-banner status-banner--warning">
                         <span class="status-dot"></span>
-                        <span class="status-text">Free analyses left: {{ remaining }} / 6</span>
+                        <span class="status-text">Free improvements left: {{ remaining }} / 6</span>
                     </div>
                     <div class="status-actions">
-                        <a href="/upgrade" class="btn btn-primary">Get More Access ($20)</a>
+                        <a href="/upgrade" class="btn btn-primary">Go Pro — $9.99/mo</a>
                     </div>
                 {% endif %}
             {% else %}
-                <div class="status-banner status-banner--warning">
-                    <span class="status-dot"></span>
-                    <span class="status-text">Free analyses left: {{ remaining }} / 6</span>
-                </div>
-                <div class="status-actions">
+                <div class="status-actions" style="margin-top: 20px;">
                     <a href="/login" class="btn btn-primary">Login</a>
-                    <a href="/signup" class="btn btn-secondary">Sign Up</a>
+                    <a href="/signup" class="btn btn-secondary">Sign Up Free</a>
                 </div>
             {% endif %}
         </div>
-        
+
         <!-- Tool Selection Tabs -->
         <div class="tool-tabs">
-            <button class="tool-tab active" data-tool="email" onclick="switchTool('email')">
-                <span class="tab-icon">📧</span>
-                <span class="tab-text">Cold DM/Email Analyzer</span>
+            <button class="tool-tab active" data-tool="image" onclick="switchTool('image')">
+                <span class="tab-icon">🎨</span>
+                <span class="tab-text">Image & Video Prompt</span>
             </button>
-            <button class="tool-tab" data-tool="prompt" onclick="switchTool('prompt')">
-                <span class="tab-icon">✨</span>
-                <span class="tab-text">AI Builder Prompt Improver</span>
+            <button class="tool-tab" data-tool="app" onclick="switchTool('app')">
+                <span class="tab-icon">💻</span>
+                <span class="tab-text">App Builder Prompt</span>
             </button>
         </div>
-        
-        <!-- Cold DM/Email Form -->
-        <form action="/analyze" method="POST" class="email-form tool-form" id="email-form">
+
+        <!-- Image/Video Prompt Form -->
+        <form action="/improve-image-prompt" method="POST" class="email-form tool-form" id="image-form" onsubmit="showLoading()">
+            <div class="model-select-group">
+                <label for="model">Select AI Model</label>
+                <select id="model" name="model" class="model-select">
+                    {% for key, name in models.items() %}
+                    <option value="{{ key }}">{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
             <div class="form-group">
-                <label for="email_content">Enter your cold DM or cold email content:</label>
-                <textarea 
-                    id="email_content" 
-                    name="email_content" 
-                    rows="12" 
-                    placeholder="Paste your cold DM or cold email here...&#10;&#10;First line will be treated as the subject line.&#10;&#10;Example:&#10;Subject: Meeting Tomorrow&#10;&#10;Hi Alex,&#10;&#10;I hope this message finds you well. I wanted to follow up on our discussion..."
+                <label for="image_prompt_content">Enter your image/video prompt to improve</label>
+                <textarea
+                    id="image_prompt_content"
+                    name="prompt_content"
+                    rows="8"
+                    placeholder="Describe what you want to generate...&#10;&#10;Examples:&#10;• A woman unboxing a skincare product in soft morning light&#10;• Product flat lay with coffee and notebook, minimal aesthetic&#10;• 15-second UGC-style video of someone using my fitness app&#10;• Cinematic close-up of luxury watch on marble surface"
                     required></textarea>
             </div>
             <button type="submit" class="analyze-btn">
-                <span class="btn-text">Analyze Cold DM/Email</span>
+                <span class="btn-text">Optimize Prompt</span>
                 <span class="btn-icon">→</span>
             </button>
         </form>
-        
-        <!-- Prompt Improver Form -->
-        <form action="/improve-prompt" method="POST" class="email-form tool-form" id="prompt-form" style="display: none;">
+
+        <!-- App Builder Prompt Form -->
+        <form action="/improve-prompt" method="POST" class="email-form tool-form" id="app-form" style="display: none;" onsubmit="showLoading()">
             <div class="form-group">
-                <label for="prompt_content">Enter your AI app builder prompt to improve:</label>
-                <textarea 
-                    id="prompt_content" 
-                    name="prompt_content" 
-                    rows="12" 
-                    placeholder="Paste your AI app builder prompt here...&#10;&#10;Example:&#10;Build me a todo app with React&#10;&#10;Or:&#10;Create a landing page for my SaaS startup with a signup form and pricing section&#10;&#10;Or:&#10;Make a dashboard that shows user analytics with charts"
+                <label for="prompt_content">Enter your AI app builder prompt to improve</label>
+                <textarea
+                    id="prompt_content"
+                    name="prompt_content"
+                    rows="8"
+                    placeholder="Describe the app or feature you want to build...&#10;&#10;Examples:&#10;• Build me a todo app with React and Tailwind&#10;• Create a landing page for my SaaS with signup form&#10;• Make a dashboard with user analytics and charts&#10;• Build an e-commerce product page with cart functionality"
                     required></textarea>
             </div>
             <button type="submit" class="analyze-btn prompt-btn">
                 <span class="btn-text">Improve My Prompt</span>
-                <span class="btn-icon">✨</span>
+                <span class="btn-icon">→</span>
             </button>
         </form>
 
+        <!-- Features Section -->
         <div class="features-section">
-            <h3>What we analyze:</h3>
+            <h3>Why optimize your prompts?</h3>
             <div class="features-grid">
                 <div class="feature-card">
-                    <div class="feature-icon">🚫</div>
-                    <h4>Spam Detection</h4>
-                    <p>Identify common spam words and phrases in your cold DM or cold email</p>
+                    <div class="feature-icon">🎨</div>
+                    <h4>Image & Video AI</h4>
+                    <p>Optimized prompts for Midjourney, DALL-E 3, Stable Diffusion, Veo, Runway, and more</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">📏</div>
-                    <h4>Subject Length</h4>
-                    <p>Optimize your subject line for cold emails and DMs</p>
+                    <div class="feature-icon">💻</div>
+                    <h4>App Builders</h4>
+                    <p>Better prompts for Cursor, v0, Bolt, Lovable, and Replit Agent</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">👋</div>
-                    <h4>Personalization</h4>
-                    <p>Check for proper greetings and personal touch in your cold DM or cold email</p>
+                    <div class="feature-icon">📈</div>
+                    <h4>UGC & Marketing</h4>
+                    <p>Create scroll-stopping content for product promotion and brand awareness</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">✨</div>
-                    <h4>Prompt Improver</h4>
-                    <p>Optimize your AI app builder prompts for better code and features</p>
+                    <div class="feature-icon">⚡</div>
+                    <h4>Instant Results</h4>
+                    <p>AI-powered analysis and improvement in seconds, with a quality score</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- UGC Templates Section -->
+        <div class="ugc-section">
+            <h3>Proven UGC Templates</h3>
+            <p>Click any template to preview it, then use it directly in the prompt optimizer.</p>
+            <div class="templates-grid">
+                <div class="template-card" onclick="toggleTemplate(this)">
+                    <span class="template-tag tag-product">Product</span>
+                    <h4>Product Unboxing</h4>
+                    <p>First-person unboxing experience that builds anticipation and showcases packaging quality.</p>
+                    <div class="template-prompt">Close-up hands unboxing a premium product from a branded box, soft natural lighting from a window, shallow depth of field, clean white desk background, satisfying reveal moment, lifestyle aesthetic, warm tones, 4K quality</div>
+                    <button class="use-template-btn" onclick="useTemplate(event, this)">Use This Template</button>
+                </div>
+                <div class="template-card" onclick="toggleTemplate(this)">
+                    <span class="template-tag tag-ugc">UGC</span>
+                    <h4>Testimonial Style</h4>
+                    <p>Authentic-looking user testimonial format that drives trust and conversions.</p>
+                    <div class="template-prompt">Young woman talking to camera in her apartment, holding up a product with genuine excitement, natural indoor lighting, iPhone selfie style, authentic UGC aesthetic, warm color grading, casual outfit, relatable background</div>
+                    <button class="use-template-btn" onclick="useTemplate(event, this)">Use This Template</button>
+                </div>
+                <div class="template-card" onclick="toggleTemplate(this)">
+                    <span class="template-tag tag-brand">Brand</span>
+                    <h4>Lifestyle Flat Lay</h4>
+                    <p>Aesthetic product arrangement perfect for social media feeds and ads.</p>
+                    <div class="template-prompt">Minimalist flat lay of product surrounded by lifestyle items, marble surface, golden hour side lighting, top-down camera angle, muted earth tones, editorial style, Instagram-worthy composition, 1:1 aspect ratio</div>
+                    <button class="use-template-btn" onclick="useTemplate(event, this)">Use This Template</button>
+                </div>
+                <div class="template-card" onclick="toggleTemplate(this)">
+                    <span class="template-tag tag-video">Video</span>
+                    <h4>Before & After</h4>
+                    <p>Transformation content that highlights your product's impact visually.</p>
+                    <div class="template-prompt">Split screen before and after comparison, left side dull and grey, right side vibrant and enhanced, smooth transition wipe effect, product placement at center, dramatic lighting change, satisfying visual transformation, 16:9 aspect ratio</div>
+                    <button class="use-template-btn" onclick="useTemplate(event, this)">Use This Template</button>
+                </div>
+                <div class="template-card" onclick="toggleTemplate(this)">
+                    <span class="template-tag tag-product">Product</span>
+                    <h4>Hero Product Shot</h4>
+                    <p>Clean, professional product photography for websites and ads.</p>
+                    <div class="template-prompt">Professional product photography, centered composition, clean gradient background, studio lighting with soft shadows, slight reflection on surface, premium feel, sharp focus, commercial quality, 3:4 aspect ratio</div>
+                    <button class="use-template-btn" onclick="useTemplate(event, this)">Use This Template</button>
+                </div>
+                <div class="template-card" onclick="toggleTemplate(this)">
+                    <span class="template-tag tag-ugc">UGC</span>
+                    <h4>Day-in-the-Life</h4>
+                    <p>Show your product naturally integrated into an everyday routine.</p>
+                    <div class="template-prompt">Candid lifestyle shot of person using product during morning routine, cozy home setting, soft backlighting from window, bokeh background, warm and inviting mood, authentic and relatable, natural colors, eye-level perspective</div>
+                    <button class="use-template-btn" onclick="useTemplate(event, this)">Use This Template</button>
                 </div>
             </div>
         </div>
@@ -108,33 +341,46 @@
 
 {% block extra_js %}
     <script>
-        // Auto-resize textarea
-        const emailTextarea = document.getElementById('email_content');
-        const promptTextarea = document.getElementById('prompt_content');
-        
-        emailTextarea.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = this.scrollHeight + 'px';
-        });
-        
-        promptTextarea.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = this.scrollHeight + 'px';
-        });
-        
-        // Tool tab switching
         function switchTool(tool) {
-            // Update tab buttons
-            document.querySelectorAll('.tool-tab').forEach(tab => {
+            document.querySelectorAll('.tool-tab').forEach(function(tab) {
                 tab.classList.remove('active');
             });
-            document.querySelector(`.tool-tab[data-tool="${tool}"]`).classList.add('active');
-            
-            // Update forms
-            document.querySelectorAll('.tool-form').forEach(form => {
+            document.querySelector('.tool-tab[data-tool="' + tool + '"]').classList.add('active');
+            document.querySelectorAll('.tool-form').forEach(function(form) {
                 form.style.display = 'none';
             });
-            document.getElementById(`${tool}-form`).style.display = 'block';
+            document.getElementById(tool + '-form').style.display = 'block';
         }
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function toggleTemplate(card) {
+            if (card.classList.contains('expanded')) {
+                card.classList.remove('expanded');
+            } else {
+                document.querySelectorAll('.template-card.expanded').forEach(function(c) {
+                    c.classList.remove('expanded');
+                });
+                card.classList.add('expanded');
+            }
+        }
+
+        function useTemplate(event, btn) {
+            event.stopPropagation();
+            var promptText = btn.previousElementSibling.textContent.trim();
+            switchTool('image');
+            document.getElementById('image_prompt_content').value = promptText;
+            document.getElementById('image_prompt_content').focus();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        document.querySelectorAll('.tool-form textarea').forEach(function(textarea) {
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = this.scrollHeight + 'px';
+            });
+        });
     </script>
-{% endblock %} 
+{% endblock %}
