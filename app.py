@@ -6,6 +6,9 @@ from supabase_service import SupabaseService
 import re
 import os
 import requests
+import hmac
+import hashlib
+import base64
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import time
@@ -592,36 +595,74 @@ def paypal_checkout():
     return redirect(url_for('upgrade'))
 
 # --- Whop Webhook Integration ---
+def verify_whop_signature(payload_bytes, headers):
+    """Verify Whop webhook signature using the Standard Webhooks protocol."""
+    secret = os.getenv('WHOP_WEBHOOK_SECRET')
+    if not secret:
+        print("WARNING: WHOP_WEBHOOK_SECRET not set — skipping signature verification")
+        return True
+
+    msg_id = headers.get('webhook-id')
+    timestamp = headers.get('webhook-timestamp')
+    signature_header = headers.get('webhook-signature')
+
+    if not all([msg_id, timestamp, signature_header]):
+        print("Whop webhook: Missing signature headers")
+        return False
+
+    # Whop secrets may use whsec_ or ws_ prefix — strip either
+    if secret.startswith('whsec_'):
+        secret = secret[len('whsec_'):]
+    elif secret.startswith('ws_'):
+        secret = secret[len('ws_'):]
+
+    try:
+        secret_bytes = base64.b64decode(secret)
+    except Exception:
+        secret_bytes = secret.encode()
+
+    signed_content = f"{msg_id}.{timestamp}.{payload_bytes.decode('utf-8')}"
+    expected = base64.b64encode(
+        hmac.new(secret_bytes, signed_content.encode('utf-8'), hashlib.sha256).digest()
+    ).decode('utf-8')
+
+    # The header can contain multiple signatures: "v1,<sig1> v1,<sig2>"
+    for sig in signature_header.split(' '):
+        parts = sig.split(',', 1)
+        if len(parts) == 2 and parts[0] == 'v1':
+            if hmac.compare_digest(expected, parts[1]):
+                return True
+
+    print("Whop webhook: Signature mismatch")
+    return False
+
+
 @app.route('/whop/webhook', methods=['POST'])
 def whop_webhook():
-    """
-    Handle Whop payment webhook notifications.
-    Whop sends a POST request when a payment is completed.
-    """
+    """Handle Whop payment webhook notifications with signature verification."""
     try:
-        # Get webhook data
+        raw_payload = request.get_data()
+
+        if not verify_whop_signature(raw_payload, request.headers):
+            return jsonify({'success': False, 'message': 'Invalid signature'}), 401
+
         data = request.get_json()
-        
         if not data:
-            print("Whop webhook: No data received")
             return jsonify({'success': False, 'message': 'No data received'}), 400
-        
+
         print(f"Whop webhook received: {data}")
-        
-        # Get event type - Whop sends different event types
+
         event_type = data.get('event') or data.get('action') or data.get('type')
-        
-        # Handle membership/payment events
-        # Whop typically sends events like: membership.went_valid, payment.succeeded, etc.
-        if event_type in ['membership.went_valid', 'payment.succeeded', 'membership_went_valid', 'payment_succeeded']:
-            # Extract user email from the webhook data
-            # Whop includes user info in the webhook payload
+
+        if event_type in ['membership.went_valid', 'payment.succeeded',
+                          'membership_went_valid', 'payment_succeeded']:
             user_data = data.get('data', {})
             user_info = user_data.get('user', {}) or data.get('user', {})
-            email = user_info.get('email') or user_data.get('email') or data.get('email')
-            
+            email = (user_info.get('email')
+                     or user_data.get('email')
+                     or data.get('email'))
+
             if email:
-                # Find user by email and mark as paid
                 user = User.query.filter_by(email=email).first()
                 if user:
                     if not user.is_paid:
@@ -637,11 +678,10 @@ def whop_webhook():
             else:
                 print("Whop webhook: No email in webhook data")
                 return jsonify({'success': False, 'message': 'No email provided'}), 400
-        
-        # For other event types, just acknowledge receipt
+
         print(f"Whop webhook: Received event type: {event_type}")
         return jsonify({'success': True, 'message': 'Webhook received'}), 200
-        
+
     except Exception as e:
         print(f"Whop webhook error: {e}")
         import traceback
