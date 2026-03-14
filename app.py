@@ -153,28 +153,17 @@ Session(app)
 # --- Main Application Routes ---
 @app.route("/login/process", methods=["GET", "POST"])
 def user_login():
-    
-    if request.method == "GET":
-        return render_template("login.html")
-    
+    """Legacy auth route: forward to canonical /login endpoint."""
     if request.method == "POST":
-        email = request.form.get("email")
-        password = request.form.get("password")
-        user = User.query.filter_by(email=email).first()
-        if user and user.password == password:
-            session['user_id'] = user.id
-            session.permanent = True
-            return redirect(url_for("home"))
-        else:
-            flash("Invalid email or password")
-            
-    return render_template("login.html")
+        return redirect(url_for("login"), code=307)
+    return redirect(url_for("login"))
 
 @app.route("/signup/process", methods=["GET", "POST"])
 def signup_user():
+    """Legacy auth route: forward to canonical /signup endpoint."""
     if request.method == "POST":
-        email = request.form.get("email")
-        password = request.form.get("password")
+        return redirect(url_for("signup"), code=307)
+    return redirect(url_for("signup"))
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -599,8 +588,8 @@ def verify_whop_signature(payload_bytes, headers):
     """Verify Whop webhook signature using the Standard Webhooks protocol."""
     secret = os.getenv('WHOP_WEBHOOK_SECRET')
     if not secret:
-        print("WARNING: WHOP_WEBHOOK_SECRET not set — skipping signature verification")
-        return True
+        print("Whop webhook: WHOP_WEBHOOK_SECRET is missing")
+        return False
 
     msg_id = headers.get('webhook-id')
     timestamp = headers.get('webhook-timestamp')
@@ -621,7 +610,16 @@ def verify_whop_signature(payload_bytes, headers):
     except Exception:
         secret_bytes = secret.encode()
 
-    signed_content = f"{msg_id}.{timestamp}.{payload_bytes.decode('utf-8')}"
+    # Reject stale webhooks (5 minute replay window)
+    try:
+        if abs(time.time() - int(timestamp)) > 300:
+            print("Whop webhook: Timestamp outside replay window")
+            return False
+    except Exception:
+        print("Whop webhook: Invalid timestamp header")
+        return False
+
+    signed_content = f"{msg_id}.{timestamp}.{payload_bytes.decode('utf-8', errors='replace')}"
     expected = base64.b64encode(
         hmac.new(secret_bytes, signed_content.encode('utf-8'), hashlib.sha256).digest()
     ).decode('utf-8')
