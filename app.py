@@ -180,15 +180,16 @@ def load_user(user_id):
 
 # --- Helper Functions ---
 IMAGE_VIDEO_MODELS = {
-    'midjourney': 'Midjourney',
-    'dalle3': 'DALL-E 3',
-    'stable_diffusion': 'Stable Diffusion XL',
-    'veo': 'Google Veo',
-    'runway': 'Runway Gen-3',
-    'sora': 'OpenAI Sora',
-    'flux': 'Flux',
-    'leonardo': 'Leonardo AI',
-    'ideogram': 'Ideogram',
+    'midjourney': 'Midjourney (Image)',
+    'dalle3': 'DALL-E 3 (Image)',
+    'stable_diffusion': 'Stable Diffusion XL (Image)',
+    'flux': 'Flux (Image)',
+    'leonardo': 'Leonardo AI (Image)',
+    'ideogram': 'Ideogram (Image)',
+    'imagen': 'Google Nano Banana/Imagen (Image)',
+    'veo': 'Google Veo (Video)',
+    'runway': 'Runway Gen-3 (Video)',
+    'sora': 'OpenAI Sora (Video)',
 }
 
 # --- Authentication Routes ---
@@ -907,6 +908,7 @@ def improve_image_prompt_with_ai(original_prompt, model_key):
         'flux': "Flux excels at photorealistic images. Be specific about lighting (golden hour, studio, etc.), composition (rule of thirds, close-up), and subject details.",
         'leonardo': "Leonardo AI supports various styles. Specify the model/preset you want (PhotoReal, DreamShaper, etc.). Include negative prompts for better results.",
         'ideogram': "Ideogram is excellent at text in images. Clearly specify any text to include and its placement. Describe typography style, background, and overall composition.",
+        'imagen': "Google Imagen (Nano Banana Pro) excels at photorealistic and artistic images. Be specific about scene composition, subject details, lighting, and artistic style. Supports natural language descriptions well. Mention quality keywords like high resolution, detailed, and specify aspect ratio if needed.",
     }
 
     tip = model_tips.get(model_key, "Be descriptive and specific about visual elements, style, composition, lighting, and mood.")
