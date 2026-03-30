@@ -116,7 +116,7 @@ def check_environment():
     print("Checking environment configuration...")
     
     required_vars = ['FLASK_SECRET_KEY']
-    optional_vars = ['OPENAI_API_KEY', 'DATABASE_URL', 'PAYPAL_CLIENT_ID', 'PAYPAL_CLIENT_SECRET']
+    optional_vars = ['OPENAI_API_KEY', 'GOOGLE_API_KEY', 'DATABASE_URL', 'PAYPAL_CLIENT_ID', 'PAYPAL_CLIENT_SECRET']
     
     missing_required = []
     for var in required_vars:

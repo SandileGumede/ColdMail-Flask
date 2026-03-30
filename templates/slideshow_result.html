@@ -180,6 +180,48 @@
         to { opacity: 1; transform: translateY(0); }
     }
 
+    .lightbox-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.85);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        cursor: zoom-out;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-overlay img {
+        max-width: 90vw;
+        max-height: 90vh;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .lightbox-close {
+        position: fixed;
+        top: 20px;
+        right: 24px;
+        color: white;
+        font-size: 2em;
+        cursor: pointer;
+        z-index: 10000;
+        background: rgba(0,0,0,0.4);
+        border: none;
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+    }
+    .lightbox-close:hover { background: rgba(0,0,0,0.7); }
+
+    .download-all-row {
+        text-align: center;
+        margin-bottom: 28px;
+    }
+
     @media (max-width: 640px) {
         .gallery-grid { grid-template-columns: 1fr; }
         .slideshow-header h1 { font-size: 1.5em; }
@@ -191,6 +233,11 @@
 {% endblock %}
 
 {% block content %}
+    <div id="lightbox" class="lightbox-overlay" onclick="closeLightbox()">
+        <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+        <img id="lightboxImg" src="" alt="Full-size preview">
+    </div>
+
     <div class="container fade-in">
         <div class="slideshow-header">
             <span class="provider-badge">{{ slideshow_data.provider }}</span>
@@ -223,12 +270,19 @@
                 <img src="{{ image_url }}" alt="UGC Scene {{ loop.index }}" class="gallery-image" loading="lazy">
                 <div class="gallery-item-footer">
                     <span class="scene-label">Scene {{ loop.index }}</span>
-                    <a href="{{ image_url }}" download="ugc_scene_{{ loop.index }}.png" class="download-btn">
+                    <a href="/download-image/{{ slideshow_data.batch_id }}/scene_{{ loop.index0 }}.png" class="download-btn">
                         <span>⬇</span> Download
                     </a>
                 </div>
             </div>
             {% endfor %}
+        </div>
+
+        <div class="download-all-row">
+            <button class="btn btn-primary" onclick="downloadAll()">
+                <span class="btn-icon">⬇</span>
+                <span class="btn-text">Download All Images</span>
+            </button>
         </div>
 
         <div class="email-preview-card scene-prompts-card">
@@ -281,10 +335,36 @@
 
 {% block extra_js %}
 <script>
+    function openLightbox(src) {
+        document.getElementById('lightboxImg').src = src;
+        document.getElementById('lightbox').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox() {
+        document.getElementById('lightbox').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeLightbox();
+    });
     document.querySelectorAll('.gallery-image').forEach(function(img) {
         img.addEventListener('click', function() {
-            window.open(this.src, '_blank');
+            openLightbox(this.src);
         });
     });
+
+    function downloadAll() {
+        var links = document.querySelectorAll('.download-btn');
+        links.forEach(function(link, i) {
+            setTimeout(function() {
+                var a = document.createElement('a');
+                a.href = link.href;
+                a.download = 'ugc_scene_' + (i + 1) + '.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }, i * 500);
+        });
+    }
 </script>
 {% endblock %}

@@ -1169,36 +1169,37 @@ def generate_ugc_scene_prompts(product_description, improved_prompt, num_scenes=
 
 
 def generate_image_imagen(prompt):
-    """Generate an image using Google Imagen 3 via the Generative Language API."""
+    """Generate an image using Google Imagen 4 via the Generative Language API."""
     if not GOOGLE_API_KEY:
         raise ValueError("GOOGLE_API_KEY not configured")
 
-    url = (
-        "https://generativelanguage.googleapis.com/v1beta/"
-        "models/imagen-3.0-generate-002:predict"
-        f"?key={GOOGLE_API_KEY}"
-    )
+    url = "https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict"
+    headers = {
+        "x-goog-api-key": GOOGLE_API_KEY,
+        "Content-Type": "application/json"
+    }
     payload = {
         "instances": [{"prompt": prompt}],
         "parameters": {
             "sampleCount": 1,
             "aspectRatio": "1:1",
-            "safetyFilterLevel": "block_only_high",
             "personGeneration": "allow_adult"
         }
     }
 
-    response = requests.post(url, json=payload, timeout=60)
-    response.raise_for_status()
-    result = response.json()
+    response = requests.post(url, headers=headers, json=payload, timeout=90)
+    if response.status_code != 200:
+        error_detail = response.text[:500]
+        raise ValueError(f"Imagen API error ({response.status_code}): {error_detail}")
 
+    result = response.json()
     predictions = result.get('predictions', [])
     if not predictions:
-        raise ValueError("No image returned from Google Imagen")
+        raise ValueError(f"No image returned from Imagen. Response: {json.dumps(result)[:300]}")
 
     image_b64 = predictions[0].get('bytesBase64Encoded')
     if not image_b64:
-        raise ValueError("No image data in Google Imagen response")
+        raise ValueError("No image data in Imagen response")
 
     return base64.b64decode(image_b64)
 
@@ -1300,7 +1301,12 @@ def improve_image_prompt():
 @app.route('/generate-slideshow', methods=['POST'])
 @login_required
 def generate_slideshow():
-    if not current_user.can_generate_slideshow():
+    try:
+        can_gen = current_user.can_generate_slideshow()
+    except Exception:
+        can_gen = False
+
+    if not can_gen:
         if current_user.is_paid:
             flash('Monthly slideshow limit reached (50/month). Resets next month.')
         else:
@@ -1334,17 +1340,30 @@ def generate_slideshow():
         flash('Image too large. Please upload an image under 10MB.')
         return redirect(url_for('prompt_result'))
 
-    product_description = analyze_product_image(image_bytes)
+    try:
+        product_description = analyze_product_image(image_bytes)
+    except Exception as e:
+        print(f"Product analysis failed: {e}")
+        product_description = None
+
     if not product_description:
         flash('Could not analyze the product image. Please try again.')
         return redirect(url_for('prompt_result'))
 
-    scene_prompts = generate_ugc_scene_prompts(product_description, improved_prompt, num_scenes=4)
+    try:
+        scene_prompts = generate_ugc_scene_prompts(product_description, improved_prompt, num_scenes=4)
+    except Exception as e:
+        print(f"Scene prompt generation failed: {e}")
+        scene_prompts = []
+
     if not scene_prompts:
         flash('Could not generate scene descriptions. Please try again.')
         return redirect(url_for('prompt_result'))
 
+    print(f"Generating {len(scene_prompts)} images with Imagen 4...")
     image_bytes_list, errors = generate_slideshow_images(scene_prompts, provider)
+    if errors:
+        print(f"Slideshow generation errors: {errors}")
 
     batch_id = str(uuid.uuid4())[:12]
     batch_dir = os.path.join(GENERATED_DIR, batch_id)
@@ -1360,12 +1379,16 @@ def generate_slideshow():
             image_urls.append(f"/static/generated/{batch_id}/{filename}")
 
     if not image_urls:
-        flash('Image generation failed. Please check your API configuration and try again.')
+        error_msg = 'Image generation failed.'
         if errors:
-            print(f"Slideshow generation errors: {errors}")
+            error_msg += f' Error: {errors[0][:200]}'
+        flash(error_msg)
         return redirect(url_for('prompt_result'))
 
-    current_user.increment_slideshow_generation()
+    try:
+        current_user.increment_slideshow_generation()
+    except Exception as e:
+        print(f"Could not increment slideshow count: {e}")
 
     session['slideshow_result'] = {
         'images': image_urls,
@@ -1381,6 +1404,20 @@ def generate_slideshow():
     }
 
     return redirect(url_for('slideshow_result'))
+
+
+@app.route('/download-image/<batch_id>/<filename>')
+@login_required
+def download_image(batch_id, filename):
+    """Serve generated images for download."""
+    safe_batch = batch_id.replace('..', '').replace('/', '').replace('\\', '')
+    safe_file = filename.replace('..', '').replace('/', '').replace('\\', '')
+    directory = os.path.join(GENERATED_DIR, safe_batch)
+    filepath = os.path.join(directory, safe_file)
+    if not os.path.isfile(filepath):
+        flash('Image not found.')
+        return redirect(url_for('home'))
+    return send_from_directory(directory, safe_file, as_attachment=True, download_name=safe_file)
 
 
 @app.route('/slideshow-result')
