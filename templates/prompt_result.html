@@ -133,14 +133,218 @@
         to { opacity: 1; transform: translateY(0); }
     }
 
+    .generate-btn {
+        width: 100%;
+        padding: 16px;
+        font-size: 1rem;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .generate-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102,126,234,0.3);
+    }
+    .generate-btn:active { transform: translateY(0); }
+    .generate-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .no-quota-message {
+        text-align: center;
+        padding: 24px 0;
+    }
+    .no-quota-message p {
+        margin-bottom: 12px;
+    }
+    .no-quota-message .reset-note {
+        font-size: 0.9em;
+        color: #9ca3af;
+    }
+    body.dark .no-quota-message .reset-note { color: #64748b; }
+
     @media (max-width: 480px) {
         .stats-grid { grid-template-columns: 1fr; }
         .stat-number { font-size: 2em; }
+        .upload-area { padding: 24px 16px; }
+        .gen-loading-card { padding: 32px 24px; }
     }
+
+    .slideshow-gen-card {
+        border: 2px dashed #667eea;
+        background: linear-gradient(135deg, rgba(102,126,234,0.03) 0%, rgba(118,75,162,0.03) 100%);
+    }
+    body.dark .slideshow-gen-card {
+        border-color: #818cf8;
+        background: linear-gradient(135deg, rgba(102,126,234,0.08) 0%, rgba(118,75,162,0.08) 100%);
+    }
+    .slideshow-gen-card .card-content p {
+        color: #4b5563;
+        margin-bottom: 20px;
+        line-height: 1.6;
+    }
+    body.dark .slideshow-gen-card .card-content p { color: #94a3b8; }
+
+    .upload-area {
+        border: 2px dashed #d1d5db;
+        border-radius: 14px;
+        padding: 32px;
+        text-align: center;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+    .upload-area:hover, .upload-area.dragover {
+        border-color: #667eea;
+        background: rgba(102,126,234,0.05);
+    }
+    body.dark .upload-area {
+        border-color: #334155;
+    }
+    body.dark .upload-area:hover { border-color: #818cf8; background: rgba(129,140,248,0.08); }
+    .upload-area input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+    .upload-icon { font-size: 2.5em; margin-bottom: 8px; display: block; }
+    .upload-label { font-weight: 600; font-size: 1.05em; margin-bottom: 4px; display: block; }
+    .upload-hint { font-size: 0.85em; color: #9ca3af; display: block; }
+    body.dark .upload-hint { color: #64748b; }
+    .upload-preview {
+        display: none;
+        max-width: 160px;
+        max-height: 160px;
+        border-radius: 12px;
+        margin: 16px auto 0;
+        object-fit: cover;
+        border: 2px solid #e5e7eb;
+    }
+    body.dark .upload-preview { border-color: #334155; }
+
+    .quota-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8em;
+        font-weight: 600;
+        margin-bottom: 16px;
+    }
+    .quota-badge.has-quota { background: #d1fae5; color: #065f46; }
+    .quota-badge.no-quota { background: #fee2e2; color: #991b1b; }
+    body.dark .quota-badge.has-quota { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+    body.dark .quota-badge.no-quota { background: rgba(239,68,68,0.2); color: #fca5a5; }
+
+    .gen-loading-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(6px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+    .gen-loading-overlay.active { display: flex; }
+    .gen-loading-card {
+        background: white;
+        border-radius: 20px;
+        padding: 48px 40px;
+        text-align: center;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+        max-width: 420px;
+        width: 90%;
+        animation: genSlideUp 0.3s ease;
+    }
+    body.dark .gen-loading-card { background: #1e293b; color: #e2e8f0; }
+    @keyframes genSlideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .gen-spinner {
+        width: 56px; height: 56px;
+        border: 4px solid #e5e7eb;
+        border-top-color: #667eea;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 24px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .gen-loading-card h3 { margin-bottom: 8px; font-size: 1.3em; }
+    .gen-loading-card p { color: #6b7280; font-size: 0.95em; margin: 4px 0; }
+    body.dark .gen-loading-card p { color: #94a3b8; }
+    .gen-steps {
+        text-align: left;
+        margin-top: 20px;
+        padding: 0;
+    }
+    .gen-steps li {
+        padding: 8px 0 8px 28px;
+        font-size: 0.9em;
+        color: #6b7280;
+        list-style: none;
+        position: relative;
+        transition: color 0.3s ease;
+    }
+    .gen-steps li::before {
+        content: '';
+        position: absolute;
+        left: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: 2px solid #d1d5db;
+        background: transparent;
+    }
+    .gen-steps li.active { color: #667eea; font-weight: 600; }
+    .gen-steps li.active::before {
+        border-color: #667eea;
+        background: #667eea;
+    }
+    .gen-steps li.done { color: #10b981; }
+    .gen-steps li.done::before {
+        border-color: #10b981;
+        background: #10b981;
+    }
+    body.dark .gen-steps li { color: #94a3b8; }
+    body.dark .gen-steps li::before { border-color: #475569; }
+    body.dark .gen-steps li.active { color: #818cf8; }
+    body.dark .gen-steps li.active::before { border-color: #818cf8; background: #818cf8; }
+    body.dark .gen-steps li.done { color: #34d399; }
+    body.dark .gen-steps li.done::before { border-color: #34d399; background: #34d399; }
 </style>
 {% endblock %}
 
 {% block content %}
+    <div id="genLoadingOverlay" class="gen-loading-overlay">
+        <div class="gen-loading-card">
+            <div class="gen-spinner"></div>
+            <h3>Generating Your Slideshow...</h3>
+            <p>This takes 30-60 seconds. Please don't close this page.</p>
+            <ul class="gen-steps">
+                <li class="active">Analyzing your product image</li>
+                <li>Creating UGC scene descriptions</li>
+                <li>Generating 4 product placement images</li>
+                <li>Preparing your slideshow gallery</li>
+            </ul>
+        </div>
+    </div>
+
     <div class="container fade-in">
         <div class="results-header">
             {% if prompt_data.tool_type == 'image_video' %}
@@ -348,6 +552,54 @@
             </div>
         </div>
 
+        {% if prompt_data.tool_type == 'image_video' and prompt_data.model_key == 'imagen' %}
+        <div class="email-preview-card slideshow-gen-card">
+            <div class="card-header">
+                <div class="card-icon preview-icon">📸</div>
+                <h3>Generate UGC Product Slideshow</h3>
+            </div>
+            <div class="card-content">
+                <p>Upload a product image and we'll generate <strong>4 UGC-style product placement images</strong> — ready for TikTok slideshows, Instagram carousels, and ad creatives.</p>
+
+                <span class="quota-badge {{ 'has-quota' if remaining_slideshows > 0 else 'no-quota' }}">
+                    {% if remaining_slideshows > 0 %}
+                        {{ remaining_slideshows }} slideshow{{ 's' if remaining_slideshows != 1 else '' }} remaining
+                    {% else %}
+                        No slideshows remaining this month
+                    {% endif %}
+                </span>
+
+                {% if remaining_slideshows > 0 %}
+                <form action="/generate-slideshow" method="POST" enctype="multipart/form-data" id="slideshowForm" onsubmit="showGenLoading()">
+                    <div class="upload-area" id="uploadArea">
+                        <input type="file" id="productImage" name="product_image" accept="image/jpeg,image/png,image/webp" required>
+                        <div class="upload-icon">📦</div>
+                        <div class="upload-label">Drop your product image here</div>
+                        <div class="upload-hint">or click to browse (JPG, PNG, WebP — max 10MB)</div>
+                        <img id="uploadPreview" class="upload-preview" alt="Preview">
+                    </div>
+
+                    <input type="hidden" name="provider" value="imagen">
+
+                    <button type="submit" class="generate-btn">
+                        <span>✨</span>
+                        <span>Generate 4 UGC Images</span>
+                    </button>
+                </form>
+                {% else %}
+                <div class="no-quota-message">
+                    <p>You've used all your slideshow generations for this month.</p>
+                    {% if not paid %}
+                    <a href="/upgrade" class="btn btn-primary">Upgrade for 50/month</a>
+                    {% else %}
+                    <p class="reset-note">Your limit resets next month.</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
         <div class="action-buttons">
             <a href="/" class="btn btn-primary">
                 <span class="btn-icon">←</span>
@@ -386,6 +638,58 @@
             }, 2000);
         }).catch(function() {
             alert('Failed to copy. Please select and copy manually.');
+        });
+    }
+
+    function showGenLoading() {
+        document.getElementById('genLoadingOverlay').classList.add('active');
+        var steps = document.querySelectorAll('.gen-steps li');
+        var idx = 0;
+        var timer = setInterval(function() {
+            if (idx < steps.length - 1) {
+                steps[idx].classList.remove('active');
+                steps[idx].classList.add('done');
+                idx++;
+                steps[idx].classList.add('active');
+            } else {
+                clearInterval(timer);
+            }
+        }, 12000);
+    }
+
+    var fileInput = document.getElementById('productImage');
+    var preview = document.getElementById('uploadPreview');
+    var uploadArea = document.getElementById('uploadArea');
+
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            var file = this.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    if (uploadArea) {
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', function() {
+            this.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                fileInput.dispatchEvent(new Event('change'));
+            }
         });
     }
 </script>

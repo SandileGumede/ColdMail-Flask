@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, make_response
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, make_response, send_from_directory
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_session import Session
 from models import db, User
@@ -9,6 +9,8 @@ import requests
 import hmac
 import hashlib
 import base64
+import uuid
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import time
@@ -16,7 +18,12 @@ import json
 
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 print("OPENAI_API_KEY loaded:", OPENAI_API_KEY is not None)
+print("GOOGLE_API_KEY loaded:", GOOGLE_API_KEY is not None)
+
+GENERATED_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'generated')
+os.makedirs(GENERATED_DIR, exist_ok=True)
 
 app = Flask(__name__)
 
@@ -143,9 +150,26 @@ def ensure_db_initialized():
     
     return False
 
+def ensure_slideshow_columns():
+    """Add slideshow generation columns to existing user table if missing."""
+    try:
+        with app.app_context():
+            from sqlalchemy import inspect as sa_inspect
+            inspector = sa_inspect(db.engine)
+            columns = [col['name'] for col in inspector.get_columns('user')]
+            if 'slideshow_generations_used' not in columns:
+                with db.engine.connect() as conn:
+                    conn.execute(db.text('ALTER TABLE "user" ADD COLUMN slideshow_generations_used INTEGER DEFAULT 0'))
+                    conn.execute(db.text('ALTER TABLE "user" ADD COLUMN slideshow_generation_reset TIMESTAMP'))
+                    conn.commit()
+                print("Added slideshow generation columns to user table")
+    except Exception as e:
+        print(f"Slideshow column check (non-critical): {e}")
+
 # Initialize database on startup
 if not ensure_db_initialized():
     print("Warning: Database initialization failed, but continuing startup...")
+ensure_slideshow_columns()
 
 # Initialize Flask-Session after database is configured
 Session(app)
@@ -189,7 +213,6 @@ IMAGE_VIDEO_MODELS = {
     'imagen': 'Google Nano Banana/Imagen (Image)',
     'veo': 'Google Veo (Video)',
     'runway': 'Runway Gen-3 (Video)',
-    'sora': 'OpenAI Sora (Video)',
 }
 
 # --- Authentication Routes ---
@@ -904,7 +927,6 @@ def improve_image_prompt_with_ai(original_prompt, model_key):
         'stable_diffusion': "Use weighted keywords with (parentheses) for emphasis. Include negative prompts. Specify style: photorealistic, anime, oil painting, etc. Mention technical details: 8k, detailed, masterpiece, best quality.",
         'veo': "Google Veo generates videos. Describe the scene, camera movement, lighting, mood, and temporal progression. Specify duration, transitions, and any text overlays needed for UGC content.",
         'runway': "Runway Gen-3 excels at video. Describe motion, camera angles, scene transitions. Be specific about subject movement, background changes, and visual effects.",
-        'sora': "OpenAI Sora generates videos from text. Describe the scene cinematically: camera movement, lighting shifts, subject actions over time. Think like a director.",
         'flux': "Flux excels at photorealistic images. Be specific about lighting (golden hour, studio, etc.), composition (rule of thirds, close-up), and subject details.",
         'leonardo': "Leonardo AI supports various styles. Specify the model/preset you want (PhotoReal, DreamShaper, etc.). Include negative prompts for better results.",
         'ideogram': "Ideogram is excellent at text in images. Clearly specify any text to include and its placement. Describe typography style, background, and overall composition.",
@@ -1031,6 +1053,179 @@ def rule_based_image_prompt_analysis(prompt, model_key):
     return analysis
 
 
+# --- UGC Slideshow Image Generation ---
+
+def analyze_product_image(image_bytes):
+    """Use GPT-4o Vision to describe an uploaded product image."""
+    if not OPENAI_API_KEY:
+        return None
+
+    b64_image = base64.b64encode(image_bytes).decode('utf-8')
+    headers = {
+        'Authorization': f'Bearer {OPENAI_API_KEY}',
+        'Content-Type': 'application/json'
+    }
+    data = {
+        "model": "gpt-4o",
+        "messages": [{
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": (
+                        "Analyze this product image concisely. Describe: "
+                        "1) Product type/category 2) Colors and materials "
+                        "3) Any visible brand text or logo 4) Shape and proportions "
+                        "5) Key visual features that make it recognizable. "
+                        "Be specific — this description will be used to recreate "
+                        "the product in AI-generated images."
+                    )
+                },
+                {
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/jpeg;base64,{b64_image}"}
+                }
+            ]
+        }],
+        "max_tokens": 400,
+        "temperature": 0.2
+    }
+
+    try:
+        response = requests.post(
+            'https://api.openai.com/v1/chat/completions',
+            headers=headers, json=data, timeout=30
+        )
+        response.raise_for_status()
+        return response.json()['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        print(f"Product image analysis error: {e}")
+        return None
+
+
+def generate_ugc_scene_prompts(product_description, improved_prompt, num_scenes=4):
+    """Generate diverse UGC-style scene descriptions using GPT-4o-mini."""
+    if not OPENAI_API_KEY:
+        return []
+
+    headers = {
+        'Authorization': f'Bearer {OPENAI_API_KEY}',
+        'Content-Type': 'application/json'
+    }
+    data = {
+        "model": "gpt-4o-mini",
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "You generate UGC-style image prompts for product placement. "
+                    "Each scene should feel authentic — like content a real creator "
+                    "would post on TikTok or Instagram. NOT studio-perfect. Think: "
+                    "handheld camera, natural lighting, real environments, casual framing. "
+                    "Vary the settings (kitchen, desk, outdoor cafe, bathroom shelf, gym bag), "
+                    "camera angles (selfie, overhead flat lay, close-up in hand, mirror shot), "
+                    "and creator styles (clean girl, minimalist, cozy, energetic). "
+                    "Each prompt must include the product description so the AI "
+                    "generates the correct product. Return a JSON object with key "
+                    "'scenes' containing an array of prompt strings."
+                )
+            },
+            {
+                "role": "user",
+                "content": (
+                    f"Product description: {product_description}\n\n"
+                    f"Style inspiration: {improved_prompt[:500]}\n\n"
+                    f"Generate exactly {num_scenes} diverse UGC-style scene prompts. "
+                    "Each should be a complete, detailed image generation prompt "
+                    "(50-100 words) that places this specific product in an authentic "
+                    "creator-style setting."
+                )
+            }
+        ],
+        "max_tokens": 1200,
+        "temperature": 0.8,
+        "response_format": {"type": "json_object"}
+    }
+
+    try:
+        response = requests.post(
+            'https://api.openai.com/v1/chat/completions',
+            headers=headers, json=data, timeout=25
+        )
+        response.raise_for_status()
+        content = response.json()['choices'][0]['message']['content'].strip()
+        parsed = json.loads(content)
+
+        if isinstance(parsed, dict):
+            for v in parsed.values():
+                if isinstance(v, list):
+                    return v[:num_scenes]
+        if isinstance(parsed, list):
+            return parsed[:num_scenes]
+        return []
+    except Exception as e:
+        print(f"UGC scene generation error: {e}")
+        return []
+
+
+def generate_image_imagen(prompt):
+    """Generate an image using Google Imagen 3 via the Generative Language API."""
+    if not GOOGLE_API_KEY:
+        raise ValueError("GOOGLE_API_KEY not configured")
+
+    url = (
+        "https://generativelanguage.googleapis.com/v1beta/"
+        "models/imagen-3.0-generate-002:predict"
+        f"?key={GOOGLE_API_KEY}"
+    )
+    payload = {
+        "instances": [{"prompt": prompt}],
+        "parameters": {
+            "sampleCount": 1,
+            "aspectRatio": "1:1",
+            "safetyFilterLevel": "block_only_high",
+            "personGeneration": "allow_adult"
+        }
+    }
+
+    response = requests.post(url, json=payload, timeout=60)
+    response.raise_for_status()
+    result = response.json()
+
+    predictions = result.get('predictions', [])
+    if not predictions:
+        raise ValueError("No image returned from Google Imagen")
+
+    image_b64 = predictions[0].get('bytesBase64Encoded')
+    if not image_b64:
+        raise ValueError("No image data in Google Imagen response")
+
+    return base64.b64decode(image_b64)
+
+
+def generate_slideshow_images(scene_prompts, provider):
+    """Generate multiple images in parallel for a UGC slideshow."""
+    gen_func = generate_image_imagen
+    results = [None] * len(scene_prompts)
+    errors = []
+
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        futures = {}
+        for i, prompt in enumerate(scene_prompts):
+            futures[executor.submit(gen_func, prompt)] = i
+
+        for future in as_completed(futures):
+            idx = futures[future]
+            try:
+                results[idx] = future.result()
+            except Exception as e:
+                print(f"Image generation error (scene {idx}): {e}")
+                errors.append(str(e))
+                results[idx] = None
+
+    return results, errors
+
+
 # --- Routes: App Builder Prompt ---
 @app.route('/improve-prompt', methods=['POST'])
 @login_required
@@ -1102,6 +1297,105 @@ def improve_image_prompt():
     return redirect(url_for('prompt_result'))
 
 
+@app.route('/generate-slideshow', methods=['POST'])
+@login_required
+def generate_slideshow():
+    if not current_user.can_generate_slideshow():
+        if current_user.is_paid:
+            flash('Monthly slideshow limit reached (50/month). Resets next month.')
+        else:
+            flash('Free slideshow limit reached (1/month). Upgrade for 50 per month!')
+            return redirect(url_for('upgrade'))
+        return redirect(url_for('prompt_result'))
+
+    prompt_data = session.get('prompt_result', {})
+    if not prompt_data:
+        flash('Please optimize a prompt first.')
+        return redirect(url_for('home'))
+
+    improved_prompt = prompt_data.get('improved_prompt', '')
+    provider = request.form.get('provider', 'imagen')
+
+    if provider != 'imagen':
+        flash('Invalid provider selected.')
+        return redirect(url_for('prompt_result'))
+
+    if 'product_image' not in request.files:
+        flash('Please upload a product image.')
+        return redirect(url_for('prompt_result'))
+
+    file = request.files['product_image']
+    if file.filename == '':
+        flash('No file selected.')
+        return redirect(url_for('prompt_result'))
+
+    image_bytes = file.read()
+    if len(image_bytes) > 10 * 1024 * 1024:
+        flash('Image too large. Please upload an image under 10MB.')
+        return redirect(url_for('prompt_result'))
+
+    product_description = analyze_product_image(image_bytes)
+    if not product_description:
+        flash('Could not analyze the product image. Please try again.')
+        return redirect(url_for('prompt_result'))
+
+    scene_prompts = generate_ugc_scene_prompts(product_description, improved_prompt, num_scenes=4)
+    if not scene_prompts:
+        flash('Could not generate scene descriptions. Please try again.')
+        return redirect(url_for('prompt_result'))
+
+    image_bytes_list, errors = generate_slideshow_images(scene_prompts, provider)
+
+    batch_id = str(uuid.uuid4())[:12]
+    batch_dir = os.path.join(GENERATED_DIR, batch_id)
+    os.makedirs(batch_dir, exist_ok=True)
+
+    image_urls = []
+    for i, img_bytes in enumerate(image_bytes_list):
+        if img_bytes:
+            filename = f"scene_{i}.png"
+            filepath = os.path.join(batch_dir, filename)
+            with open(filepath, 'wb') as f:
+                f.write(img_bytes)
+            image_urls.append(f"/static/generated/{batch_id}/{filename}")
+
+    if not image_urls:
+        flash('Image generation failed. Please check your API configuration and try again.')
+        if errors:
+            print(f"Slideshow generation errors: {errors}")
+        return redirect(url_for('prompt_result'))
+
+    current_user.increment_slideshow_generation()
+
+    session['slideshow_result'] = {
+        'images': image_urls,
+        'scene_prompts': scene_prompts,
+        'product_description': product_description,
+        'provider': 'Google Nano Banana/Imagen',
+        'provider_key': provider,
+        'batch_id': batch_id,
+        'original_prompt': prompt_data.get('original_prompt', ''),
+        'improved_prompt': improved_prompt,
+        'num_generated': len(image_urls),
+        'num_failed': len(scene_prompts) - len(image_urls)
+    }
+
+    return redirect(url_for('slideshow_result'))
+
+
+@app.route('/slideshow-result')
+@login_required
+def slideshow_result():
+    slideshow_data = session.get('slideshow_result', {})
+    if not slideshow_data:
+        return redirect(url_for('home'))
+
+    return render_template('slideshow_result.html',
+                         slideshow_data=slideshow_data,
+                         paid=current_user.is_paid,
+                         remaining_slideshows=current_user.get_remaining_slideshows())
+
+
 @app.route('/prompt-result')
 @login_required
 def prompt_result():
@@ -1112,7 +1406,8 @@ def prompt_result():
 
     return render_template('prompt_result.html',
                          prompt_data=prompt_data,
-                         paid=current_user.is_paid)
+                         paid=current_user.is_paid,
+                         remaining_slideshows=current_user.get_remaining_slideshows())
 
 @app.route('/contact')
 def contact():
