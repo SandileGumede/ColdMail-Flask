@@ -1390,10 +1390,15 @@ def slideshow_result():
     if not slideshow_data:
         return redirect(url_for('home'))
 
+    try:
+        remaining = current_user.get_remaining_slideshows()
+    except Exception:
+        remaining = 0
+
     return render_template('slideshow_result.html',
                          slideshow_data=slideshow_data,
                          paid=current_user.is_paid,
-                         remaining_slideshows=current_user.get_remaining_slideshows())
+                         remaining_slideshows=remaining)
 
 
 @app.route('/prompt-result')
@@ -1404,10 +1409,15 @@ def prompt_result():
     if not prompt_data:
         return redirect(url_for('home'))
 
+    try:
+        remaining = current_user.get_remaining_slideshows()
+    except Exception:
+        remaining = 0
+
     return render_template('prompt_result.html',
                          prompt_data=prompt_data,
                          paid=current_user.is_paid,
-                         remaining_slideshows=current_user.get_remaining_slideshows())
+                         remaining_slideshows=remaining)
 
 @app.route('/contact')
 def contact():

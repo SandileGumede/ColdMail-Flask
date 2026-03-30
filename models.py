@@ -9,12 +9,15 @@ db = SQLAlchemy()
 MONTHLY_ANALYSIS_LIMIT = 200
 
 class User(UserMixin, db.Model):
+    FREE_SLIDESHOW_LIMIT = 1
+    PAID_SLIDESHOW_LIMIT = 50
+
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    user_name = db.Column(db.String(12), unique=True, nullable=True)  # Username max 12 characters
-    password_hash = db.Column(db.String(255), nullable=True)  # Made nullable for Supabase users
-    supabase_id = db.Column(db.String(255), unique=True, nullable=True)  # Supabase user ID
-    analysis_count = db.Column(db.Integer, default=0)  # Total lifetime analyses (free tier tracking)
+    user_name = db.Column(db.String(12), unique=True, nullable=True)
+    password_hash = db.Column(db.String(255), nullable=True)
+    supabase_id = db.Column(db.String(255), unique=True, nullable=True)
+    analysis_count = db.Column(db.Integer, default=0)
     is_paid = db.Column(db.Boolean, default=False)
     payment_date = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -24,6 +27,10 @@ class User(UserMixin, db.Model):
     # Monthly usage tracking for fair use policy
     monthly_analysis_count = db.Column(db.Integer, default=0)
     monthly_reset_date = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Slideshow generation tracking (separate from prompt optimization)
+    slideshow_generations_used = db.Column(db.Integer, default=0)
+    slideshow_generation_reset = db.Column(db.DateTime)
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -91,4 +98,26 @@ class User(UserMixin, db.Model):
                 'limit': MONTHLY_ANALYSIS_LIMIT,
                 'remaining': MONTHLY_ANALYSIS_LIMIT - self.monthly_analysis_count
             }
-        return None 
+        return None
+
+    def _reset_slideshow_if_needed(self):
+        now = datetime.utcnow()
+        if self.slideshow_generation_reset is None or (now - self.slideshow_generation_reset).days >= 30:
+            self.slideshow_generations_used = 0
+            self.slideshow_generation_reset = now
+            db.session.commit()
+
+    def can_generate_slideshow(self):
+        self._reset_slideshow_if_needed()
+        limit = self.PAID_SLIDESHOW_LIMIT if self.is_paid else self.FREE_SLIDESHOW_LIMIT
+        return self.slideshow_generations_used < limit
+
+    def increment_slideshow_generation(self):
+        self._reset_slideshow_if_needed()
+        self.slideshow_generations_used += 1
+        db.session.commit()
+
+    def get_remaining_slideshows(self):
+        self._reset_slideshow_if_needed()
+        limit = self.PAID_SLIDESHOW_LIMIT if self.is_paid else self.FREE_SLIDESHOW_LIMIT
+        return max(0, limit - self.slideshow_generations_used)
