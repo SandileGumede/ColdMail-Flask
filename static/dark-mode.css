@@ -24,16 +24,16 @@
   --surface-elevated: #ffffff;
   --surface-overlay: rgba(255, 255, 255, 0.95);
   
-  /* Accent Colors */
-  --accent-primary: #667eea;
-  --accent-secondary: #764ba2;
-  --accent-hover: #5a6fd8;
-  --accent-active: #4c63d2;
+  /* Accent Colors — professional blue (productivity SaaS) */
+  --accent-primary: #2563eb;
+  --accent-secondary: #1d4ed8;
+  --accent-hover: #3b82f6;
+  --accent-active: #1e40af;
   
   /* Border Colors */
   --border-primary: #e2e8f0;
   --border-secondary: #cbd5e0;
-  --border-focus: #667eea;
+  --border-focus: #2563eb;
   --border-subtle: rgba(226, 232, 240, 0.5);
   
   /* Status Colors */
@@ -56,9 +56,9 @@
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
   --shadow-xl: 0 16px 64px rgba(0, 0, 0, 0.15);
   
-  /* Gradient Colors */
-  --gradient-primary: linear-gradient(135deg, #667eea, #764ba2);
-  --gradient-secondary: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  /* Surfaces (avoid loud gradients on chrome) */
+  --gradient-primary: linear-gradient(135deg, #2563eb, #1d4ed8);
+  --gradient-secondary: linear-gradient(135deg, #f8fafc, #f1f5f9);
   
   /* Spacing */
   --space-xs: 0.25rem;
@@ -105,15 +105,15 @@
   --surface-overlay: rgba(22, 27, 34, 0.95);
   
   /* Accent Colors */
-  --accent-primary: #7c8cff;
-  --accent-secondary: #8b5cf6;
-  --accent-hover: #6b7ae8;
-  --accent-active: #5a6fd8;
+  --accent-primary: #60a5fa;
+  --accent-secondary: #3b82f6;
+  --accent-hover: #93c5fd;
+  --accent-active: #2563eb;
   
   /* Border Colors */
   --border-primary: #30363d;
   --border-secondary: #21262d;
-  --border-focus: #7c8cff;
+  --border-focus: #60a5fa;
   --border-subtle: rgba(48, 54, 61, 0.5);
   
   /* Status Colors */
@@ -136,8 +136,7 @@
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
   --shadow-xl: 0 16px 64px rgba(0, 0, 0, 0.6);
   
-  /* Gradient Colors */
-  --gradient-primary: linear-gradient(135deg, #7c8cff, #8b5cf6);
+  --gradient-primary: linear-gradient(135deg, #3b82f6, #2563eb);
   --gradient-secondary: linear-gradient(135deg, #1a1f2e, #242938);
 }
 
@@ -156,7 +155,7 @@ body.dark {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.6;
@@ -175,10 +174,9 @@ h1, h2, h3, h4, h5, h6 {
 h1 {
   font-size: 2.5rem;
   font-weight: 700;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-primary);
+  background: none;
+  -webkit-text-fill-color: currentColor;
 }
 
 h2 {
@@ -226,10 +224,9 @@ p {
 }
 
 .nav-brand h2 {
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-primary);
+  background: none;
+  -webkit-text-fill-color: currentColor;
   font-size: 1.8rem;
   font-weight: 700;
 }
@@ -252,10 +249,10 @@ p {
 
 .nav-link:hover,
 .nav-link.active {
-  background: var(--gradient-primary);
-  color: var(--text-inverse);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--accent-primary);
+  transform: none;
+  box-shadow: none;
 }
 
 /* ===== BUTTONS ===== */
@@ -283,14 +280,15 @@ p {
 }
 
 .btn-primary {
-  background: var(--gradient-primary);
+  background: var(--accent-secondary);
   color: var(--text-inverse);
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-  filter: brightness(1.1);
+  background: var(--accent-primary);
+  transform: none;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+  filter: none;
 }
 
 .btn-primary:active {
@@ -306,7 +304,7 @@ p {
 .btn-secondary:hover {
   background: var(--bg-hover);
   border-color: var(--border-focus);
-  transform: translateY(-2px);
+  transform: none;
 }
 
 .btn-outline {
@@ -316,9 +314,9 @@ p {
 }
 
 .btn-outline:hover {
-  background: var(--accent-primary);
+  background: var(--accent-secondary);
   color: var(--text-inverse);
-  transform: translateY(-2px);
+  transform: none;
 }
 
 /* ===== FORMS ===== */
@@ -356,7 +354,7 @@ textarea:focus {
   border-color: var(--border-focus);
   outline: none;
   background: var(--surface-primary);
-  box-shadow: 0 0 0 3px rgba(124, 140, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
 }
 
 textarea {

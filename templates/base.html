@@ -18,6 +18,9 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/static/my_simple_logo.png">
     <link rel="shortcut icon" type="image/png" href="/static/my_simple_logo.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/static/my_simple_logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/dark-mode.css">
     {% block extra_css %}{% endblock %}
@@ -34,7 +37,7 @@
                 <a href="/faq" class="nav-link {% if request.endpoint == 'faq' %}active{% endif %}">FAQ</a>
                 <a href="/contact" class="nav-link {% if request.endpoint == 'contact' %}active{% endif %}">Contact</a>
                 {% if current_user.is_authenticated %}
-                    <span class="nav-link" style="color:#4a90e2;">{{ current_user.user_name or current_user.email }}</span>
+                    <span class="nav-user">{{ current_user.user_name or current_user.email }}</span>
                     <a href="/logout" class="nav-link">Logout</a>
                 {% else %}
                     <a href="/login" class="nav-link {% if request.endpoint == 'login' %}active{% endif %}">Login</a>

@@ -20,11 +20,11 @@
 
     .provider-badge {
         display: inline-block;
-        padding: 6px 14px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
+        padding: 6px 12px;
+        background: #2563eb;
         color: white;
-        border-radius: 20px;
-        font-size: 0.85em;
+        border-radius: 8px;
+        font-size: 0.8em;
         font-weight: 600;
         margin-bottom: 8px;
     }
@@ -58,8 +58,8 @@
         transition: all 0.3s ease;
     }
     .gallery-item:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 28px rgba(0,0,0,0.1);
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
     }
     body.dark .gallery-item {
         background: #1e293b;
@@ -96,16 +96,16 @@
         gap: 6px;
         padding: 8px 14px;
         border: none;
-        border-radius: 10px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 8px;
+        background: #2563eb;
         color: white;
         font-size: 0.8em;
         font-weight: 600;
         cursor: pointer;
         text-decoration: none;
-        transition: all 0.2s ease;
+        transition: background-color 0.15s ease;
     }
-    .download-btn:hover { transform: translateY(-1px); opacity: 0.9; }
+    .download-btn:hover { background: #1d4ed8; transform: none; opacity: 1; }
 
     .scene-prompts-card {
         margin-bottom: 24px;
@@ -128,13 +128,13 @@
     }
     .scene-prompt-label {
         font-weight: 700;
-        color: #667eea;
+        color: #1d4ed8;
         font-size: 0.8em;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 4px;
     }
-    body.dark .scene-prompt-label { color: #818cf8; }
+    body.dark .scene-prompt-label { color: #60a5fa; }
 
     .product-desc-card .card-content p {
         line-height: 1.7;
@@ -144,9 +144,9 @@
     body.dark .product-desc-card .card-content p { color: #cbd5e1; }
 
     .success-banner {
-        background: linear-gradient(135deg, #10b981, #059669);
+        background: #059669;
         color: white;
-        border-radius: 14px;
+        border-radius: 12px;
         padding: 20px 24px;
         margin-bottom: 24px;
         display: flex;
@@ -154,7 +154,7 @@
         gap: 14px;
     }
     .success-banner.partial {
-        background: linear-gradient(135deg, #f59e0b, #d97706);
+        background: #d97706;
     }
     .success-banner-icon { font-size: 1.6em; flex-shrink: 0; }
     .success-banner-text h3 { margin: 0 0 4px; font-size: 1.1em; }
